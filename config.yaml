@@ -1,0 +1,49 @@
+# Ulanzi D200X configuration.
+
+device:
+  brightness: 80              # 0-100
+  keep_alive_interval: 1.0    # seconds; keeps the screensaver away
+  clock_background: "#000000" # background behind the clock window
+
+# Defaults for every key; a key below only needs the fields it changes.
+button_defaults:
+  background: "#1a1a2e"
+  color: "#ffffff"
+  font_size: 110
+
+# Keys 1-13, numbered left to right, top to bottom:
+#    1  2  3  4  5
+#    6  7  8  9 10
+#   11 12 13 [clock]
+#
+# Per key:
+#   text:       text drawn on the key
+#   icon:       path to an image (png/jpg); used instead of text
+#   background: background color
+#   color:      text color
+#   font_size:  text size in pixels
+#   output:     printed when the key is pressed
+buttons:
+  1:  {text: "Hallo",  output: "Hallo"}
+  2:  {text: "2",  output: "2"}
+  3:  {text: "3",  output: "3"}
+  4:  {text: "4",  output: "4"}
+  5:  {text: "5",  output: "5"}
+  6:  {text: "6",  output: "6"}
+  7:  {text: "7",  output: "7"}
+  8:  {text: "8",  output: "8"}
+  9:  {text: "9",  output: "9"}
+  10: {text: "10", output: "10"}
+  11: {text: "11", output: "11"}
+  12: {text: "12", output: "12"}
+  13: {text: "13", output: "13"}
+
+# Rotary knobs, left to right.
+#   index: the knob's id in the USB events (only 0x11 for K1 is confirmed)
+#   left:  printed on a counter-clockwise step
+#   right: printed on a clockwise step
+#   press: printed when the knob is pressed
+knobs:
+  K1: {index: 0x11, left: "K1 <-", right: "K1 ->", press: "K1 press"}
+  K2: {index: 0x12, left: "K2 <-", right: "K2 ->", press: "K2 press"}
+  K3: {index: 0x13, left: "K3 <-", right: "K3 ->", press: "K3 press"}

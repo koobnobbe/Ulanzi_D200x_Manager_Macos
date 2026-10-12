@@ -1,26 +1,25 @@
 import asyncio
 import binascii
 import os
+import sys
 from dataclasses import dataclass
 from PIL import Image, ImageDraw, ImageFont
 import hid
+import yaml
 from strmdck.device import ButtonAction
 from strmdck.devices.ulanzi_d200 import UlanziD200Device
 
 ICON_DIR = os.path.join('.cache', 'icons', '_generated')
 SIZE = UlanziD200Device.ICON_WIDTH  # 196x196
+CONFIG_PATH = 'config.yaml'
 
 IN_BUTTON = b'\x01\x01'
 KIND_BUTTON = 0x01
 KIND_KNOB = 0x02
-# Value byte of a knob event: 0x01/0x00 press/release, 0x02 counter-clockwise,
-# 0x03 clockwise. Anything else is printed raw.
-KNOB_PRESS = 0x01
+# Value byte of a knob event -> config field. 0x00 (release) is ignored;
+# anything else is printed raw.
 KNOB_RELEASE = 0x00
-KNOB_DIRECTION = {0x02: '<-', 0x03: '->'}
-# Index byte of a knob event -> knob name. Only 0x11 (left knob) has been seen;
-# the other two are assumed to follow it. Unknown indices are printed raw.
-KNOB_NAMES = {0x11: 'K1', 0x12: 'K2', 0x13: 'K3'}
+KNOB_EVENTS = {0x01: 'press', 0x02: 'left', 0x03: 'right'}
 
 
 @dataclass
@@ -68,17 +67,26 @@ def load_font(size):
         return ImageFont.load_default()
 
 
-def render_black():
-    name = 'black.png'
-    Image.new('RGB', (SIZE, SIZE), color='black').save(os.path.join(ICON_DIR, name))
+def load_config(path):
+    with open(path) as fp:
+        return yaml.safe_load(fp)
+
+
+def render_solid(color):
+    name = f'solid_{color.lstrip("#")}.png'
+    Image.new('RGB', (SIZE, SIZE), color=color).save(os.path.join(ICON_DIR, name))
     return name
 
 
-def render_number(number):
-    img = Image.new('RGB', (SIZE, SIZE), color='#1a1a2e')
-    draw = ImageDraw.Draw(img)
-    draw.text((SIZE / 2, SIZE / 2), str(number), font=load_font(110), fill='white', anchor='mm')
-    name = f'num_{number}.png'
+def render_button(number, button):
+    name = f'button_{number}.png'
+    if button.get('icon'):
+        img = Image.open(button['icon']).convert('RGB').resize((SIZE, SIZE))
+    else:
+        img = Image.new('RGB', (SIZE, SIZE), color=button['background'])
+        draw = ImageDraw.Draw(img)
+        draw.text((SIZE / 2, SIZE / 2), str(button.get('text', '')),
+                  font=load_font(button['font_size']), fill=button['color'], anchor='mm')
     img.save(os.path.join(ICON_DIR, name))
     return name
 
@@ -92,35 +100,46 @@ async def keep_alive(deck, interval=1.0):
 
 
 async def main():
+    config = load_config(sys.argv[1] if len(sys.argv) > 1 else CONFIG_PATH)
+    device = config.get('device', {})
+    defaults = config.get('button_defaults', {})
+    # Config keys are numbered from 1; the deck index is number - 1
+    # (left-to-right, top-to-bottom, index = row * 5 + col).
+    buttons = {int(n): {**defaults, **(b or {})} for n, b in config.get('buttons', {}).items()}
+    knobs = {k['index']: k for k in config.get('knobs', {}).values()}
+
     deck = connect()
     if deck is None:
         raise SystemExit("No Ulanzi D200 found")
 
     os.makedirs(ICON_DIR, exist_ok=True)
 
-    # Button index runs left-to-right, top-to-bottom (index = row * 5 + col),
-    # so the number shown is simply index + 1.
-    buttons = {i: {'icon': render_number(i + 1)} for i in range(UlanziD200Device.BUTTON_COUNT)}
+    layout = {number - 1: {'icon': render_button(number, b)} for number, b in buttons.items()}
     # Slots 13 and 14 (cols 3-4 of the bottom row) are the clock window. Give them
-    # a black background so the deck's default image doesn't show behind the time.
-    black = render_black()
+    # a solid background so the deck's default image doesn't show behind the time.
+    clock = render_solid(device.get('clock_background', '#000000'))
     for i in range(UlanziD200Device.BUTTON_COUNT, UlanziD200Device.BUTTON_ROWS * UlanziD200Device.BUTTON_COLS):
-        buttons[i] = {'icon': black}
+        layout[i] = {'icon': clock}
 
-    deck.set_brightness(80)
-    deck.set_buttons(buttons)
-    keep_alive_task = asyncio.create_task(keep_alive(deck))  # keep a reference so it isn't GC'd
+    deck.set_brightness(device.get('brightness', 80))
+    deck.set_buttons(layout)
+    keep_alive_task = asyncio.create_task(  # keep a reference so it isn't GC'd
+        keep_alive(deck, device.get('keep_alive_interval', 1.0)))
 
     print("Druk op een knop (Ctrl+C om te stoppen)")
     async for action in deck.read_packet():
         if isinstance(action, KnobAction):
-            name = KNOB_NAMES.get(action.index, f'knob 0x{action.index:02x}')
-            if action.value == KNOB_PRESS:
-                print(f'{name} press')
-            elif action.value != KNOB_RELEASE:
-                direction = KNOB_DIRECTION.get(action.value, f'value 0x{action.value:02x}')
-                print(f'{name} {direction}')
+            if action.value == KNOB_RELEASE:
+                continue
+            knob = knobs.get(action.index)
+            event = KNOB_EVENTS.get(action.value)
+            if knob is None or event is None:
+                print(f'knob 0x{action.index:02x} value 0x{action.value:02x}')
+            elif knob.get(event):
+                print(knob[event])
         elif action and action.pressed:
-            print(action.index + 1)
+            button = buttons.get(action.index + 1)
+            if button and button.get('output'):
+                print(button['output'])
 
 asyncio.run(main())
