@@ -1,0 +1,6 @@
+strmdck==0.1.0rc1
+hidapi==0.14.0.post4
+pillow==12.3.0
+# Imported by strmdck but not declared in its package metadata
+deepdiff==9.1.0
+python-dotenv==1.2.4
