@@ -9,7 +9,7 @@ device:
 button_defaults:
   background: "#1a1a2e"
   color: "#ffffff"
-  font_size: 110
+  font_size: 60
 
 # Keys 1-13, numbered left to right, top to bottom:
 #    1  2  3  4  5
@@ -17,26 +17,35 @@ button_defaults:
 #   11 12 13 [clock]
 #
 # Per key:
-#   text:       text drawn on the key
-#   icon:       path to an image (png/jpg); used instead of text
+#   type:       "text" (default), "app" or "key"
+#   app:        type app: path to a .app bundle; opened when the key is pressed.
+#               The key shows the app's icon, with the title (if any) below it.
+#   keys:       type key: key combo sent when pressed, e.g. "cmd+c", "ctrl+shift+tab",
+#               or a list of combos sent one after another: ["cmd+a", "cmd+c"].
+#               Modifiers: cmd, ctrl, alt/option, shift, fn. Keys: a-z, 0-9,
+#               enter, tab, space, esc, backspace, delete, up/down/left/right,
+#               home, end, pageup, pagedown, f1-f12 and punctuation.
+#               Needs Accessibility permission for the terminal running the manager.
+#   title:      text drawn on the key
+#   icon:       path to an image (png/jpg); used instead of the text/app icon
 #   background: background color
 #   color:      text color
 #   font_size:  text size in pixels
 #   output:     printed when the key is pressed
 buttons:
-  1:  {text: "Hallo",  output: "Hallo"}
-  2:  {text: "2",  output: "2"}
-  3:  {text: "3",  output: "3"}
-  4:  {text: "4",  output: "4"}
-  5:  {text: "5",  output: "5"}
-  6:  {text: "6",  output: "6"}
-  7:  {text: "7",  output: "7"}
-  8:  {text: "8",  output: "8"}
-  9:  {text: "9",  output: "9"}
-  10: {text: "10", output: "10"}
-  11: {text: "11", output: "11"}
-  12: {text: "12", output: "12"}
-  13: {text: "13", output: "13"}
+  1:  {type: "key", keys: "cmd+c", title: "Copy", output: "Copy "}
+  2:  {title: "3", output: "3" }
+  3:  {type: "key", keys: "cmd+v", title: "Paste", output: "Paste "}
+  4:  {type: app, app: "/System/Applications/Calculator.app", title: "Calc"}
+  5:  {type: app, app: "/Applications/iStatistica\ Pro.app", title: "Stats"}
+  6:  {title: "6",  output: "6"}
+  7:  {title: "7",  output: "7"}
+  8:  {title: "8",  output: "8"}
+  9:  {title: "9",  output: "9"}
+  10: {title: "10", output: "10"}
+  11: {title: "11", output: "11"}
+  12: {title: "12", output: "12"}
+  13: {title: "13", output: "13"}
 
 # Rotary knobs, left to right.
 #   index: the knob's id in the USB events (only 0x11 for K1 is confirmed)
