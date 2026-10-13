@@ -1,0 +1,8 @@
+pages:
+  1:
+    11: {type: page, page: previous, title: "<"}
+    12: {type: page, page: home, title: "Home"}
+    13: {type: page, page: next, title: ">"}
+    14: {type: profile, profile: default}
+    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    17: {type: page, page: next}

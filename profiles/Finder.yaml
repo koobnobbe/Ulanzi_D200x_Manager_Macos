@@ -1,0 +1,20 @@
+# Profile for Finder: used while Finder is the frontmost app.
+# Only "pages" and "knobs" are read from here; device and button_defaults come from config.yaml.
+pages:
+  1:
+    1:  {type: key, keys: "cmd+n", title: "New window"}
+    2:  {type: key, keys: "cmd+shift+n", title: "New folder"}
+    3:  {type: key, keys: "cmd+shift+g", title: "Go to"}
+    4:  {type: key, keys: "cmd+delete", title: "Trash"}
+    5:  {type: key, keys: "cmd+shift+h", title: "Home"}
+    6:  {type: key, keys: "cmd+1", title: "Icons"}
+    7:  {type: key, keys: "cmd+2", title: "List"}
+    8:  {type: key, keys: "cmd+3", title: "Columns"}
+    9:  {type: key, keys: "cmd+4", title: "Gallery"}
+    10: {type: key, keys: "cmd+i", title: "Info"}
+    11: {type: page, page: previous, title: "<"}
+    12: {type: page, page: home, title: "Home"}
+    13: {type: page, page: next, title: ">"}
+    14: {type: profile, profile: default}
+    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    17: {type: page, page: next}

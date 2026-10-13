@@ -1,0 +1,20 @@
+# Profile for Calculator: used while Calculator is the frontmost app.
+# Only "pages" and "knobs" are read from here; device and button_defaults come from config.yaml.
+pages:
+  1:
+    1:  {type: key, keys: "7", title: "7"}
+    2:  {type: key, keys: "8", title: "8"}
+    3:  {type: key, keys: "9", title: "9"}
+    4:  {type: key, keys: "shift+=", title: "+"}
+    5:  {type: key, keys: "esc", title: "C"}
+    6:  {type: key, keys: "4", title: "4"}
+    7:  {type: key, keys: "5", title: "5"}
+    8:  {type: key, keys: "6", title: "6"}
+    9:  {type: key, keys: "-", title: "-"}
+    10: {type: key, keys: "shift+8", title: "*"}
+    11: {type: key, keys: "1", title: "1"}
+    12: {type: key, keys: "2", title: "2"}
+    13: {type: key, keys: "3", title: "3"}
+    14: {type: key, keys: "Enter", title: "Enter"}
+    16: {type: key, keys: "0", title: "0", hold: {type: profile, profile: default}}
+    17: {type: key, keys: "enter", title: "="}

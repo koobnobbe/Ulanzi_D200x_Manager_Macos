@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D200X Manager</title>
+<style>
+:root { color-scheme: dark; --bg: #111116; --panel: #1b1b24; --line: #2c2c3a; --text: #e8e8ef; --muted: #8a8aa0; --accent: #6c8cff; --err: #ff6b6b; }
+body { margin: 0; font: 14px system-ui, sans-serif; background: var(--bg); color: var(--text); }
+header { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+header h1 { font-size: 16px; margin: 0; margin-right: auto; }
+main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; padding: 20px; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.tab { padding: 6px 14px; }
+.tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tab.add { color: var(--muted); border-style: dashed; }
+.keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.key { position: relative; aspect-ratio: 1; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; background: #000; cursor: pointer; }
+.key img { width: 100%; height: 100%; display: block; }
+.key.text { background: #1f2a44; color: var(--text); font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 4px; text-align: center; word-break: break-word; }
+.key.sel { border-color: var(--accent); }
+.key .num { position: absolute; left: 4px; top: 2px; font-size: 11px; background: rgba(0, 0, 0, .6); padding: 0 4px; border-radius: 4px; }
+.clock { aspect-ratio: 1; background: #000; border-radius: 8px; }
+.knobs { display: flex; flex-wrap: wrap; gap: 10px; }
+.knob { flex: 1; min-width: 180px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.knob .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.row { display: flex; gap: 6px; margin-top: 8px; }
+.row button { flex: 1; }
+button { background: #2a2a3a; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; font: inherit; }
+button:hover { border-color: var(--accent); }
+button:disabled { opacity: .5; cursor: default; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+textarea { width: 100%; min-height: 560px; box-sizing: border-box; background: #0c0c12; color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 13px ui-monospace, Menlo, monospace; resize: vertical; }
+.detail { margin-top: 12px; font-size: 13px; color: var(--muted); min-height: 20px; }
+.bar { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+#error { color: var(--err); white-space: pre-wrap; margin: 10px 0 0; font: 12px ui-monospace, Menlo, monospace; }
+#log { margin: 0; height: 160px; overflow: auto; white-space: pre-wrap; background: #0c0c12; border-radius: 8px; padding: 10px; font: 12px ui-monospace, Menlo, monospace; }
+.wide { margin: 0 20px 20px; }
+.shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: calc(100vh - 60px); }
+@media (max-width: 900px) { .shell { grid-template-columns: 1fr; } }
+.side { border-right: 1px solid var(--line); padding: 14px; overflow: auto; }
+.content { min-width: 0; }
+.tree { display: flex; flex-direction: column; gap: 6px; }
+.profile-btn { display: block; width: 100%; text-align: left; padding: 8px 10px; }
+.profile-btn.active { color: var(--accent); }
+.profile-btn.error { color: var(--err); }
+.profile-btn.viewing { font-weight: 800; border-color: var(--accent); text-decoration: underline; }
+.profile-btn.add { color: var(--muted); border-style: dashed; }
+dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+dialog::backdrop { background: rgba(0, 0, 0, .5); }
+dialog input { background: #0c0c12; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ulanzi D200X <span id="profile" style="font-weight: normal; color: var(--muted)"></span></h1>
+  <label>Helderheid <input id="bright" type="range" min="0" max="100" style="width: 160px"> <span id="brightVal"></span></label>
+  <label><input id="run" type="checkbox"> Echt uitvoeren (anders alleen preview)</label>
+  <button id="reload">Herlaad config</button>
+</header>
+<div class="shell">
+<aside class="side">
+  <h2>Profielen</h2>
+  <div id="tree" class="tree"></div>
+</aside>
+<div class="content">
+<main>
+  <div>
+    <section>
+      <h2>Pagina's</h2>
+      <div class="tabs" id="tabs"></div>
+      <h2 id="keysTitle">Toetsen</h2>
+      <div class="keys" id="keys"></div>
+      <h2 style="margin-top: 18px">Draaiknoppen</h2>
+      <div class="knobs" id="knobs"></div>
+      <div class="detail" id="detail">Klik op een toets of draaiknop om hem te testen.</div>
+    </section>
+  </div>
+  <div>
+    <section>
+      <h2 id="editorTitle">default (config.yaml)</h2>
+      <textarea id="yaml" spellcheck="false"></textarea>
+      <div class="bar"><button class="primary" id="save">Opslaan en toepassen</button><span id="saveMsg"></span></div>
+      <div id="error"></div>
+    </section>
+  </div>
+</main>
+<section class="wide">
+  <h2>Log</h2>
+  <pre id="log"></pre>
+</section>
+</div>
+</div>
+<dialog id="newDlg">
+  <form id="newForm">
+    <h2>Nieuw profiel</h2>
+    <label>Naam (wordt profiles/&lt;naam&gt;.yaml)<br>
+      <input id="newName" type="text" autocomplete="off" style="width: 280px; margin-top: 6px"></label>
+    <div id="newErr" style="color: var(--err); margin-top: 8px; font-size: 13px"></div>
+    <div class="bar" style="justify-content: flex-end">
+      <button type="button" id="newCancel">Annuleren</button>
+      <button type="submit" class="primary">Aanmaken</button>
+    </div>
+  </form>
+</dialog>
+<script>
+const $ = (id) => document.getElementById(id);
+let state = null;
+let viewName = null;
+let lastActive = null;
+let diagramPage = 1;
+
+function log(text) {
+  const box = $('log');
+  box.textContent += text + '\n';
+  box.scrollTop = box.scrollHeight;
+}
+
+async function api(path, body) {
+  const options = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+  const response = await fetch(path, options);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || response.statusText);
+  return data;
+}
+
+async function guarded(action) {
+  try {
+    await action();
+  } catch (e) {
+    log('fout: ' + e.message);
+  }
+}
+
+function activeName() {
+  return state.profile;
+}
+
+function isActiveView() {
+  return viewName === activeName();
+}
+
+function viewedProfile() {
+  return state.profiles.find((p) => p.name === viewName) || { buttons: [] };
+}
+
+function viewedPages() {
+  if (isActiveView()) return state.pages;
+  return [...new Set(viewedProfile().buttons.map((b) => b.page))].sort((a, b) => a - b);
+}
+
+function viewedPage() {
+  return isActiveView() ? state.page : diagramPage;
+}
+
+function viewedKeys() {
+  if (isActiveView()) return state.keys;
+  const keys = {};
+  for (const b of viewedProfile().buttons) if (b.page === diagramPage) keys[b.number] = b;
+  return keys;
+}
+
+function showResult(title, steps) {
+  const summary = title + (steps.length ? '' : ' - niets geconfigureerd');
+  $('detail').textContent = summary;
+  log(summary);
+  for (const step of steps) log('  -> ' + step);
+}
+
+async function pressKey(number) {
+  const key = state.keys[number];
+  const title = `Toets ${number}` + (key.title ? ` "${key.title}"` : '') + ` (${key.type || 'text'})`;
+  const result = await api('/api/press', { number, run: $('run').checked });
+  showResult(title, result.steps);
+  markSelected(number);
+}
+
+function viewKey(number, key) {
+  $('detail').textContent = `${viewName}: pagina ${diagramPage}, toets ${number} (${key.type || 'text'}) ${key.title || ''}. Activeer deze app om te testen.`;
+}
+
+async function turnKnob(knob, event) {
+  const result = await api('/api/knob', { index: knob.index, event, run: $('run').checked });
+  showResult(`${knob.name} ${event}`, result.steps);
+}
+
+function markSelected(number) {
+  document.querySelectorAll('.key').forEach((el) => el.classList.toggle('sel', Number(el.dataset.number) === number));
+}
+
+function keyButton(number, key) {
+  const active = isActiveView();
+  const button = document.createElement('button');
+  button.className = 'key' + (key.icon ? '' : ' text');
+  button.dataset.number = number;
+  button.title = key.title || key.type || '';
+  if (key.icon) {
+    const img = document.createElement('img');
+    img.src = '/icon/' + encodeURIComponent(key.icon);
+    img.alt = '';
+    button.append(img);
+  } else if (key.title) {
+    button.append(document.createTextNode(key.title));
+  }
+  const num = document.createElement('span');
+  num.className = 'num';
+  num.textContent = number;
+  button.append(num);
+  button.onclick = () => guarded(() => (active ? pressKey(number) : viewKey(number, key)));
+  return button;
+}
+
+function renderKeys() {
+  const box = $('keys');
+  box.textContent = '';
+  $('keysTitle').textContent = `Toetsen · ${viewName} · pagina ${viewedPage()}`;
+  const keys = viewedKeys();
+  for (let n = 1; n <= 13; n++) box.append(keyButton(n, keys[n] || {}));
+  const first = keys[14] || {};
+  if (first.icon || first.title) {
+    box.append(keyButton(14, first));
+  } else {
+    const clock = document.createElement('div');
+    clock.className = 'clock';
+    clock.title = 'klok';
+    box.append(clock);
+  }
+  const clock = document.createElement('div');
+  clock.className = 'clock';
+  clock.title = 'klok';
+  box.append(clock);
+  for (const n of [16, 17]) box.append(keyButton(n, keys[n] || {}));
+}
+
+function renderKnobs() {
+  const box = $('knobs');
+  box.textContent = '';
+  for (const knob of state.knobs) {
+    const card = document.createElement('div');
+    card.className = 'knob';
+    const name = document.createElement('div');
+    name.textContent = `${knob.name} (0x${knob.index.toString(16).padStart(2, '0')}, ${knob.type || 'text'})`;
+    card.append(name);
+    const hint = document.createElement('div');
+    hint.className = 'hint';
+    hint.textContent = `links: ${knob.left || '-'}  |  druk: ${knob.press || '-'}  |  rechts: ${knob.right || '-'}`;
+    card.append(hint);
+    const row = document.createElement('div');
+    row.className = 'row';
+    for (const [event, label] of [['left', '◀'], ['press', '●'], ['right', '▶']]) {
+      const button = document.createElement('button');
+      button.textContent = label;
+      button.onclick = () => guarded(() => turnKnob(knob, event));
+      row.append(button);
+    }
+    card.append(row);
+    box.append(card);
+  }
+}
+
+function renderTabs() {
+  const box = $('tabs');
+  box.textContent = '';
+  const current = viewedPage();
+  for (const page of viewedPages()) {
+    const tab = document.createElement('button');
+    tab.className = 'tab' + (page === current ? ' active' : '');
+    tab.textContent = 'Pagina ' + page;
+    tab.onclick = () => guarded(async () => {
+      if (isActiveView()) {
+        await api('/api/page', { page });
+        await load(true);
+      } else {
+        diagramPage = page;
+        renderViewed();
+      }
+    });
+    box.append(tab);
+  }
+  if (!isActiveView()) return;
+  const add = document.createElement('button');
+  add.className = 'tab add';
+  add.textContent = '+ Nieuwe pagina';
+  add.onclick = () => guarded(async () => {
+    await api('/api/pages/add', {});
+    await load(true);
+  });
+  box.append(add);
+}
+
+function renderViewed() {
+  const pages = viewedPages();
+  if (!pages.includes(diagramPage)) diagramPage = pages[0] ?? 1;
+  renderTabs();
+  renderKeys();
+}
+
+function renderTree() {
+  const box = $('tree');
+  box.textContent = '';
+  for (const profile of state.profiles) {
+    const button = document.createElement('button');
+    button.className = 'profile-btn' + (profile.active ? ' active' : '') + (profile.error ? ' error' : '') + (profile.name === viewName ? ' viewing' : '');
+    button.dataset.profile = profile.name;
+    button.title = profile.error || '';
+    button.textContent = profile.name + (profile.active ? '  (actief)' : '');
+    button.onclick = () => guarded(() => openInEditor(profile.name));
+    box.append(button);
+  }
+  const add = document.createElement('button');
+  add.className = 'profile-btn add';
+  add.textContent = '+ Nieuw profiel';
+  add.onclick = () => openNewDialog();
+  box.append(add);
+}
+
+function openNewDialog() {
+  $('newName').value = '';
+  $('newErr').textContent = '';
+  $('newDlg').showModal();
+  $('newName').focus();
+}
+
+$('newForm').onsubmit = (e) => {
+  e.preventDefault();
+  guarded(async () => {
+    try {
+      const result = await api('/api/profile/new', { name: $('newName').value.trim() });
+      $('newDlg').close();
+      await load(true);
+      await openInEditor(result.name);
+      $('saveMsg').textContent = `Profiel ${result.name} aangemaakt (profiles/${result.name}.yaml)`;
+    } catch (err) {
+      $('newErr').textContent = err.message;
+    }
+  });
+};
+$('newCancel').onclick = () => $('newDlg').close();
+
+function render(keepText) {
+  $('profile').textContent = 'Profiel: ' + state.profile;
+  renderKnobs();
+  $('bright').value = state.brightness;
+  $('brightVal').textContent = state.brightness;
+  $('error').textContent = state.error ? 'Laatste config is fout, de vorige config blijft actief:\n' + state.error : '';
+  renderTree();
+  const now = activeName();
+  const switched = lastActive !== null && lastActive !== now;
+  lastActive = now;
+  if (switched) viewName = now;
+  renderViewed();
+  if (switched || !keepText) guarded(() => openInEditor(viewName || now));
+}
+
+async function openInEditor(name) {
+  const data = await api('/api/file?name=' + encodeURIComponent(name));
+  if (name !== viewName) diagramPage = 1;
+  viewName = name;
+  const editable = name === activeName();
+  $('yaml').value = data.text;
+  $('editorTitle').textContent = name === 'default' ? 'default (config.yaml)' : `${name} (profiles/${name}.yaml)`;
+  $('saveMsg').textContent = editable ? '' : 'Niet actief: opslaan wijzigt het bestand, maar wordt pas toegepast als de app actief is.';
+  $('error').textContent = '';
+  renderTree();
+  renderViewed();
+}
+
+async function load(keepText) {
+  state = await api('/api/state');
+  render(keepText);
+}
+
+$('save').onclick = () => guarded(async () => {
+  const result = await api('/api/save', { text: $('yaml').value, name: viewName || activeName() });
+  if (result.error) {
+    $('error').textContent = 'Niet opgeslagen, de vorige config blijft actief:\n' + result.error;
+    $('saveMsg').textContent = '';
+  } else {
+    $('error').textContent = '';
+    $('saveMsg').textContent = 'Opgeslagen en toegepast';
+  }
+  await load(true);
+});
+
+$('reload').onclick = () => guarded(async () => {
+  await api('/api/reload', {});
+  await load(false);
+});
+
+$('bright').oninput = (e) => { $('brightVal').textContent = e.target.value; };
+$('bright').onchange = (e) => guarded(() => api('/api/brightness', { value: Number(e.target.value) }));
+
+guarded(() => load(false));
+</script>
+</body>
+</html>

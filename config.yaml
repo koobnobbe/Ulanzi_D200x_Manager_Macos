@@ -3,7 +3,7 @@
 device:
   brightness: 80              # 0-100
   keep_alive_interval: 1.0    # seconds; keeps the screensaver away
-  clock_background: "#000000" # background behind the clock window
+  clock_background: "#1a1a2e" #"#000000" # background behind the clock window
 
 # Defaults for every key; a key below only needs the fields it changes.
 button_defaults:
@@ -17,7 +17,7 @@ button_defaults:
 #   11 12 13 [clock]
 #
 # Per key:
-#   type:       "text" (default), "app" or "key"
+#   type:       "text" (default), "app", "key" or "page"
 #   app:        type app: path to a .app bundle; opened when the key is pressed.
 #               The key shows the app's icon, with the title (if any) below it.
 #   keys:       type key: key combo sent when pressed, e.g. "cmd+c", "ctrl+shift+tab",
@@ -25,34 +25,82 @@ button_defaults:
 #               Modifiers: cmd, ctrl, alt/option, shift, fn. Keys: a-z, 0-9,
 #               enter, tab, space, esc, backspace, delete, up/down/left/right,
 #               home, end, pageup, pagedown, f1-f12 and punctuation.
-#               Needs Accessibility permission for the terminal running the manager.
+#               Media keys (alone, no modifiers): volumeup, volumedown, mute,
+#               brightnessup, brightnessdown, play, next, previous.
+#               Normal combos need Accessibility permission for the terminal running
+#               the manager; media keys do not.
+#   page:       type page: "next", "previous", "home" (page 1) or a page number
 #   title:      text drawn on the key
 #   icon:       path to an image (png/jpg); used instead of the text/app icon
 #   background: background color
 #   color:      text color
 #   font_size:  text size in pixels
-#   output:     printed when the key is pressed
-buttons:
-  1:  {type: "key", keys: "cmd+c", title: "Copy", output: "Copy "}
-  2:  {title: "3", output: "3" }
-  3:  {type: "key", keys: "cmd+v", title: "Paste", output: "Paste "}
-  4:  {type: app, app: "/System/Applications/Calculator.app", title: "Calc"}
-  5:  {type: app, app: "/Applications/iStatistica\ Pro.app", title: "Stats"}
-  6:  {title: "6",  output: "6"}
-  7:  {title: "7",  output: "7"}
-  8:  {title: "8",  output: "8"}
-  9:  {title: "9",  output: "9"}
-  10: {title: "10", output: "10"}
-  11: {title: "11", output: "11"}
-  12: {title: "12", output: "12"}
-  13: {title: "13", output: "13"}
-
+#   output:     printed when the key is pressed to the terminal/logfile
+#
+# Pages: each page has its own keys. Keys not listed on a page are blank.
+# The manager starts on page 1.
+pages:
+  1:
+    1:  {type: "key", keys: "cmd+c", title: "Copy", output: "Copy "}
+    2:  {type: app, app: "/System/Library/CoreServices/Finder.app", title: "Finder"}
+    3:  {type: "key", keys: "cmd+v", title: "Paste", output: "Paste "}
+    4:  {type: app, app: "/System/Applications/Calculator.app",profile: Calculator,  title: "Calc"}
+    5:  {type: app, app: "/Applications/iStatistica\ Pro.app", title: "Stats"}
+    6:  {type: profile, profile: Finder, title: "Finder"}
+    7:  {title: "7",  output: "7"}
+    8:  {title: "8",  output: "8"}
+    9:  {title: "9",  output: "9"}
+    10: {title: "10", output: "10"}
+    11: {type: page, page: previous, title: "<"}
+    12: {type: page, page: home, title: "Home"}
+    13: {type: page, page: next, title: ">"}
+    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    14: {type: profile, profile: default}
+    17: {type: page, page: next}
+  2:
+    1:  {title: "2-1", output: "2-1"}
+    2:  {title: "2-2", output: "2-2"}
+    3:  {title: "2-3", output: "2-3"}
+    4:  {title: "2-4", output: "2-4"}
+    5:  {title: "2-5", output: "2-5"}
+    6:  {title: "2-6", output: "2-6"}
+    7:  {title: "2-7", output: "2-7"}
+    8:  {title: "2-8", output: "2-8"}
+    9:  {title: "2-9", output: "2-9"}
+    10: {title: "2-10", output: "2-10"}
+    11: {type: page, page: previous, title: "<-"}
+    12: {type: page, page: home, title: "Home"}
+    13: {type: page, page: next, title: "->"}
+    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    14: {type: profile, profile: default}
+    17: {type: page, page: next}
+  3:
+    1:  {title: "3-1", output: "3-1"}
+    2:  {title: "3-2", output: "3-2"}
+    3:  {title: "3-3", output: "3-3" }
+    4:  {title: "3-4", output: "3-4"}
+    5:  {title: "3-5", output: "3-5"}
+    6:  {title: "3-6", output: "3-6"}
+    7:  {title: "3-7", output: "3-7"}
+    8:  {title: "3-8", output: "3-8"}
+    9:  {title: "3-9", output: "3-9"}
+    10: {title: "3-10", output: "3-10"}
+    11: {type: page, page: previous, title: "<-"}
+    12: {type: page, page: home, title: "Home"}
+    13: {type: page, page: next, title: "->"}
+    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    14: {type: profile, profile: default}
+    17: {type: page, page: next}
 # Rotary knobs, left to right.
 #   index: the knob's id in the USB events (only 0x11 for K1 is confirmed)
-#   left:  printed on a counter-clockwise step
-#   right: printed on a clockwise step
-#   press: printed when the knob is pressed
+#   type:  "text" (default): left/right/press are printed
+#          "key": left/right/press are key combos to send (same syntax as keys above)
+#          "device_brightness": turns the deck's own brightness down (left) or up (right)
+#   step:  device_brightness only: brightness change per click, default 10
+#   left:  counter-clockwise step
+#   right: clockwise step
+#   press: knob pressed
 knobs:
-  K1: {index: 0x11, left: "K1 <-", right: "K1 ->", press: "K1 press"}
-  K2: {index: 0x12, left: "K2 <-", right: "K2 ->", press: "K2 press"}
-  K3: {index: 0x13, left: "K3 <-", right: "K3 ->", press: "K3 press"}
+  K1: {index: 0x11, type: key, left: "volumedown", right: "volumeup", press: "mute"}
+  K2: {index: 0x12, type: key, left: "brightnessdown", right: "brightnessup"}
+  K3: {index: 0x13, type: device_brightness, step: 10}
