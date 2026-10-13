@@ -2,10 +2,64 @@ import concurrent.futures
 import http.server
 import json
 import os
+import re
 import threading
 from urllib.parse import parse_qs, unquote, urlsplit
 
+from PIL import Image
+
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'index.html')
+
+
+IMAGE_EXTS = ('.png', '.jpg', '.jpeg', '.ico', '.icns')
+
+
+def browse(directory):
+    directory = os.path.abspath(os.path.expanduser(directory))
+    dirs, files = [], []
+    for e in os.scandir(directory):
+        if e.name.startswith('.'):
+            continue
+        if e.is_dir():
+            dirs.append({'name': e.name, 'path': e.path})
+        elif e.name.lower().endswith(IMAGE_EXTS):
+            files.append({'name': e.name, 'path': e.path})
+    dirs.sort(key=lambda e: e['name'].lower())
+    files.sort(key=lambda e: e['name'].lower())
+    return {'dir': directory, 'parent': os.path.dirname(directory), 'dirs': dirs, 'files': files}
+
+
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+ICON_SIZE = 192
+
+
+def list_icons():
+    folder = os.path.join(PROJECT_DIR, 'icons')
+    if not os.path.isdir(folder):
+        return []
+    return sorted(f'icons/{name}' for name in os.listdir(folder) if name.lower().endswith('.png'))
+
+
+def make_icon(source, name=None):
+    if not os.path.isfile(source) or not source.lower().endswith(IMAGE_EXTS):
+        raise ValueError('geen afbeelding: kies een png, jpg, ico of icns')
+    stem = re.sub(r'[^A-Za-z0-9_-]+', '_', name or os.path.splitext(os.path.basename(source))[0]).strip('_')
+    if not stem:
+        raise ValueError('geef een naam voor het icoon')
+    os.makedirs(os.path.join(PROJECT_DIR, 'icons'), exist_ok=True)
+    image = Image.open(source).convert('RGBA')
+    image.thumbnail((ICON_SIZE, ICON_SIZE), Image.LANCZOS)
+    canvas = Image.new('RGBA', (ICON_SIZE, ICON_SIZE), (0, 0, 0, 0))
+    canvas.paste(image, ((ICON_SIZE - image.width) // 2, (ICON_SIZE - image.height) // 2), image)
+    canvas.save(os.path.join(PROJECT_DIR, 'icons', f'{stem}.png'))
+    return f'icons/{stem}.png'
+
+
+def list_apps(directory):
+    directory = os.path.expanduser(directory)
+    entries = [e for e in os.scandir(directory) if e.name.endswith('.app') and e.is_dir()]
+    entries.sort(key=lambda e: e.name.lower())
+    return {'dir': directory, 'apps': [{'name': e.name[:-4], 'path': e.path} for e in entries]}
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -43,6 +97,34 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path == '/':
             with open(PAGE, 'rb') as fp:
                 self.send(200, fp.read(), 'text/html; charset=utf-8')
+        elif path == '/api/icons':
+            self.send_json({'icons': list_icons()})
+        elif path == '/api/browse':
+            directory = parse_qs(urlsplit(self.path).query).get('dir', ['~'])[0]
+            try:
+                self.send_json(browse(directory))
+            except Exception as e:
+                self.send_json({'error': str(e)}, 400)
+        elif path == '/api/apps':
+            directory = parse_qs(urlsplit(self.path).query).get('dir', ['/Applications'])[0]
+            try:
+                self.send_json(list_apps(directory))
+            except Exception as e:
+                self.send_json({'error': str(e)}, 400)
+        elif path == '/api/knobdata':
+            query = parse_qs(urlsplit(self.path).query)
+            try:
+                knob = self.call(manager.knob_data, query['profile'][0], query['name'][0])
+                self.send_json({'knob': knob})
+            except Exception as e:
+                self.send_json({'error': str(e)}, 400)
+        elif path == '/api/key':
+            query = parse_qs(urlsplit(self.path).query)
+            try:
+                key = self.call(manager.key_data, query['name'][0], int(query['page'][0]), int(query['number'][0]))
+                self.send_json({'key': key})
+            except Exception as e:
+                self.send_json({'error': str(e)}, 400)
         elif path == '/api/file':
             name = parse_qs(urlsplit(self.path).query).get('name', ['default'])[0]
             try:
@@ -82,6 +164,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
         manager = self.server.manager
         if path == '/api/save':
             return {'error': self.call(manager.save_file, body.get('name', 'default'), body['text'])}
+        if path == '/api/icon':
+            return {'icon': make_icon(body['source'], body.get('name'))}
+        if path == '/api/knobcfg':
+            return {'error': self.call(manager.set_knob, body['profile'], body['name'], body['data'])}
+        if path == '/api/key':
+            return {'error': self.call(manager.set_key, body['name'], int(body['page']), int(body['number']), body['data'])}
         if path == '/api/profile/new':
             return {'name': self.call(manager.create_profile, body.get('name', ''))}
         if path == '/api/press':

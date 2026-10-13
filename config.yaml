@@ -47,9 +47,9 @@ pages:
     4:  {type: app, app: "/System/Applications/Calculator.app",profile: Calculator,  title: "Calc"}
     5:  {type: app, app: "/Applications/iStatistica\ Pro.app", title: "Stats"}
     6:  {type: profile, profile: Finder, title: "Finder"}
-    7:  {title: "7",  output: "7"}
-    8:  {title: "8",  output: "8"}
-    9:  {title: "9",  output: "9"}
+    7: {type: app, title: Bitwarden, output: Bitwarden, app: /Applications/Bitwarden.app, font_size: 35}
+    8: {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
+    9: {type: key, title: mute, keys: mute, icon: icons/james.png, hold: {type: profile, profile: Calculator}}
     10: {title: "10", output: "10"}
     11: {type: page, page: previous, title: "<"}
     12: {type: page, page: home, title: "Home"}

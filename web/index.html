@@ -21,8 +21,7 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
 .key { position: relative; aspect-ratio: 1; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; background: #000; cursor: pointer; }
 .key img { width: 100%; height: 100%; display: block; }
 .key.text { background: #1f2a44; color: var(--text); font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 4px; text-align: center; word-break: break-word; }
-.key.sel { border-color: var(--accent); }
-.key .num { position: absolute; left: 4px; top: 2px; font-size: 11px; background: rgba(0, 0, 0, .6); padding: 0 4px; border-radius: 4px; }
+.key.sel { border-color: var(--accent); }.key .num { position: absolute; left: 4px; top: 2px; font-size: 11px; background: rgba(0, 0, 0, .6); padding: 0 4px; border-radius: 4px; }
 .clock { aspect-ratio: 1; background: #000; border-radius: 8px; }
 .knobs { display: flex; flex-wrap: wrap; gap: 10px; }
 .knob { flex: 1; min-width: 180px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
@@ -51,7 +50,21 @@ textarea { width: 100%; min-height: 560px; box-sizing: border-box; background: #
 .profile-btn.add { color: var(--muted); border-style: dashed; }
 dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
 dialog::backdrop { background: rgba(0, 0, 0, .5); }
-dialog input { background: #0c0c12; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: inherit; }
+dialog input, dialog select { display: block; box-sizing: border-box; width: 100%; background: #0c0c12; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: inherit; margin-top: 4px; }
+dialog form { width: min(640px, 90vw); }
+#keyForm .grid2 { row-gap: 18px; }
+#keyForm .tpanel { margin-bottom: 14px; }
+#keyForm .tabs { margin-bottom: 16px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.grid2 label { font-size: 13px; color: var(--muted); }
+.hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
+dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height: 1px; padding: 0; margin: 0; border: 0; pointer-events: none; }
+.pick { display: flex; gap: 6px; }
+.pick input { flex: 1; }
+.pick button { margin-top: 4px; }
+.applist { max-height: 360px; overflow: auto; display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.applist button { text-align: left; }
+.err { color: var(--err); font-size: 13px; margin-top: 8px; white-space: pre-wrap; }
 </style>
 </head>
 <body>
@@ -94,6 +107,118 @@ dialog input { background: #0c0c12; color: var(--text); border: 1px solid var(--
 </section>
 </div>
 </div>
+<dialog id="knobDlg">
+  <form id="knobForm">
+    <h2 id="knobHeader">knop</h2>
+    <label>Type
+      <select id="knobType">
+        <option value="text">text (tekst printen)</option>
+        <option value="key">key (toetsen sturen)</option>
+        <option value="device_brightness">device_brightness (helderheid van het deck)</option>
+      </select></label>
+    <label>Links (tegen de klok in) <input id="knobLeft" type="text"></label>
+    <label>Rechts (met de klok mee) <input id="knobRight" type="text"></label>
+    <label>Druk <input id="knobPress" type="text"></label>
+    <label>Stap (alleen device_brightness) <input id="knobStep" type="number" min="1" max="100"></label>
+    <div class="hint">Bij text: tekst die geprint wordt. Bij key: toetscombinatie(s). Bij device_brightness wordt alleen de stap gebruikt.</div>
+    <div id="knobErr" class="err"></div>
+    <div class="bar">
+      <span style="flex: 1"></span>
+      <button type="button" id="knobCancel">Annuleren</button>
+      <button type="submit" class="primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="imgDlg">
+  <div style="min-width: 420px">
+    <h2>Kies een afbeelding (wordt 192x192 in icons/)</h2>
+    <div class="bar"><button type="button" id="imgUp">Omhoog</button><span id="imgDir" class="hint" style="margin: 0"></span></div>
+    <div id="imgList" class="applist"></div>
+    <div class="bar"><span style="flex: 1"></span><button type="button" id="imgCancel">Sluiten</button></div>
+  </div>
+</dialog>
+<dialog id="appDlg">
+  <div style="min-width: 360px">
+    <h2>Kies een app</h2>
+    <select id="appRoot">
+      <option value="/Applications">/Applications</option>
+      <option value="/System/Applications">/System/Applications</option>
+      <option value="/System/Applications/Utilities">/System/Applications/Utilities</option>
+      <option value="~/Applications">~/Applications</option>
+    </select>
+    <input id="appFilter" type="text" placeholder="filter op naam" style="margin-top: 8px">
+    <div id="appList" class="applist"></div>
+    <div class="bar"><span style="flex: 1"></span><button type="button" id="appCancel">Sluiten</button></div>
+  </div>
+</dialog>
+<dialog id="keyDlg">
+  <form id="keyForm">
+    <h2 id="kHeader">Toets</h2>
+    <input id="kType" type="hidden">
+    <div id="kTabs" class="tabs">
+      <button type="button" class="tab" data-type="text">Tekst</button>
+      <button type="button" class="tab" data-type="key">Toetsen (key)</button>
+      <button type="button" class="tab" data-type="app">App</button>
+      <button type="button" class="tab" data-type="page">Pagina</button>
+      <button type="button" class="tab" data-type="profile">Profiel</button>
+    </div>
+    <div class="grid2 top">
+      <label>Titel <input id="kTitleText" type="text"></label>
+      <label>Icoon (pad)
+        <div class="pick"><select id="kIcon"></select><button type="button" id="kIconPick">Nieuw…</button></div></label>
+    </div>
+    <div class="tpanel" data-type="text">
+      <div class="hint">Alleen tekst op de toets. De output wordt geprint bij een druk.</div>
+    </div>
+    <div class="tpanel" data-type="key">
+      <label>Kies een toets
+        <select id="kKeyPick"></select></label>
+      <label>Toetsen (key)
+        <input id="kKeys" type="text" placeholder="cmd+c of cmd+a, cmd+c"></label>
+      <div class="hint">Toetscombinatie(s), gescheiden door komma voor een reeks.</div>
+    </div>
+    <div class="tpanel" data-type="app">
+      <label>App (pad .app)
+        <div class="pick"><input id="kApp" type="text" placeholder="/Applications/..."><button type="button" id="kAppPick">Kies…</button></div></label>
+      <label>Profiel bij deze app
+        <select id="kAppProfile"></select></label>
+      <div class="hint">Standaard wordt het profiel met dezelfde naam als de app geladen. Kies "geen" om er geen te laden.</div>
+    </div>
+    <div class="tpanel" data-type="page">
+      <label>Pagina (page)
+        <select id="kTarget"></select></label>
+      <div class="hint">Gaat naar een pagina van het huidige profiel.</div>
+    </div>
+    <div class="tpanel" data-type="profile">
+      <label>Profiel (profile)
+        <select id="kProfile"></select></label>
+      <div class="hint">Laadt dit profiel. default is config.yaml.</div>
+    </div>
+    <div class="grid2 shared">
+      <label>Achtergrond <input id="kBg" type="text" placeholder="#1a1a2e"></label>
+      <label style="position: relative">Tekstkleur <input id="kColor" type="text" placeholder="#ffffff"><input id="kColorPicker" type="color" class="hidden-picker"></label>
+      <label>Lettergrootte <input id="kFont" type="number" min="8" max="200"></label>
+      <div><button type="button" id="kLpBtn">Activeer longpress</button></div>
+      <div id="holdFields" class="grid2" style="display: none; grid-column: 1 / -1">
+      <label>Vasthouden (hold) type
+        <select id="kHoldType">
+          <option value="none">geen</option>
+          <option value="page">page</option>
+          <option value="profile">profile</option>
+          <option value="key">key</option>
+          <option value="app">app</option>
+        </select></label>
+      <label>Vasthouden waarde <input id="kHoldValue" type="text"></label>
+      </div>
+    </div>
+    <div id="kErr" class="err"></div>
+    <div class="bar">
+      <span style="flex: 1"></span>
+      <button type="button" id="kCancel">Annuleren</button>
+      <button type="submit" class="primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
 <dialog id="newDlg">
   <form id="newForm">
     <h2>Nieuw profiel</h2>
@@ -170,29 +295,319 @@ function showResult(title, steps) {
   for (const step of steps) log('  -> ' + step);
 }
 
-async function pressKey(number) {
-  const key = state.keys[number];
-  const title = `Toets ${number}` + (key.title ? ` "${key.title}"` : '') + ` (${key.type || 'text'})`;
-  const result = await api('/api/press', { number, run: $('run').checked });
-  showResult(title, result.steps);
+const HOLD_TYPES = ['none', 'page', 'profile', 'key', 'app'];
+let keyTarget = null;
+
+function asText(value) {
+  return Array.isArray(value) ? value.join(', ') : (value ?? '').toString();
+}
+
+$('kColor').onclick = () => {
+  const picker = $('kColorPicker');
+  picker.value = /^#[0-9a-f]{6}$/i.test($('kColor').value) ? $('kColor').value : '#ffffff';
+  if (picker.showPicker) picker.showPicker();
+  else picker.click();
+};
+$('kColorPicker').oninput = () => { $('kColor').value = $('kColorPicker').value; };
+
+function longpressOn() {
+  return $('holdFields').style.display !== 'none';
+}
+
+function setLongpress(on) {
+  $('holdFields').style.display = on ? '' : 'none';
+  $('kLpBtn').textContent = on ? 'Longpress uitzetten' : 'Activeer longpress';
+  if (on && $('kHoldType').value === 'none') $('kHoldType').value = 'profile';
+}
+
+$('kLpBtn').onclick = () => setLongpress(!longpressOn());
+
+function buildAppProfileOptions(current) {
+  const select = $('kAppProfile');
+  select.textContent = '';
+  const options = [['', 'automatisch (zelfde naam)'], ['none', 'geen profiel'], ...state.profiles.map((p) => [p.name, p.name])];
+  if (current && !options.some(([value]) => value === current)) options.push([current, current]);
+  for (const [value, label] of options) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    select.append(option);
+  }
+  select.value = current;
+}
+
+function buildTargetOptions(current) {
+  const select = $('kTarget');
+  select.textContent = '';
+  const options = [['home', 'home (pagina 1)'], ['next', 'next (volgende pagina)'], ['previous', 'previous (vorige pagina)'],
+    ...viewedPages().map((p) => [String(p), `pagina ${p}`])];
+  if (current && !options.some(([value]) => value === current)) options.push([current, `pagina ${current}`]);
+  for (const [value, label] of options) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    select.append(option);
+  }
+  select.value = current || 'home';
+}
+
+function fillKeyForm(raw) {
+  $('kType').value = raw.type || 'text';
+  $('kTitleText').value = asText(raw.title);
+  $('kKeys').value = asText(raw.keys);
+  $('kApp').value = asText(raw.app);
+  buildTargetOptions(asText(raw.page));
+  $('kProfile').value = raw.profile || 'default';
+  guarded(() => loadIcons(asText(raw.icon)));
+  $('kBg').value = asText(raw.background);
+  $('kColor').value = asText(raw.color);
+  $('kFont').value = asText(raw.font_size);
+  const hold = raw.hold || {};
+  $('kHoldType').value = hold.type || 'none';
+  $('kHoldValue').value = asText(hold.page ?? hold.profile ?? hold.keys ?? hold.app);
+  buildAppProfileOptions(raw.profile || '');
+  setLongpress(Boolean(raw.hold));
+  showKeyTab(raw.type || 'text');
+}
+
+function readKeyForm() {
+  const v = (id) => $(id).value.trim();
+  const type = $('kType').value;
+  const data = {};
+  if (type !== 'text') data.type = type;
+  if (v('kTitleText')) data.title = v('kTitleText');
+  if (type === 'key' && v('kKeys')) {
+    const combos = v('kKeys').split(',').map((s) => s.trim()).filter(Boolean);
+    data.keys = combos.length === 1 ? combos[0] : combos;
+  }
+  if (type === 'app' && v('kApp')) data.app = v('kApp');
+  if (type === 'app' && $('kAppProfile').value) data.profile = $('kAppProfile').value;
+  if (type === 'page' && v('kTarget')) data.page = /^\d+$/.test(v('kTarget')) ? Number(v('kTarget')) : v('kTarget');
+  if (type === 'profile' && $('kProfile').value) data.profile = $('kProfile').value;
+  if (v('kIcon')) data.icon = v('kIcon');
+  if (v('kBg')) data.background = v('kBg');
+  if (v('kColor')) data.color = v('kColor');
+  if (v('kFont')) data.font_size = Number(v('kFont'));
+  const holdType = $('kHoldType').value;
+  if (longpressOn() && holdType !== 'none' && v('kHoldValue')) {
+    const value = v('kHoldValue');
+    const hold = { type: holdType };
+    if (holdType === 'page') hold.page = /^\d+$/.test(value) ? Number(value) : value;
+    else if (holdType === 'profile') hold.profile = value;
+    else if (holdType === 'key') hold.keys = value;
+    else hold.app = value;
+    data.hold = hold;
+  }
+  return data;
+}
+
+function showKeyTab(type) {
+  $('kType').value = type;
+  for (const tab of document.querySelectorAll('#kTabs .tab')) tab.classList.toggle('active', tab.dataset.type === type);
+  for (const panel of document.querySelectorAll('.tpanel')) panel.style.display = panel.dataset.type === type ? '' : 'none';
+}
+
+async function openKeyDialog(number) {
+  const page = viewedPage();
+  const data = await api(`/api/key?name=${encodeURIComponent(viewName)}&page=${page}&number=${number}`);
+  keyTarget = { name: viewName, page, number };
+  $('kHeader').textContent = `${viewName} · pagina ${page} · toets ${number}`;
+  $('kProfile').textContent = '';
+  for (const profile of state.profiles) {
+    const option = document.createElement('option');
+    option.value = profile.name;
+    option.textContent = profile.name;
+    $('kProfile').append(option);
+  }
+  fillKeyForm(data.key);
+  $('kErr').textContent = '';
   markSelected(number);
+  $('keyDlg').showModal();
 }
 
-function viewKey(number, key) {
-  $('detail').textContent = `${viewName}: pagina ${diagramPage}, toets ${number} (${key.type || 'text'}) ${key.title || ''}. Activeer deze app om te testen.`;
+for (const tab of document.querySelectorAll('#kTabs .tab')) tab.onclick = () => showKeyTab(tab.dataset.type);
+
+let appsCache = [];
+
+async function loadApps() {
+  const data = await api('/api/apps?dir=' + encodeURIComponent($('appRoot').value));
+  appsCache = data.apps;
+  renderApps();
 }
 
-async function turnKnob(knob, event) {
-  const result = await api('/api/knob', { index: knob.index, event, run: $('run').checked });
-  showResult(`${knob.name} ${event}`, result.steps);
+function renderApps() {
+  const box = $('appList');
+  box.textContent = '';
+  const filter = $('appFilter').value.trim().toLowerCase();
+  for (const app of appsCache.filter((a) => a.name.toLowerCase().includes(filter))) {
+    const button = document.createElement('button');
+    button.textContent = app.name;
+    button.title = app.path;
+    button.onclick = () => {
+      $('kApp').value = app.path;
+      $('appDlg').close();
+    };
+    box.append(button);
+  }
 }
+
+$('kAppPick').onclick = () => {
+  $('appDlg').showModal();
+  guarded(loadApps);
+};
+$('appRoot').onchange = () => guarded(loadApps);
+$('appFilter').oninput = renderApps;
+$('appCancel').onclick = () => $('appDlg').close();
+
+let browsed = null;
+
+async function loadIcons(current) {
+  const data = await api('/api/icons');
+  const select = $('kIcon');
+  select.textContent = '';
+  const options = [['', 'geen icoon'], ...data.icons.map((i) => [i, i])];
+  if (current && !options.some(([value]) => value === current)) options.push([current, current]);
+  for (const [value, label] of options) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    select.append(option);
+  }
+  select.value = current || '';
+}
+
+async function browse(dir) {
+  const data = await api('/api/browse?dir=' + encodeURIComponent(dir));
+  browsed = data;
+  $('imgDir').textContent = data.dir;
+  const box = $('imgList');
+  box.textContent = '';
+  for (const folder of data.dirs) {
+    const button = document.createElement('button');
+    button.textContent = folder.name + '/';
+    button.onclick = () => guarded(() => browse(folder.path));
+    box.append(button);
+  }
+  for (const file of data.files) {
+    const button = document.createElement('button');
+    button.textContent = file.name;
+    button.onclick = () => guarded(async () => {
+      const name = prompt('Opslaan als icoon (naam zonder .png):', file.name.replace(/\.[^.]+$/, ''));
+      if (!name) return;
+      try {
+        const result = await api('/api/icon', { source: file.path, name });
+        $('imgDlg').close();
+        await loadIcons(result.icon);
+      } catch (err) {
+        $('kErr').textContent = err.message;
+        $('imgDlg').close();
+      }
+    });
+    box.append(button);
+  }
+}
+
+$('kIconPick').onclick = () => {
+  $('imgDlg').showModal();
+  guarded(() => browse(browsed ? browsed.dir : '~'));
+};
+$('imgUp').onclick = () => guarded(() => browse(browsed.parent));
+$('imgCancel').onclick = () => $('imgDlg').close();
+$('keyForm').onsubmit = (e) => {
+  e.preventDefault();
+  guarded(async () => {
+    try {
+      const result = await api('/api/key', { name: keyTarget.name, page: keyTarget.page, number: keyTarget.number, data: readKeyForm() });
+      if (result.error) {
+        $('kErr').textContent = result.error;
+        return;
+      }
+      $('keyDlg').close();
+      location.reload();
+    } catch (err) {
+      $('kErr').textContent = err.message;
+    }
+  });
+};
+$('kCancel').onclick = () => $('keyDlg').close();
+const KEY_GROUPS = [
+  ['Media', ['volumeup', 'volumedown', 'mute', 'brightnessup', 'brightnessdown', 'play', 'next', 'previous']],
+  ['Speciaal', ['enter', 'esc', 'tab', 'space', 'backspace', 'delete', 'forwarddelete', 'up', 'down', 'left', 'right',
+    'home', 'end', 'pageup', 'pagedown', ...Array.from({ length: 12 }, (_, i) => `f${i + 1}`)]],
+  ['Letters', 'abcdefghijklmnopqrstuvwxyz'.split('')],
+  ['Cijfers', '0123456789'.split('')],
+  ['Cmd', ['cmd+a', 'cmd+c', 'cmd+v', 'cmd+x', 'cmd+z', 'cmd+shift+z', 'cmd+s', 'cmd+n', 'cmd+shift+n', 'cmd+w', 'cmd+q',
+    'cmd+t', 'cmd+f', 'cmd+p', 'cmd+i', 'cmd+space', 'cmd+tab', 'cmd+enter', 'cmd+delete', 'cmd+shift+g', 'cmd+shift+h',
+    'cmd+1', 'cmd+2', 'cmd+3', 'cmd+4']],
+  ['Ctrl', ['ctrl+tab', 'ctrl+shift+tab']],
+  ['Overig', ['shift+=', 'shift+8', 'cmd+=', 'cmd+-']],
+];
+
+for (const [label, keys] of KEY_GROUPS) {
+  const group = document.createElement('optgroup');
+  group.label = label;
+  for (const key of keys) {
+    const option = document.createElement('option');
+    option.value = key;
+    option.textContent = key;
+    group.append(option);
+  }
+  $('kKeyPick').append(group);
+}
+$('kKeyPick').onchange = () => {
+  if ($('kKeyPick').value) $('kKeys').value = $('kKeyPick').value;
+  $('kKeyPick').value = '';
+};
+
+function knobLabel(knob) {
+  return knob.name.replace(/^K(\d+)$/i, 'knop $1');
+}
+
+let knobTarget = null;
+
+async function openKnobDialog(knob) {
+  const data = await api(`/api/knobdata?profile=${encodeURIComponent(viewName)}&name=${encodeURIComponent(knob.name)}`);
+  const raw = data.knob;
+  knobTarget = { profile: viewName, name: knob.name, index: raw.index ?? knob.index };
+  $('knobHeader').textContent = `${knobLabel(knob)} · ${viewName}`;
+  $('knobType').value = raw.type || 'text';
+  $('knobLeft').value = asText(raw.left);
+  $('knobRight').value = asText(raw.right);
+  $('knobPress').value = asText(raw.press);
+  $('knobStep').value = raw.step ?? 10;
+  $('knobErr').textContent = '';
+  $('knobDlg').showModal();
+}
+
+$('knobForm').onsubmit = (e) => {
+  e.preventDefault();
+  guarded(async () => {
+    const type = $('knobType').value;
+    const data = { index: knobTarget.index, type };
+    if (type === 'device_brightness') {
+      data.step = Number($('knobStep').value) || 10;
+    } else {
+      for (const [field, id] of [['left', 'knobLeft'], ['right', 'knobRight'], ['press', 'knobPress']]) {
+        const value = $(id).value.trim();
+        if (value) data[field] = value;
+      }
+    }
+    const result = await api('/api/knobcfg', { profile: knobTarget.profile, name: knobTarget.name, data });
+    if (result.error) {
+      $('knobErr').textContent = result.error;
+      return;
+    }
+    $('knobDlg').close();
+    location.reload();
+  });
+};
+$('knobCancel').onclick = () => $('knobDlg').close();
 
 function markSelected(number) {
   document.querySelectorAll('.key').forEach((el) => el.classList.toggle('sel', Number(el.dataset.number) === number));
 }
 
 function keyButton(number, key) {
-  const active = isActiveView();
   const button = document.createElement('button');
   button.className = 'key' + (key.icon ? '' : ' text');
   button.dataset.number = number;
@@ -209,7 +624,7 @@ function keyButton(number, key) {
   num.className = 'num';
   num.textContent = number;
   button.append(num);
-  button.onclick = () => guarded(() => (active ? pressKey(number) : viewKey(number, key)));
+  button.onclick = () => guarded(() => openKeyDialog(number));
   return button;
 }
 
@@ -242,21 +657,16 @@ function renderKnobs() {
     const card = document.createElement('div');
     card.className = 'knob';
     const name = document.createElement('div');
-    name.textContent = `${knob.name} (0x${knob.index.toString(16).padStart(2, '0')}, ${knob.type || 'text'})`;
+    name.textContent = knobLabel(knob);
     card.append(name);
     const hint = document.createElement('div');
     hint.className = 'hint';
     hint.textContent = `links: ${knob.left || '-'}  |  druk: ${knob.press || '-'}  |  rechts: ${knob.right || '-'}`;
     card.append(hint);
-    const row = document.createElement('div');
-    row.className = 'row';
-    for (const [event, label] of [['left', '◀'], ['press', '●'], ['right', '▶']]) {
-      const button = document.createElement('button');
-      button.textContent = label;
-      button.onclick = () => guarded(() => turnKnob(knob, event));
-      row.append(button);
-    }
-    card.append(row);
+    const edit = document.createElement('button');
+    edit.textContent = 'Bewerk';
+    edit.onclick = () => guarded(() => openKnobDialog(knob));
+    card.append(edit);
     box.append(card);
   }
 }
@@ -378,11 +788,10 @@ $('save').onclick = () => guarded(async () => {
   if (result.error) {
     $('error').textContent = 'Niet opgeslagen, de vorige config blijft actief:\n' + result.error;
     $('saveMsg').textContent = '';
-  } else {
-    $('error').textContent = '';
-    $('saveMsg').textContent = 'Opgeslagen en toegepast';
+    await load(true);
+    return;
   }
-  await load(true);
+  location.reload();
 });
 
 $('reload').onclick = () => guarded(async () => {

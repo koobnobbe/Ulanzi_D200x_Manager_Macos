@@ -287,7 +287,7 @@ def render_button(number, button):
     check_button(number, button)
     kind = button.get('type', 'text')
     if button.get('icon'):
-        img = Image.open(button['icon']).convert('RGB').resize((SIZE, SIZE))
+        img = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), button['icon'])).convert('RGB').resize((SIZE, SIZE))
     elif kind == 'app' and (app_icon := load_app_icon(button['app'])):
         img = Image.new('RGB', (SIZE, SIZE), color=button['background'])
         # Leave room at the bottom for an optional title.
@@ -337,6 +337,47 @@ def check_text(text):
     check_pages(pages)
     for name, k in (config.get('knobs') or {}).items():
         parse_knob(name, {**k, 'name': name})
+
+
+def replace_key_line(text, page, number, data):
+    lines = text.split('\n')
+    if 'pages:' not in lines:
+        raise ValueError('no pages section in this file')
+    start = lines.index('pages:')
+    header = next((i for i in range(start + 1, len(lines)) if lines[i].rstrip() == f'  {page}:'), None)
+    if header is None:
+        raise ValueError(f'page {page} not found in this file')
+    end = next((i for i in range(header + 1, len(lines))
+                if lines[i].strip() and not lines[i].startswith('#') and len(lines[i]) - len(lines[i].lstrip()) <= 2),
+               len(lines))
+    flow = yaml.safe_dump(data, default_flow_style=True, sort_keys=False, allow_unicode=True, width=10 ** 6).strip()
+    new_line = f'    {number}: {flow}'
+    for i in range(header + 1, end):
+        if re.match(rf'    {number}:', lines[i]):
+            lines[i] = new_line
+            return '\n'.join(lines)
+    last = next((i for i in range(header + 1, end) if lines[i].startswith('    ') and lines[i].strip()), header)
+    lines.insert(last + 1, new_line)
+    return '\n'.join(lines)
+
+
+def replace_knob_line(text, name, data):
+    lines = text.split('\n')
+    if 'knobs:' not in lines:
+        lines.append('knobs:')
+    start = lines.index('knobs:')
+    end = next((i for i in range(start + 1, len(lines))
+                if lines[i].strip() and not lines[i].startswith('#') and not lines[i].startswith(' ')),
+               len(lines))
+    flow = yaml.safe_dump(data, default_flow_style=True, sort_keys=False, allow_unicode=True, width=10 ** 6).strip()
+    new_line = f'  {name}: {flow}'
+    for i in range(start + 1, end):
+        if re.match(rf'  {name}:', lines[i]):
+            lines[i] = new_line
+            return '\n'.join(lines)
+    last = next((i for i in range(end - 1, start, -1) if lines[i].startswith('  ') and lines[i].strip()), start)
+    lines.insert(last + 1, new_line)
+    return '\n'.join(lines)
 
 
 class Manager:
@@ -431,6 +472,11 @@ class Manager:
             # Editors may briefly remove a file while saving; a missing file just reads as None.
             if self.file_mtimes() != self.mtimes and self.load():
                 print('config reloaded')
+
+    def open_app_profile(self, app_name, profile):
+        # The app activating would otherwise switch to its own profile, so mark it as already seen.
+        self.last_app = app_name
+        self.open_profile(profile)
 
     def open_profile(self, name):
         self.profile = name
@@ -530,9 +576,12 @@ class Manager:
             steps.append((f"profile {button['profile']}", partial(self.open_profile, name)))
         elif button.get('type') == 'app':
             steps.append((f"open {button['app']}", partial(subprocess.Popen, ['open', button['app']])))
-            name = os.path.splitext(os.path.basename(button['app']))[0]
-            if os.path.exists(self.profile_path(name)):
-                steps.append((f'profile {name}', partial(self.open_profile, name)))
+            app_name = os.path.splitext(os.path.basename(button['app']))[0]
+            wanted = button.get('profile') or app_name
+            if wanted != 'none':
+                target = None if wanted == 'default' else wanted
+                if target is None or os.path.exists(self.profile_path(target)):
+                    steps.append((f'profile {wanted}', partial(self.open_app_profile, app_name, target)))
         elif button.get('type') == 'key':
             steps.append((f"send {button['keys']}", partial(send_keys, button['combos'])))
         if button.get('output'):
@@ -591,6 +640,22 @@ class Manager:
         with open(self.profile_path(name), 'x') as fp:
             fp.write(PROFILE_TEMPLATE)
         return name
+
+    def key_data(self, name, page, number):
+        pages = (load_config(self.file_for(name)) or {}).get('pages') or {}
+        return dict((pages.get(page) or {}).get(number) or {})
+
+    def knob_data(self, profile, name):
+        knobs = (load_config(self.file_for(profile)) or {}).get('knobs') or {}
+        return dict(knobs.get(name) or {})
+
+    def set_knob(self, profile, name, data):
+        text = replace_knob_line(self.read_file(profile), name, data)
+        return self.save_file(profile, text)
+
+    def set_key(self, name, page, number, data):
+        text = replace_key_line(self.read_file(name), page, number, data)
+        return self.save_file(name, text)
 
     def save_file(self, name, text):
         """Save the active config through the deck. Other files are only checked and written."""
