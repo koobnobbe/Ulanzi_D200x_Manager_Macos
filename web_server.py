@@ -1,11 +1,14 @@
 import concurrent.futures
 import http.server
+import io
 import json
 import os
+import plistlib
 import re
 import threading
 from urllib.parse import parse_qs, unquote, urlsplit
 
+import yaml
 from PIL import Image
 
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'index.html')
@@ -31,6 +34,99 @@ def browse(directory):
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 ICON_SIZE = 192
+
+
+def list_library():
+    folder = os.path.join(PROJECT_DIR, 'library')
+    if not os.path.isdir(folder):
+        return []
+    sections = []
+    for name in sorted(os.listdir(folder), key=str.lower):
+        if not name.endswith('.yaml'):
+            continue
+        with open(os.path.join(folder, name)) as fp:
+            entries = (yaml.safe_load(fp) or {}).get('buttons') or []
+        sections.append({'section': os.path.splitext(name)[0],
+                         'items': [{'title': e.get('title') or str(e.get('keys', '')), 'data': e} for e in entries]})
+    return sections
+
+
+def app_icon_png(app, size=32):
+    with open(os.path.join(app, 'Contents', 'Info.plist'), 'rb') as fp:
+        icon = plistlib.load(fp).get('CFBundleIconFile')
+    if not icon:
+        return None
+    if not icon.endswith('.icns'):
+        icon += '.icns'
+    path = os.path.join(app, 'Contents', 'Resources', icon)
+    if not os.path.exists(path):
+        return None
+    buf = io.BytesIO()
+    Image.open(path).convert('RGBA').resize((size, size), Image.LANCZOS).save(buf, format='PNG')
+    return buf.getvalue()
+
+
+def library_path(section):
+    if '/' in section or section.startswith('.'):
+        raise ValueError('onbekende sectie')
+    return os.path.join(PROJECT_DIR, 'library', f'{section}.yaml')
+
+
+def append_library_line(path, line):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    text = open(path).read() if os.path.exists(path) else ''
+    lines = text.rstrip('\n').split('\n') if text.strip() else []
+    if 'buttons: []' in lines:
+        lines[lines.index('buttons: []')] = 'buttons:'
+    elif 'buttons:' not in lines:
+        lines.append('buttons:')
+    lines.append(line)
+    with open(path, 'w') as fp:
+        fp.write('\n'.join(lines) + '\n')
+
+
+def add_library_entry(data):
+    entry = yaml.safe_dump(data, default_flow_style=True, sort_keys=False, allow_unicode=True, width=10 ** 6).strip()
+    append_library_line(library_path('template'), f'  - {entry}')
+
+
+def create_library(name):
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9 _-]{0,40}', name or ''):
+        raise ValueError('ongeldige naam: gebruik letters, cijfers, spatie, - of _')
+    path = library_path(name)
+    if os.path.exists(path):
+        raise ValueError(f'bibliotheek {name} bestaat al')
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'x') as fp:
+        fp.write(f'# Library section "{name}". Each entry is a key definition you can drag onto a key.\nbuttons: []\n')
+
+
+def take_library_line(section, index):
+    path = library_path(section)
+    if not os.path.isfile(path):
+        raise ValueError('onbekende sectie')
+    with open(path) as fp:
+        lines = fp.read().split('\n')
+    entries = [i for i, line in enumerate(lines) if line.startswith('  - ')]
+    if not 0 <= index < len(entries):
+        raise ValueError('onbekend item')
+    line = lines.pop(entries[index])
+    with open(path, 'w') as fp:
+        fp.write('\n'.join(lines))
+    return line
+
+
+def delete_library_entry(section, index):
+    take_library_line(section, index)
+
+
+def move_library_entry(section, index, target):
+    if target == section:
+        return
+    if not os.path.isfile(library_path(target)):
+        raise ValueError('onbekende sectie')
+    line = take_library_line(section, index)
+    append_library_line(library_path(target), line)
 
 
 def list_icons():
@@ -97,6 +193,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path == '/':
             with open(PAGE, 'rb') as fp:
                 self.send(200, fp.read(), 'text/html; charset=utf-8')
+        elif path == '/api/library':
+            try:
+                self.send_json({'sections': list_library()})
+            except Exception as e:
+                self.send_json({'error': str(e)}, 400)
         elif path == '/api/icons':
             self.send_json({'icons': list_icons()})
         elif path == '/api/browse':
@@ -135,6 +236,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
             with open(manager.active_path()) as fp:
                 text = fp.read()
             self.send_json({'text': text, **self.call(manager.state)})
+        elif path == '/appicon':
+            app = parse_qs(urlsplit(self.path).query).get('path', [''])[0]
+            data = app_icon_png(app) if app.endswith('.app') and os.path.isdir(app) else None
+            if data is None:
+                self.send_json({'error': 'no icon'}, 404)
+            else:
+                self.send(200, data, 'image/png')
+        elif path.startswith('/icons/'):
+            name = unquote(path[len('/icons/'):])
+            file = os.path.join(PROJECT_DIR, 'icons', name)
+            if os.path.basename(name) != name or not name.endswith('.png') or not os.path.isfile(file):
+                self.send_json({'error': 'not found'}, 404)
+                return
+            with open(file, 'rb') as fp:
+                self.send(200, fp.read(), 'image/png')
         elif path.startswith('/icon/'):
             name = unquote(path[len('/icon/'):])
             file = os.path.join(self.server.icon_dir, name)
@@ -166,6 +282,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return {'error': self.call(manager.save_file, body.get('name', 'default'), body['text'])}
         if path == '/api/icon':
             return {'icon': make_icon(body['source'], body.get('name'))}
+        if path == '/api/library/new':
+            create_library(body.get('name', ''))
+            return {}
+        if path == '/api/key/clear':
+            return {'error': self.call(manager.clear_key, body['name'], int(body['page']), int(body['number']))}
+        if path == '/api/library/move':
+            move_library_entry(body['section'], int(body['index']), body['target'])
+            return {}
+        if path == '/api/library/delete':
+            delete_library_entry(body['section'], int(body['index']))
+            return {}
+        if path == '/api/library/add':
+            key = self.call(manager.key_data, body['name'], int(body['page']), int(body['number']))
+            if not key:
+                raise ValueError('deze toets is leeg')
+            add_library_entry(key)
+            return {}
         if path == '/api/knobcfg':
             return {'error': self.call(manager.set_knob, body['profile'], body['name'], body['data'])}
         if path == '/api/key':
@@ -180,7 +313,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.call(manager.set_brightness, int(body['value']))
             return {}
         elif path == '/api/pages/add':
-            return {'page': self.call(manager.add_page)}
+            return {'page': self.call(manager.add_page, body.get('name'))}
         elif path == '/api/page':
             self.call(lambda: manager.goto(manager.page_number(str(body['page']))))
             return {}

@@ -2,8 +2,8 @@
 # Only "pages" and "knobs" are read from here; device and button_defaults come from config.yaml.
 pages:
   1:
-    1:  {type: key, keys: "7", title: "7"}
     2:  {type: key, keys: "8", title: "8"}
+    1: {type: key, title: '7', keys: '7'}
     3:  {type: key, keys: "9", title: "9"}
     4:  {type: key, keys: "shift+=", title: "+"}
     5:  {type: key, keys: "esc", title: "C"}
@@ -18,3 +18,12 @@ pages:
     14: {type: key, keys: "Enter", title: "Enter"}
     16: {type: key, keys: "0", title: "0", hold: {type: profile, profile: default}}
     17: {type: key, keys: "enter", title: "="}
+  2:
+    11: {type: page, page: previous, title: "<-"}
+    2: {type: key, title: Paste, keys: cmd+v}
+    1: {type: key, title: copy, keys: cmd+c}
+    12: {type: page, page: home, title: "Home"}
+    13: {type: page, page: next, title: "->"}
+    14: {type: profile, profile: default}
+    16: {type: page, page: home}
+    17: {type: page, page: next}

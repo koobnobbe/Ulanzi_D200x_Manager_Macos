@@ -361,6 +361,21 @@ def replace_key_line(text, page, number, data):
     return '\n'.join(lines)
 
 
+def remove_key_line(text, page, number):
+    lines = text.split('\n')
+    header = next((i for i in range(len(lines)) if lines[i].rstrip() == f'  {page}:'), None)
+    if header is None:
+        raise ValueError(f'page {page} not found in this file')
+    end = next((i for i in range(header + 1, len(lines))
+                if lines[i].strip() and not lines[i].startswith('#') and len(lines[i]) - len(lines[i].lstrip()) <= 2),
+               len(lines))
+    for i in range(header + 1, end):
+        if re.match(rf'    {number}:', lines[i]):
+            del lines[i]
+            break
+    return '\n'.join(lines)
+
+
 def replace_knob_line(text, name, data):
     lines = text.split('\n')
     if 'knobs:' not in lines:
@@ -386,6 +401,7 @@ class Manager:
         self.config_path = config_path
         self.profile = None
         self.last_app = None
+        self.sticky = False
         self.mtimes = None
         self.device = {}
         self.pages = {}
@@ -477,8 +493,10 @@ class Manager:
         # The app activating would otherwise switch to its own profile, so mark it as already seen.
         self.last_app = app_name
         self.open_profile(profile)
+        self.sticky = profile is not None
 
     def open_profile(self, name):
+        self.sticky = False
         self.profile = name
         self.page = 1
         self.load()
@@ -496,8 +514,9 @@ class Manager:
                 if name != self.last_app:
                     self.last_app = name
                     print(f'app: {name}')
-                    wanted = name if name and '/' not in name and os.path.exists(self.profile_path(name)) else None
-                    self.set_profile(wanted)
+                    if not self.sticky:
+                        wanted = name if name and '/' not in name and os.path.exists(self.profile_path(name)) else None
+                        self.set_profile(wanted)
             except Exception as e:
                 print(f'app watch error: {e}')
             await asyncio.sleep(interval)
@@ -524,9 +543,9 @@ class Manager:
         self.deck.set_buttons(self.layouts[page])
         self.apply_small_window()
 
-    def add_page(self):
-        with open(self.active_path()) as fp:
-            lines = fp.read().split('\n')
+    def add_page(self, name=None):
+        name = name or (self.profile or 'default')
+        lines = self.read_file(name).split('\n')
         if 'pages:' not in lines:
             lines.append('pages:')
         start = lines.index('pages:')
@@ -537,7 +556,8 @@ class Manager:
                 break
             if line.startswith(' '):
                 last = i
-        number = max(self.pages) + 1
+        pages = (load_config(self.file_for(name)) or {}).get('pages') or {}
+        number = max(pages, default=0) + 1
         lines[last + 1:last + 1] = [
             f'  {number}:',
             '    11: {type: page, page: previous, title: "<-"}',
@@ -547,10 +567,11 @@ class Manager:
             '    16: {type: page, page: home}',
             '    17: {type: page, page: next}',
         ]
-        error = self.save_config('\n'.join(lines))
+        error = self.save_file(name, '\n'.join(lines))
         if error:
             raise ValueError(error)
-        self.goto(number)
+        if name == (self.profile or 'default'):
+            self.goto(number)
         return number
 
     def has_hold(self, number):
@@ -652,6 +673,9 @@ class Manager:
     def set_knob(self, profile, name, data):
         text = replace_knob_line(self.read_file(profile), name, data)
         return self.save_file(profile, text)
+
+    def clear_key(self, name, page, number):
+        return self.save_file(name, remove_key_line(self.read_file(name), page, number))
 
     def set_key(self, name, page, number, data):
         text = replace_key_line(self.read_file(name), page, number, data)

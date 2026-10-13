@@ -1,0 +1,26 @@
+# Template for preconfigured keys. Add an entry under "buttons:" and it appears in the library panel.
+# Drag it onto a key in the web interface to save it there.
+#
+# Every option of a key (leave out what you don't need):
+#   title:      text drawn on the key
+#   type:       text | key | app | page | profile
+#   keys:       (type key) key combo, e.g. "cmd+c", or a list ["cmd+a", "cmd+c"]
+#               media keys: volumeup, volumedown, mute, brightnessup, brightnessdown, play, next, previous
+#   app:        (type app) path to a .app bundle, e.g. /System/Applications/Calculator.app
+#   profile:    (type app) profile to load with the app; "none" loads none; omit = profile with the same name
+#               (type profile) the profile to load: default or a profile name
+#   page:       (type page) next | previous | home | a page number
+#   icon:       path to an image, e.g. icons/name.png
+#   background: background color, e.g. "#1a1a2e"
+#   color:      text color, e.g. "#ffffff"
+#   font_size:  text size in pixels, e.g. 60
+#   output:     printed when the key is pressed
+#   hold:       action for a long press (about 0.6 seconds); same fields as above, e.g.
+#               {type: profile, profile: default}
+#
+# Example entry (delete the leading "#" to use it):
+#   - {title: "Copy", type: key, keys: "cmd+c", background: "#1a1a2e", color: "#ffffff", font_size: 60}
+buttons:
+  - {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
+  - {type: app, title: Bitwarden, output: Bitwarden, app: /Applications/Bitwarden.app, font_size: 35}
+  - {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}

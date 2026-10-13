@@ -42,32 +42,30 @@ button_defaults:
 pages:
   1:
     1:  {type: "key", keys: "cmd+c", title: "Copy", output: "Copy "}
+    6: {background: '#000000'}
     2:  {type: app, app: "/System/Library/CoreServices/Finder.app", title: "Finder"}
     3:  {type: "key", keys: "cmd+v", title: "Paste", output: "Paste "}
     4:  {type: app, app: "/System/Applications/Calculator.app",profile: Calculator,  title: "Calc"}
     5:  {type: app, app: "/Applications/iStatistica\ Pro.app", title: "Stats"}
-    6:  {type: profile, profile: Finder, title: "Finder"}
     7: {type: app, title: Bitwarden, output: Bitwarden, app: /Applications/Bitwarden.app, font_size: 35}
     8: {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
     9: {type: key, title: mute, keys: mute, icon: icons/james.png, hold: {type: profile, profile: Calculator}}
-    10: {title: "10", output: "10"}
     11: {type: page, page: previous, title: "<"}
     12: {type: page, page: home, title: "Home"}
     13: {type: page, page: next, title: ">"}
     16: {type: page, page: previous, hold: {type: profile, profile: default}}
     14: {type: profile, profile: default}
-    17: {type: page, page: next}
+    17: {type: page, title: Next, page: next}
   2:
     1:  {title: "2-1", output: "2-1"}
-    2:  {title: "2-2", output: "2-2"}
-    3:  {title: "2-3", output: "2-3"}
+    3: {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
+    2: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
     4:  {title: "2-4", output: "2-4"}
-    5:  {title: "2-5", output: "2-5"}
+    5: {title: F1, type: key, keys: f1}
     6:  {title: "2-6", output: "2-6"}
-    7:  {title: "2-7", output: "2-7"}
-    8:  {title: "2-8", output: "2-8"}
+    8: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
     9:  {title: "2-9", output: "2-9"}
-    10: {title: "2-10", output: "2-10"}
+    10: {title: Helder -, type: key, keys: brightnessdown}
     11: {type: page, page: previous, title: "<-"}
     12: {type: page, page: home, title: "Home"}
     13: {type: page, page: next, title: "->"}
@@ -83,8 +81,8 @@ pages:
     6:  {title: "3-6", output: "3-6"}
     7:  {title: "3-7", output: "3-7"}
     8:  {title: "3-8", output: "3-8"}
-    9:  {title: "3-9", output: "3-9"}
-    10: {title: "3-10", output: "3-10"}
+    9: {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
+    10: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
     11: {type: page, page: previous, title: "<-"}
     12: {type: page, page: home, title: "Home"}
     13: {type: page, page: next, title: "->"}

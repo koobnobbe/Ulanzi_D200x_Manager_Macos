@@ -1,0 +1,11 @@
+# Library section "sound". Each entry is a key definition you can drag onto a key in the web interface.
+buttons:
+  - {title: "Vol +", type: key, keys: volumeup}
+  - {title: "Vol -", type: key, keys: volumedown}
+  - {title: "Mute", type: key, keys: mute}
+  - {title: "Play", type: key, keys: play}
+  - {title: "Next", type: key, keys: next}
+  - {title: "Prev", type: key, keys: previous}
+  - {title: "Helder +", type: key, keys: brightnessup}
+  - {title: "Helder -", type: key, keys: brightnessdown}
+  - {type: key, title: mute, keys: mute, icon: icons/james.png, hold: {type: profile, profile: Calculator}}

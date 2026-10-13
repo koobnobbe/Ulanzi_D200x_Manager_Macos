@@ -1,0 +1,3 @@
+# Library section "Applications". Each entry is a key definition you can drag onto a key.
+buttons:
+  - {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}

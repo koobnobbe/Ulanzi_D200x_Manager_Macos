@@ -9,7 +9,8 @@
 body { margin: 0; font: 14px system-ui, sans-serif; background: var(--bg); color: var(--text); }
 header { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--line); }
 header h1 { font-size: 16px; margin: 0; margin-right: auto; }
-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; padding: 20px; }
+main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 20px; }
+.main-tabs { padding: 14px 20px 0; margin-bottom: 0; }
 @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
 section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
 h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
@@ -20,7 +21,7 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
 .keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .key { position: relative; aspect-ratio: 1; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; background: #000; cursor: pointer; }
 .key img { width: 100%; height: 100%; display: block; }
-.key.text { background: #1f2a44; color: var(--text); font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 4px; text-align: center; word-break: break-word; }
+.key.text { background: #1f2a44; color: var(--text); font-size: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 4px; text-align: center; word-break: break-word; }
 .key.sel { border-color: var(--accent); }.key .num { position: absolute; left: 4px; top: 2px; font-size: 11px; background: rgba(0, 0, 0, .6); padding: 0 4px; border-radius: 4px; }
 .clock { aspect-ratio: 1; background: #000; border-radius: 8px; }
 .knobs { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -38,7 +39,20 @@ textarea { width: 100%; min-height: 560px; box-sizing: border-box; background: #
 #error { color: var(--err); white-space: pre-wrap; margin: 10px 0 0; font: 12px ui-monospace, Menlo, monospace; }
 #log { margin: 0; height: 160px; overflow: auto; white-space: pre-wrap; background: #0c0c12; border-radius: 8px; padding: 10px; font: 12px ui-monospace, Menlo, monospace; }
 .wide { margin: 0 20px 20px; }
-.shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: calc(100vh - 60px); }
+.shell { display: grid; grid-template-columns: 240px minmax(0, 1fr) 240px; min-height: calc(100vh - 60px); }
+.lib { border-left: 1px solid var(--line); padding: 14px; overflow: auto; }
+.lib-section { margin-bottom: 14px; }
+.lib-section summary { cursor: pointer; font-size: 12px; color: var(--muted); margin: 0 0 6px; padding: 4px 0; text-transform: uppercase; letter-spacing: .06em; }
+.lib-section summary:hover { color: var(--text); }
+.lib-section.over { outline: 2px dashed var(--accent); border-radius: 8px; }
+.lib-item { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; margin-bottom: 4px; cursor: grab; }
+.lib-icon { width: 32px; height: 32px; flex: none; object-fit: contain; }
+.key.drop { border-color: var(--accent); }
+.bin { border: 2px dashed var(--line); border-radius: 8px; padding: 14px 8px; margin-bottom: 14px; text-align: center; font-size: 12px; color: var(--muted); }
+.bin.over { border-color: var(--err); color: var(--err); }
+button.danger { color: var(--err); border-color: var(--err); display: inline-flex; align-items: center; }
+button.danger:hover { background: var(--err); color: #fff; }
+.lib-new { width: 100%; margin-bottom: 14px; color: var(--muted); border-style: dashed; }
 @media (max-width: 900px) { .shell { grid-template-columns: 1fr; } }
 .side { border-right: 1px solid var(--line); padding: 14px; overflow: auto; }
 .content { min-width: 0; }
@@ -80,8 +94,12 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
   <div id="tree" class="tree"></div>
 </aside>
 <div class="content">
+<div class="tabs main-tabs" id="mainTabs">
+  <button type="button" class="tab" data-view="grid">Grid</button>
+  <button type="button" class="tab" data-view="code">Code</button>
+</div>
 <main>
-  <div>
+  <div class="view" data-view="grid">
     <section>
       <h2>Pagina's</h2>
       <div class="tabs" id="tabs"></div>
@@ -92,7 +110,7 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
       <div class="detail" id="detail">Klik op een toets of draaiknop om hem te testen.</div>
     </section>
   </div>
-  <div>
+  <div class="view" data-view="code">
     <section>
       <h2 id="editorTitle">default (config.yaml)</h2>
       <textarea id="yaml" spellcheck="false"></textarea>
@@ -106,6 +124,12 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
   <pre id="log"></pre>
 </section>
 </div>
+<aside class="lib">
+  <div id="bin" class="bin">Sleep hierheen om te verwijderen</div>
+  <button type="button" id="libNew" class="lib-new">+ Nieuwe bibliotheek</button>
+  <h2>Bibliotheek</h2>
+  <div id="library"></div>
+</aside>
 </div>
 <dialog id="knobDlg">
   <form id="knobForm">
@@ -195,7 +219,7 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
       <div class="hint">Laadt dit profiel. default is config.yaml.</div>
     </div>
     <div class="grid2 shared">
-      <label>Achtergrond <input id="kBg" type="text" placeholder="#1a1a2e"></label>
+      <label style="position: relative">Achtergrond <input id="kBg" type="text" placeholder="#1a1a2e"><input id="kBgPicker" type="color" class="hidden-picker"></label>
       <label style="position: relative">Tekstkleur <input id="kColor" type="text" placeholder="#ffffff"><input id="kColorPicker" type="color" class="hidden-picker"></label>
       <label>Lettergrootte <input id="kFont" type="number" min="8" max="200"></label>
       <div><button type="button" id="kLpBtn">Activeer longpress</button></div>
@@ -213,6 +237,9 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
     </div>
     <div id="kErr" class="err"></div>
     <div class="bar">
+      <button type="button" id="kRemove" class="danger" title="Verwijderen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
       <span style="flex: 1"></span>
       <button type="button" id="kCancel">Annuleren</button>
       <button type="submit" class="primary">Opslaan</button>
@@ -302,13 +329,18 @@ function asText(value) {
   return Array.isArray(value) ? value.join(', ') : (value ?? '').toString();
 }
 
-$('kColor').onclick = () => {
-  const picker = $('kColorPicker');
-  picker.value = /^#[0-9a-f]{6}$/i.test($('kColor').value) ? $('kColor').value : '#ffffff';
-  if (picker.showPicker) picker.showPicker();
-  else picker.click();
-};
-$('kColorPicker').oninput = () => { $('kColor').value = $('kColorPicker').value; };
+function attachColorPicker(textId, pickerId, fallback) {
+  $(textId).onclick = () => {
+    const picker = $(pickerId);
+    picker.value = /^#[0-9a-f]{6}$/i.test($(textId).value) ? $(textId).value : fallback;
+    if (picker.showPicker) picker.showPicker();
+    else picker.click();
+  };
+  $(pickerId).oninput = () => { $(textId).value = $(pickerId).value; };
+}
+
+attachColorPicker('kColor', 'kColorPicker', '#ffffff');
+attachColorPicker('kBg', 'kBgPicker', '#1a1a2e');
 
 function longpressOn() {
   return $('holdFields').style.display !== 'none';
@@ -530,6 +562,18 @@ $('keyForm').onsubmit = (e) => {
   });
 };
 $('kCancel').onclick = () => $('keyDlg').close();
+$('kRemove').onclick = () => {
+  if (!confirm('Deze toets verwijderen?')) return;
+  guarded(async () => {
+    const result = await api('/api/key/clear', keyTarget);
+    if (result.error) {
+      $('kErr').textContent = result.error;
+      return;
+    }
+    $('keyDlg').close();
+    location.reload();
+  });
+};
 const KEY_GROUPS = [
   ['Media', ['volumeup', 'volumedown', 'mute', 'brightnessup', 'brightnessdown', 'play', 'next', 'previous']],
   ['Speciaal', ['enter', 'esc', 'tab', 'space', 'backspace', 'delete', 'forwarddelete', 'up', 'down', 'left', 'right',
@@ -624,6 +668,43 @@ function keyButton(number, key) {
   num.className = 'num';
   num.textContent = number;
   button.append(num);
+  button.draggable = Boolean(key.type || key.title);
+  button.ondragstart = (e) => e.dataTransfer.setData(KEY_MIME, JSON.stringify({ name: viewName, page: viewedPage(), number }));
+  button.ondragover = (e) => e.preventDefault();
+  button.ondragenter = () => button.classList.add('drop');
+  button.ondragleave = () => button.classList.remove('drop');
+  button.ondrop = (e) => {
+    e.preventDefault();
+    button.classList.remove('drop');
+    const raw = e.dataTransfer.getData('text/plain');
+    const source = e.dataTransfer.getData(KEY_MIME);
+    if (!raw && !source) return;
+    guarded(async () => {
+      let data;
+      if (raw) {
+        data = JSON.parse(raw);
+      } else {
+        const ref = JSON.parse(source);
+        data = (await api(`/api/key?name=${encodeURIComponent(ref.name)}&page=${ref.page}&number=${ref.number}`)).key;
+      }
+      const result = await api('/api/key', { name: viewName, page: viewedPage(), number, data });
+      if (result.error) {
+        $('error').textContent = result.error;
+        return;
+      }
+      if (source) {
+        const ref = JSON.parse(source);
+        if (ref.name !== viewName || ref.page !== viewedPage() || ref.number !== number) {
+          const cleared = await api('/api/key/clear', ref);
+          if (cleared.error) {
+            $('error').textContent = cleared.error;
+            return;
+          }
+        }
+      }
+      location.reload();
+    });
+  };
   button.onclick = () => guarded(() => openKeyDialog(number));
   return button;
 }
@@ -690,13 +771,13 @@ function renderTabs() {
     });
     box.append(tab);
   }
-  if (!isActiveView()) return;
   const add = document.createElement('button');
   add.className = 'tab add';
   add.textContent = '+ Nieuwe pagina';
   add.onclick = () => guarded(async () => {
-    await api('/api/pages/add', {});
+    await api('/api/pages/add', { name: viewName });
     await load(true);
+    await openInEditor(viewName);
   });
   box.append(add);
 }
@@ -802,6 +883,148 @@ $('reload').onclick = () => guarded(async () => {
 $('bright').oninput = (e) => { $('brightVal').textContent = e.target.value; };
 $('bright').onchange = (e) => guarded(() => api('/api/brightness', { value: Number(e.target.value) }));
 
+let libraryData = { sections: [] };
+const KEY_MIME = 'application/x-d200-key';
+const LIB_MIME = 'application/x-d200-lib';
+
+const bin = $('bin');
+bin.ondragover = (e) => {
+  if (!e.dataTransfer.types.includes(LIB_MIME)) return;
+  e.preventDefault();
+  bin.classList.add('over');
+};
+bin.ondragleave = () => bin.classList.remove('over');
+
+$('libNew').onclick = () => {
+  const name = prompt('Naam van de nieuwe bibliotheek:');
+  if (!name || !name.trim()) return;
+  guarded(async () => {
+    await api('/api/library/new', { name: name.trim() });
+    libraryData = await api('/api/library');
+    renderLibrary();
+    log(`Bibliotheek ${name.trim()} aangemaakt`);
+  });
+};
+bin.ondrop = (e) => {
+  if (!e.dataTransfer.types.includes(LIB_MIME)) return;
+  e.preventDefault();
+  e.stopPropagation();
+  bin.classList.remove('over');
+  const ref = JSON.parse(e.dataTransfer.getData(LIB_MIME));
+  guarded(async () => {
+    await api('/api/library/delete', ref);
+    libraryData = await api('/api/library');
+    renderLibrary();
+    log(`Verwijderd uit library/${ref.section}.yaml`);
+  });
+};
+
+const libraryPanel = document.querySelector('.lib');
+libraryPanel.ondragover = (e) => {
+  if (e.dataTransfer.types.includes(KEY_MIME)) e.preventDefault();
+};
+libraryPanel.ondrop = (e) => {
+  if (!e.dataTransfer.types.includes(KEY_MIME)) return;
+  e.preventDefault();
+  const ref = JSON.parse(e.dataTransfer.getData(KEY_MIME));
+  guarded(async () => {
+    await api('/api/library/add', ref);
+    libraryData = await api('/api/library');
+    renderLibrary();
+    log('Toets toegevoegd aan library/template.yaml');
+  });
+};
+
+function libOpen(name) {
+  try {
+    return localStorage.getItem('lib-closed:' + name) !== '1';
+  } catch (e) {
+    return true;
+  }
+}
+
+function libSetOpen(name, open) {
+  try {
+    if (open) localStorage.removeItem('lib-closed:' + name);
+    else localStorage.setItem('lib-closed:' + name, '1');
+  } catch (e) {
+    // storage unavailable: the state just won't persist
+  }
+}
+
+function renderLibrary() {
+  const box = $('library');
+  box.textContent = '';
+  for (const section of libraryData.sections) {
+    const wrap = document.createElement('details');
+    wrap.className = 'lib-section';
+    wrap.open = libOpen(section.section);
+    wrap.addEventListener('toggle', () => libSetOpen(section.section, wrap.open));
+    wrap.ondragover = (e) => {
+      if (!e.dataTransfer.types.includes(LIB_MIME)) return;
+      e.preventDefault();
+      wrap.classList.add('over');
+    };
+    wrap.ondragleave = () => wrap.classList.remove('over');
+    wrap.ondrop = (e) => {
+      if (!e.dataTransfer.types.includes(LIB_MIME)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      wrap.classList.remove('over');
+      const ref = JSON.parse(e.dataTransfer.getData(LIB_MIME));
+      guarded(async () => {
+        await api('/api/library/move', { section: ref.section, index: ref.index, target: section.section });
+        libraryData = await api('/api/library');
+        renderLibrary();
+        log(`Verplaatst naar ${section.section}`);
+      });
+    };
+    const heading = document.createElement('summary');
+    heading.textContent = section.section;
+    wrap.append(heading);
+    for (const [index, item] of section.items.entries()) {
+      const button = document.createElement('button');
+      button.className = 'lib-item';
+      let iconSrc = null;
+      if (item.data.icon && item.data.icon.startsWith('icons/')) {
+        iconSrc = '/icons/' + encodeURIComponent(item.data.icon.slice('icons/'.length));
+      } else if (item.data.type === 'app' && item.data.app) {
+        iconSrc = '/appicon?path=' + encodeURIComponent(item.data.app);
+      }
+      if (iconSrc) {
+        const img = document.createElement('img');
+        img.className = 'lib-icon';
+        img.width = 32;
+        img.height = 32;
+        img.alt = '';
+        img.src = iconSrc;
+        button.append(img);
+      }
+      button.append(document.createTextNode(` ${item.title}  (${item.data.type || 'text'})`));
+      button.title = 'Sleep naar een toets of naar de prullenbak';
+      button.draggable = true;
+      button.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', JSON.stringify(item.data));
+        e.dataTransfer.setData(LIB_MIME, JSON.stringify({ section: section.section, index }));
+      });
+      wrap.append(button);
+    }
+    box.append(wrap);
+  }
+}
+
+function showView(name) {
+  for (const view of document.querySelectorAll('.view')) view.style.display = view.dataset.view === name ? '' : 'none';
+  for (const tab of document.querySelectorAll('#mainTabs .tab')) tab.classList.toggle('active', tab.dataset.view === name);
+}
+
+for (const tab of document.querySelectorAll('#mainTabs .tab')) tab.onclick = () => showView(tab.dataset.view);
+showView('grid');
+
+guarded(async () => {
+  libraryData = await api('/api/library');
+  renderLibrary();
+});
 guarded(() => load(false));
 </script>
 </body>

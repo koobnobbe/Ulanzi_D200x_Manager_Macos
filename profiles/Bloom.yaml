@@ -1,6 +1,8 @@
 pages:
   1:
     11: {type: page, page: previous, title: "<"}
+    9: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
+    8: {type: app, title: Bitwarden, output: Bitwarden, app: /Applications/Bitwarden.app, font_size: 35}
     12: {type: page, page: home, title: "Home"}
     13: {type: page, page: next, title: ">"}
     14: {type: profile, profile: default}
