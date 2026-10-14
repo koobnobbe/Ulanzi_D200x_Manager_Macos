@@ -1,6 +1,6 @@
 # Ulanzi D200X configuration.
 
-background_image: "backgrounds/Unknown_Unknown_4.png"
+background_color: "#1e1a2e"
 device:
   screensaver_image: ""
   screensaver_color: "#000000"

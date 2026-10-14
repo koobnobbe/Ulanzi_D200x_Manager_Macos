@@ -44,6 +44,7 @@ grid:
   keys_title: Tasten · {profile} · Seite {page}
   page_tab: Seite {page}
   new_page: + Neue Seite
+  page_config: Config
   key_14: Taste 14
   clock_window: Uhrfenster (Einstellungen)
   knob: Drehknopf {number}
@@ -159,7 +160,7 @@ profile_dialog:
   app: App, die dieses Profil aktiviert
   no_app: keine App
   hint_app: Das Profil wird aktiv, sobald diese App auf dem Mac in den Vordergrund kommt.
-  background: Hintergrund (über den ganzen Bildschirm, sichtbar durch die Transparenz einer Taste; ohne Bild schwarz)
+  background: Hintergrund (über den ganzen Bildschirm, sichtbar durch die Transparenz einer Taste)
   unlink: App trennen
   unlink_confirm: App von Profil {name} trennen? Das Profil selbst bleibt erhalten.
 
@@ -176,6 +177,24 @@ screen_dialog:
   title: Bildschirm-Config
   language: Sprache
   hint: "Wird unter ui: in config.yaml gespeichert. Die Seite wird danach neu geladen."
+
+background:
+  image: Bild
+  color: Einfarbig
+  remove: Hintergrund entfernen
+  none_black: keiner (schwarz)
+
+page_dialog:
+  title: "Seite {page} · {profile}"
+  name: Name (auf dem Reiter)
+  background: Hintergrund dieser Seite
+  background_profile: wie das Profil
+  order: Reihenfolge
+  move_left: ← Nach links
+  move_right: Nach rechts →
+  remove: Seite entfernen
+  remove_confirm: Seite {page} mit allen Tasten entfernen? Tasten, die zu dieser Seite führen, führen danach zu Seite 1.
+  hint: "Wird unter page_settings: in der Datei des Profils gespeichert. Nach links oder rechts verschieben geschieht sofort; die Tasten wandern mit."
 
 new_profile_dialog:
   title: Neues Profil
@@ -215,6 +234,10 @@ errors:
   saver_image_needed: bitte ein Bild für den Bildschirmschoner wählen
   unknown_language: "unbekannte Sprache: {language}"
   file_missing: "{field}: Datei nicht gefunden"
+  first_page: Seite 1 kann nicht entfernt werden
+  page_edge: diese Seite ist schon am Rand
+  page_name_long: der Name darf höchstens {max} Zeichen lang sein
+  unknown_page_number: Seite {page} existiert nicht
   bad_zip: keine gültige Zip-Datei mit png-Symbolen
 
 # Fehler in config.yaml oder einem Profil. Die vorherige Config bleibt dann aktiv.

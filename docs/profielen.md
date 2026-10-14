@@ -52,7 +52,7 @@ knobs:
 ```
 
 - `app`: de app die dit profiel activeert (optioneel).
-- `background_image`: de achtergrond van dit profiel (optioneel).
+- `background_image` of `background_color`: de achtergrond van dit profiel, een afbeelding of een effen kleur (optioneel).
 - `pages`: de pagina's en toetsen.
 - `knobs`: eigen draaiknoppen (optioneel). Zie [Draaiknoppen](draaiknoppen.md#draaiknoppen-per-profiel).
 

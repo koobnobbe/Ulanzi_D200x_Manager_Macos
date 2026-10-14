@@ -24,6 +24,25 @@ Klik op **+ Nieuwe pagina**. De nieuwe pagina krijgt meteen een paar navigatieto
 
 Die kun je daarna gewoon aanpassen of weghalen.
 
+## Pagina-instellingen
+
+Rechts naast de tabbladen staat de knop **config** met een tandwiel. Die opent de instellingen van de pagina die je bekijkt:
+
+- **Naam**: staat op het tabblad in plaats van "Pagina 2". Maximaal 30 tekens.
+- **Achtergrond**: een eigen afbeelding of effen kleur voor alleen deze pagina, met een kleurkiezer voor de kleur. Kies je niets, of klik je op **Achtergrond verwijderen**, dan geldt de achtergrond van het profiel. Zie [Achtergronden en klok](achtergronden.md).
+- **Volgorde**: schuif de pagina een plek naar links of rechts. Dat gebeurt meteen. De toetsen en instellingen gaan mee, en toetsen die naar die pagina gaan, worden aangepast. Schuif je een pagina naar de eerste plek, dan wordt het de startpagina.
+- **Prullenbak**: verwijdert de pagina met al haar toetsen. Toetsen die naar die pagina gingen, gaan daarna naar pagina 1. Pagina 1 kan niet weg.
+
+De instellingen staan in het bestand van het profiel onder `page_settings:`:
+
+```
+page_settings:
+  2: {name: Media, background_image: "backgrounds/media.png"}
+  3: {name: Werk, background_color: "#203040"}
+```
+
+> Toetsen die door het schuiven of verwijderen worden aangepast, worden opnieuw weggeschreven. Commentaar aan het eind van zo'n regel verdwijnt dan.
+
 ## In het bestand
 
 ```

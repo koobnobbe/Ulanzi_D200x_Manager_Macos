@@ -44,6 +44,7 @@ grid:
   keys_title: Teclas · {profile} · página {page}
   page_tab: Página {page}
   new_page: + Nueva página
+  page_config: config
   key_14: tecla 14
   clock_window: ventana del reloj (ajustes)
   knob: mando {number}
@@ -159,7 +160,7 @@ profile_dialog:
   app: App que activa este perfil
   no_app: sin app
   hint_app: El perfil se activa en cuanto esta app pasa al primer plano en el Mac.
-  background: Fondo (sobre toda la pantalla, visible a través de la transparencia de una tecla; negro sin imagen)
+  background: Fondo (sobre toda la pantalla, visible a través de la transparencia de una tecla)
   unlink: Desvincular app
   unlink_confirm: ¿Desvincular la app del perfil {name}? El perfil se conserva.
 
@@ -176,6 +177,24 @@ screen_dialog:
   title: Config. de pantalla
   language: Idioma
   hint: "Se guarda en ui: de config.yaml. Después la página se recarga."
+
+background:
+  image: Imagen
+  color: Color sólido
+  remove: Quitar fondo
+  none_black: ninguno (negro)
+
+page_dialog:
+  title: "Página {page} · {profile}"
+  name: Nombre (en la pestaña)
+  background: Fondo de esta página
+  background_profile: igual que el perfil
+  order: Orden
+  move_left: ← A la izquierda
+  move_right: A la derecha →
+  remove: Eliminar página
+  remove_confirm: ¿Eliminar la página {page} con todas sus teclas? Las teclas que van a esta página irán a la página 1.
+  hint: "Se guarda en page_settings: del archivo del perfil. Mover a la izquierda o a la derecha es inmediato; las teclas se mueven con ella."
 
 new_profile_dialog:
   title: Nuevo perfil
@@ -215,6 +234,10 @@ errors:
   saver_image_needed: elige una imagen para el salvapantallas
   unknown_language: "idioma desconocido: {language}"
   file_missing: "{field}: archivo no encontrado"
+  first_page: la página 1 no se puede eliminar
+  page_edge: esta página ya está en el borde
+  page_name_long: el nombre puede tener como máximo {max} caracteres
+  unknown_page_number: la página {page} no existe
   bad_zip: no es un zip válido de iconos png
 
 # Errores en config.yaml o en un perfil. La config anterior sigue activa.

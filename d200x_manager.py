@@ -300,6 +300,42 @@ def clock_window_tiles(wallpaper, key):
     return [save_icon(out.crop((i * SIZE, 0, (i + 1) * SIZE, SIZE)), 'clock') for i in range(2)]
 
 
+HEX_COLOR = re.compile(r'#[0-9a-fA-F]{6}')
+
+
+def background_of(values):
+    """The background a profile or page asks for: ('image', path), ('color', '#rrggbb') or None."""
+    if (values or {}).get('background_image'):
+        return 'image', values['background_image']
+    if (values or {}).get('background_color'):
+        return 'color', values['background_color']
+    return None
+
+
+def check_background(values):
+    image, color = (values or {}).get('background_image'), (values or {}).get('background_color')
+    if image and not os.path.isfile(image):
+        raise ValueError(t('errors.background_missing', path=image))
+    if color and not HEX_COLOR.fullmatch(str(color)):
+        raise ValueError(t('errors.hex_color', field='background_color'))
+
+
+def page_wallpapers(pages, page_settings, background):
+    """{page: per-slot background images or None}. A page's own background wins over the profile's
+    (`background`, from background_of); without any the screen is black."""
+    cache = {}
+    result = {}
+    for page in pages:
+        spec = background_of(page_settings.get(page)) or background
+        if spec and spec not in cache:
+            kind, value = spec
+            slots = UlanziD200Device.BUTTON_COLS * UlanziD200Device.BUTTON_ROWS
+            cache[spec] = (cover_tiles(value, UlanziD200Device.BUTTON_COLS, UlanziD200Device.BUTTON_ROWS) if kind == 'image'
+                           else [Image.new('RGB', (SIZE, SIZE), value)] * slots)
+        result[page] = cache.get(spec) if spec else None
+    return result
+
+
 def render_tiles(path, cols, rows):
     return [save_icon(tile, 'bg') for tile in cover_tiles(path, cols, rows)]
 
@@ -416,8 +452,10 @@ def render_button(number, button, wallpaper=None):
     opacity = 1 - float(button.get('transparency', 0)) / 100
     fill = ImageColor.getrgb(button['background'])[:3] + (round(255 * opacity),)
     if button.get('icon'):
-        img = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), button['icon'])).convert('RGBA').resize((SIZE, SIZE))
-        img.putalpha(img.getchannel('A').point(lambda a: round(a * opacity)))
+        # Like the other keys: the background color (with its transparency) first, the icon on top of it.
+        icon = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), button['icon'])).convert('RGBA')
+        img = Image.new('RGBA', (SIZE, SIZE), color=fill)
+        img.alpha_composite(icon.resize((SIZE, SIZE), Image.LANCZOS))
     elif kind == 'app' and (app_icon := load_app_icon(button['app'])):
         img = Image.new('RGBA', (SIZE, SIZE), color=fill)
         # Leave room at the bottom for an optional title.
@@ -458,9 +496,26 @@ PROFILE_TEMPLATE = """pages:
 """
 
 
+PAGE_NAME_MAX = 30
+
+
+def page_settings_of(config):
+    """{page number: {'name': ..., 'background_image': ...}} from a config or profile file, checked."""
+    settings = {}
+    for page, values in (config.get('page_settings') or {}).items():
+        values = values or {}
+        name = values.get('name')
+        if name is not None and (not isinstance(name, str) or len(name) > PAGE_NAME_MAX):
+            raise ValueError(t('errors.page_name_long', max=PAGE_NAME_MAX))
+        check_background(values)
+        settings[int(page)] = values
+    return settings
+
+
 def check_text(text):
     """Validate config text without touching the deck or rendering icons."""
     config = yaml.safe_load(text) or {}
+    page_settings_of(config)
     defaults = config.get('button_defaults') or {}
     pages = {int(p): {int(n): {**defaults, **(b or {})} for n, b in (keys or {}).items()}
              for p, keys in (config.get('pages') or {}).items()}
@@ -468,6 +523,100 @@ def check_text(text):
     check_pages(pages)
     for name, k in (config.get('knobs') or {}).items():
         parse_knob(name, {**k, 'name': name})
+
+
+PAGE_HEADER = re.compile(r'  (\d+):\s*(#.*)?$')
+KEY_LINE = re.compile(r'(    \d+:\s*)(.*)$')
+
+
+def top_block(lines, name):
+    """(start, end) line indexes of a top-level "name:" block; end is the first line after it. None if absent."""
+    if f'{name}:' not in lines:
+        return None
+    start = lines.index(f'{name}:')
+    end = next((i for i in range(start + 1, len(lines))
+                if lines[i].strip() and not lines[i].startswith('#') and not lines[i].startswith(' ')), len(lines))
+    return start, end
+
+
+def retarget_pages(line, mapping):
+    """A key line with its page references (also in "hold") changed by `mapping`; the line itself if none change."""
+    match = KEY_LINE.match(line)
+    if not match:
+        return line
+    try:
+        data = yaml.safe_load(match.group(2))
+    except yaml.YAMLError:
+        return line
+    if not isinstance(data, dict):
+        return line
+    changed = False
+    for target in (data, data.get('hold')):
+        if isinstance(target, dict) and target.get('type') == 'page' and target.get('page') in mapping:
+            target['page'] = mapping[target['page']]
+            changed = True
+    if not changed:
+        return line
+    flow = yaml.safe_dump(data, default_flow_style=True, sort_keys=False, allow_unicode=True, width=10 ** 6).strip()
+    return match.group(1) + flow
+
+
+def swap_page_numbers(text, a, b):
+    """Swap pages a and b: their headers under "pages:" and "page_settings:", and keys that go to them."""
+    lines = text.split('\n')
+    for block in ('pages', 'page_settings'):
+        found = top_block(lines, block)
+        if not found:
+            continue
+        for i in range(found[0] + 1, found[1]):
+            header = PAGE_HEADER.match(lines[i]) or (re.match(r'  (\d+):', lines[i]) if block == 'page_settings' else None)
+            if header and int(header.group(1)) in (a, b):
+                number = b if int(header.group(1)) == a else a
+                lines[i] = f'  {number}:' + lines[i][len(f'  {header.group(1)}:'):]
+            elif block == 'pages':
+                lines[i] = retarget_pages(lines[i], {a: b, b: a})
+    return '\n'.join(lines)
+
+
+def remove_page(text, page):
+    """Remove a page with its keys and settings; keys that went to it go to the home page."""
+    lines = text.split('\n')
+    found = top_block(lines, 'pages')
+    if found:
+        start, end = found
+        header = next((i for i in range(start + 1, end) if (m := PAGE_HEADER.match(lines[i])) and int(m.group(1)) == page), None)
+        if header is not None:
+            stop = next((i for i in range(header + 1, end) if PAGE_HEADER.match(lines[i])), end)
+            del lines[header:stop]
+        found = top_block(lines, 'pages')
+        for i in range(found[0] + 1, found[1]):
+            lines[i] = retarget_pages(lines[i], {page: 'home'})
+    return set_page_settings_line('\n'.join(lines), page, None)
+
+
+def set_page_settings_line(text, page, values):
+    """Set (or with empty values remove) the "  page: {...}" line under "page_settings:"."""
+    lines = text.split('\n')
+    found = top_block(lines, 'page_settings')
+    if found:
+        start, end = found
+        lines[start + 1:end] = [line for line in lines[start + 1:end] if not re.match(rf'  {page}:', line)]
+    if values:
+        if not found:
+            while lines and not lines[-1].strip():
+                lines.pop()
+            lines += ['', 'page_settings:', '']
+        start, end = top_block(lines, 'page_settings')   # again: the lines above may have changed
+        last = max([i for i in range(start + 1, end) if lines[i].strip()], default=start)
+        flow = yaml.safe_dump(values, default_flow_style=True, sort_keys=False, allow_unicode=True, width=10 ** 6).strip()
+        lines.insert(last + 1, f'  {page}: {flow}')
+    elif found:
+        start, end = top_block(lines, 'page_settings')
+        if not any(line.strip() and not line.lstrip().startswith('#') for line in lines[start + 1:end]):
+            del lines[start:end]   # no page has settings any more
+            while len(lines) > 1 and not lines[-1].strip() and not lines[-2].strip():
+                lines.pop()
+    return '\n'.join(lines)
 
 
 def replace_key_line(text, page, number, data):
@@ -590,11 +739,15 @@ class Manager:
             config = load_config(self.config_path) or {}
             i18n.set_language((config.get('ui') or {}).get('language'))
             # Each profile has its own background picture; without one the screen is black.
-            background = config.get('background_image')
+            check_background(config)
+            background = background_of(config)
+            page_settings = page_settings_of(config)
             if self.profile:
                 profile = load_config(self.active_path()) or {}
                 config = {**config, **{k: profile[k] for k in ('pages', 'knobs') if k in profile}}
-                background = profile.get('background_image')
+                check_background(profile)
+                background = background_of(profile)
+                page_settings = page_settings_of(profile)
             device = config.get('device') or {}
             defaults = config.get('button_defaults') or {}
             # Config keys are numbered from 1; the deck index is number - 1
@@ -608,10 +761,10 @@ class Manager:
             knobs = {k['index']: parse_knob(name, {**k, 'name': name}) for name, k in (config.get('knobs') or {}).items()}
 
             clear_icons()
-            wallpaper = cover_tiles(background, UlanziD200Device.BUTTON_COLS, UlanziD200Device.BUTTON_ROWS) \
-                if background else None
+            # A page can have its own background; otherwise the profile's is used.
+            wallpapers = page_wallpapers(pages, page_settings, background)
             # Key 14 has no screen of its own, but it shows an icon over the clock when it has a title or icon.
-            icons = {p: {n: render_button(n, b, wallpaper) for n, b in keys.items()
+            icons = {p: {n: render_button(n, b, wallpapers[p]) for n, b in keys.items()
                          if n not in INPUT_ONLY_KEYS or (n == CLOCK_KEY and (b.get('title') or b.get('icon')))}
                      for p, keys in pages.items()}
             blank = render_solid('#000000')
@@ -627,9 +780,10 @@ class Manager:
             elif mode == 'image':
                 tiles = render_tiles(device['screensaver_image'], UlanziD200Device.BUTTON_COLS, UlanziD200Device.BUTTON_ROWS)
                 saver_layout = {i: {'icon': name} for i, name in enumerate(tiles)}
-            wallpaper_names = [save_icon(t, 'bg') for t in wallpaper] if wallpaper else []
             layouts = {}
             for p in pages:
+                wallpaper = wallpapers[p]
+                wallpaper_names = [save_icon(t, 'bg') for t in wallpaper] if wallpaper else []
                 raw_clock = (raw_pages.get(int(p)) or {}).get(CLOCK_KEY) or {}
                 clock_tiles = clock_window_tiles(wallpaper, {
                     'background': raw_clock.get('background', device.get('clock_background', '#000000')),
@@ -876,16 +1030,15 @@ class Manager:
     def preview(self, name, page):
         """Key and clock images for one page of any profile, rendered as on the deck but not sent to it."""
         config = load_config(self.config_path) or {}
-        background = config.get('background_image')
+        own = config
         if name != 'default':
-            profile = load_config(self.file_for(name)) or {}
-            config = {**config, **{k: profile[k] for k in ('pages', 'knobs') if k in profile}}
-            background = profile.get('background_image')
+            own = load_config(self.file_for(name)) or {}
+            config = {**config, **{k: own[k] for k in ('pages', 'knobs') if k in own}}
+        background = background_of(own)
         device = config.get('device') or {}
         defaults = config.get('button_defaults') or {}
         raw = (config.get('pages') or {}).get(page) or {}
-        wallpaper = cover_tiles(background, UlanziD200Device.BUTTON_COLS, UlanziD200Device.BUTTON_ROWS) \
-            if background else None
+        wallpaper = page_wallpapers([page], page_settings_of(own), background)[page]
         icons = {}
         for n, b in raw.items():
             button = {**defaults, **(b or {})}
@@ -903,6 +1056,51 @@ class Manager:
         if CLOCK_KEY in icons:
             clock[0] = icons[CLOCK_KEY]
         return {'keys': icons, 'clock': clock}
+
+    def file_pages(self, name):
+        """Page numbers of a profile file; page 1 always exists."""
+        return sorted({int(p) for p in ((load_config(self.file_for(name)) or {}).get('pages') or {})} | {1})
+
+    def set_page_settings(self, name, page, data):
+        """Save a page's name and background under "page_settings:" in the profile's file."""
+        if page not in self.file_pages(name):
+            return t('errors.unknown_page_number', page=page)
+        title = (data.get('name') or '').strip()
+        if len(title) > PAGE_NAME_MAX:
+            return t('errors.page_name_long', max=PAGE_NAME_MAX)
+        image, color = data.get('background_image') or '', data.get('background_color') or ''
+        try:
+            check_background({'background_image': image, 'background_color': color})
+        except ValueError as e:
+            return str(e)
+        values = {k: v for k, v in (('name', title), ('background_image', image), ('background_color', color)) if v}
+        return self.save_file(name, set_page_settings_line(self.read_file(name), page, values))
+
+    def move_page(self, name, page, direction):
+        """Swap a page with its neighbour to the left (-1) or right (+1). Returns (new number, error)."""
+        pages = self.file_pages(name)
+        if page not in pages:
+            return None, t('errors.unknown_page_number', page=page)
+        index = pages.index(page) + direction
+        if not 0 <= index < len(pages):
+            return None, t('errors.page_edge')
+        other = pages[index]
+        error = self.save_file(name, swap_page_numbers(self.read_file(name), page, other))
+        if error:
+            return None, error
+        if name == (self.profile or 'default') and self.page in (page, other):
+            self.goto(other if self.page == page else page)   # the deck keeps showing the same page
+        return other, None
+
+    def delete_page(self, name, page):
+        if page == 1:
+            return t('errors.first_page')
+        if page not in self.file_pages(name):
+            return t('errors.unknown_page_number', page=page)
+        error = self.save_file(name, remove_page(self.read_file(name), page))
+        if not error and name == (self.profile or 'default') and self.page not in self.pages:
+            self.goto(1)
+        return error
 
     def profile_apps(self):
         """{profile name: app path} for every profile that names the app that activates it."""
@@ -923,7 +1121,7 @@ class Manager:
         return next((name for name, app in self.profile_apps().items() if app == path), None)
 
     def set_profile_settings(self, name, data):
-        """Change the app that activates a profile and/or its background picture. Only given fields change."""
+        """Change the app that activates a profile and/or its background (picture or color). Only given fields change."""
         path = self.file_for(name)
         with open(path) as fp:
             text = fp.read()
@@ -938,11 +1136,13 @@ class Manager:
                 if other and other != name:
                     return t('errors.app_taken', app=os.path.basename(app), profile=other)
             text = set_top_line(text, 'app', app)
-        if 'background_image' in data:
-            image = data['background_image'] or None
-            if image and not os.path.isfile(image):
-                return t('errors.background_missing', path=image)
-            text = set_top_line(text, 'background_image', image)
+        for field in ('background_image', 'background_color'):
+            if field in data:
+                try:
+                    check_background({field: data[field]})
+                except ValueError as e:
+                    return str(e)
+                text = set_top_line(text, field, data[field] or None)
         yaml.safe_load(text)
         with open(path, 'w') as fp:
             fp.write(text)
@@ -1070,11 +1270,19 @@ class Manager:
             except Exception as e:
                 config, error = {}, str(e)
             pages = config.get('pages') or {}
+            try:
+                page_settings = page_settings_of(config)
+            except ValueError as e:
+                page_settings, error = {}, error or str(e)
             buttons = [{'page': int(p), 'number': int(n), 'type': (b or {}).get('type', 'text'), 'title': (b or {}).get('title')}
                        for p, keys in sorted(pages.items()) for n, b in sorted((keys or {}).items())]
             result.append({'name': name, 'buttons': buttons, 'error': error,
                            'app': config.get('app') if name != 'default' else None,
                            'background_image': config.get('background_image'),
+                           'background_color': config.get('background_color'),
+                           'pages': sorted({int(p) for p in pages} | {1}),
+                           'page_settings': {p: {k: v for k, v in values.items() if k in ('name', 'background_image', 'background_color')}
+                                             for p, values in page_settings.items()},
                            'active': name == (self.profile or 'default')})
         return result
 

@@ -46,6 +46,7 @@ grid:
   keys_title: Keys · {profile} · page {page}
   page_tab: Page {page}
   new_page: + New page
+  page_config: config
   key_14: key 14
   clock_window: clock window (settings)
   knob: knob {number}
@@ -161,7 +162,7 @@ profile_dialog:
   app: App that activates this profile
   no_app: no app
   hint_app: The profile becomes active as soon as this app comes to the front on the Mac.
-  background: Background (across the whole screen, visible through a key's transparency; black without an image)
+  background: Background (across the whole screen, visible through a key's transparency)
   unlink: Unlink app
   unlink_confirm: Unlink the app from profile {name}? The profile itself is kept.
 
@@ -178,6 +179,24 @@ screen_dialog:
   title: Screen config
   language: Language
   hint: "Saved under ui: in config.yaml. The page reloads afterwards."
+
+background:
+  image: Image
+  color: Solid color
+  remove: Remove background
+  none_black: none (black)
+
+page_dialog:
+  title: "Page {page} · {profile}"
+  name: Name (on the tab)
+  background: Background of this page
+  background_profile: same as the profile
+  order: Order
+  move_left: ← Move left
+  move_right: Move right →
+  remove: Remove page
+  remove_confirm: Remove page {page} with all its keys? Keys that go to this page will go to page 1.
+  hint: "Saved under page_settings: in the profile's file. Moving left or right happens right away; the keys move along."
 
 new_profile_dialog:
   title: New profile
@@ -217,6 +236,10 @@ errors:
   saver_image_needed: choose an image for the screensaver
   unknown_language: "unknown language: {language}"
   file_missing: "{field}: file not found"
+  first_page: page 1 cannot be removed
+  page_edge: this page is already at the edge
+  page_name_long: the name can be at most {max} characters
+  unknown_page_number: page {page} does not exist
   bad_zip: not a valid zip of png icons
 
 # Errors in config.yaml or a profile. The previous config then stays active.

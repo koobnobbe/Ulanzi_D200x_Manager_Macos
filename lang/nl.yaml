@@ -46,6 +46,7 @@ grid:
   keys_title: Toetsen · {profile} · pagina {page}
   page_tab: Pagina {page}
   new_page: + Nieuwe pagina
+  page_config: config
   key_14: toets 14
   clock_window: klok-venster (instellingen)
   knob: knop {number}
@@ -161,7 +162,7 @@ profile_dialog:
   app: App die dit profiel activeert
   no_app: geen app
   hint_app: Het profiel wordt actief zodra deze app op de Mac vooraan komt.
-  background: Achtergrond (over het hele scherm, zichtbaar via de transparantie van een toets; zonder afbeelding zwart)
+  background: Achtergrond (over het hele scherm, zichtbaar via de transparantie van een toets)
   unlink: App loskoppelen
   unlink_confirm: De app loskoppelen van profiel {name}? Het profiel zelf blijft bestaan.
 
@@ -178,6 +179,24 @@ screen_dialog:
   title: Scherm config
   language: Taal
   hint: "Wordt opgeslagen onder ui: in config.yaml. De pagina wordt daarna opnieuw geladen."
+
+background:
+  image: Afbeelding
+  color: Effen kleur
+  remove: Achtergrond verwijderen
+  none_black: geen (zwart)
+
+page_dialog:
+  title: "Pagina {page} · {profile}"
+  name: Naam (op het tabblad)
+  background: Achtergrond van deze pagina
+  background_profile: zoals het profiel
+  order: Volgorde
+  move_left: ← Naar links
+  move_right: Naar rechts →
+  remove: Pagina verwijderen
+  remove_confirm: Pagina {page} met al haar toetsen verwijderen? Toetsen die naar deze pagina gaan, gaan daarna naar pagina 1.
+  hint: "Wordt opgeslagen onder page_settings: in het bestand van het profiel. Naar links of rechts schuiven gebeurt meteen; de toetsen gaan mee."
 
 new_profile_dialog:
   title: Nieuw profiel
@@ -217,6 +236,10 @@ errors:
   saver_image_needed: kies een afbeelding voor de screensaver
   unknown_language: "onbekende taal: {language}"
   file_missing: "{field}: bestand niet gevonden"
+  first_page: pagina 1 kan niet verwijderd worden
+  page_edge: deze pagina staat al aan de rand
+  page_name_long: de naam mag maximaal {max} tekens zijn
+  unknown_page_number: pagina {page} bestaat niet
   bad_zip: geen geldige zip met png-iconen
 
 # Fouten in config.yaml of een profiel. De vorige config blijft dan actief.

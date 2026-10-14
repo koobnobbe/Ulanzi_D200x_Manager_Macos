@@ -554,8 +554,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path == '/api/key':
             return {'error': self.call(manager.set_key, body['name'], int(body['page']), int(body['number']), body['data'])}
         if path == '/api/profile/settings':
-            data = {k: body[k] for k in ('app', 'background_image') if k in body}
+            data = {k: body[k] for k in ('app', 'background_image', 'background_color') if k in body}
             return {'error': self.call(manager.set_profile_settings, body['name'], data)}
+        if path == '/api/page/settings':
+            return {'error': self.call(manager.set_page_settings, body['name'], int(body['page']), body.get('settings') or {})}
+        if path == '/api/page/move':
+            page, error = self.call(manager.move_page, body['name'], int(body['page']), 1 if int(body['direction']) > 0 else -1)
+            return {'page': page, 'error': error}
+        if path == '/api/page/delete':
+            return {'error': self.call(manager.delete_page, body['name'], int(body['page']))}
         if path == '/api/profile/new':
             return {'name': self.call(manager.create_profile, body.get('name', ''))}
         if path == '/api/press':

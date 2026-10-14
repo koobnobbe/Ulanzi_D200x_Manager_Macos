@@ -16,6 +16,13 @@ section { background: var(--panel); border: 1px solid var(--line); border-radius
 h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .tab { padding: 6px 14px; }
+.tabs-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
+.tabs-row .tabs { flex: 1; margin-bottom: 0; }
+.bg-field { margin-top: 14px; }
+.bg-field .pick { margin-top: 6px; }
+.bg-field .swatch { flex: none; width: 34px; margin-top: 4px; padding: 0; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
+.bg-remove { margin-top: 8px; color: var(--muted); }
+.page-cfg { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; }
 .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .tab.add { color: var(--muted); border-style: dashed; }
 .keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
@@ -131,7 +138,10 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
   <div class="view" data-view="grid">
     <section>
       <h2 data-t="grid.pages"></h2>
-      <div class="tabs" id="tabs"></div>
+      <div class="tabs-row">
+        <div class="tabs" id="tabs"></div>
+        <button type="button" id="pageCfgBtn" class="page-cfg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span data-t="grid.page_config"></span></button>
+      </div>
       <h2 id="keysTitle" data-t="grid.keys"></h2>
       <div class="deck" id="deck">
         <img class="deck-img" src="/web/ulanzi_black_tiles_transparent.png" alt="">
@@ -313,8 +323,17 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
         <div class="pick"><img id="pIcon" class="profile-app-preview" alt=""><input id="pApp" type="text" data-t-placeholder="profile_dialog.no_app" readonly><button type="button" id="pAppPick" data-t="common.choose"></button></div></label>
       <div class="hint" data-t="profile_dialog.hint_app"></div>
     </div>
-    <label style="display: block; margin-top: 14px"><span data-t="profile_dialog.background"></span>
-      <div class="pick"><select id="pBgImg"></select><button type="button" data-pick="pBgImg" data-t="common.new"></button></div></label>
+    <div class="bg-field">
+      <label><span data-t="profile_dialog.background"></span>
+        <select id="pBgMode">
+          <option value=""></option>
+          <option value="image" data-t="background.image"></option>
+          <option value="color" data-t="background.color"></option>
+        </select></label>
+      <div class="pick" id="pBgImageRow"><select id="pBgImg"></select><button type="button" data-pick="pBgImg" data-t="common.new"></button></div>
+      <div class="pick" id="pBgColorRow" style="position: relative"><button type="button" class="swatch" id="pBgSwatch" aria-hidden="true"></button><input id="pBgColor" type="text" placeholder="#000000" autocomplete="off"><input id="pBgColorPicker" type="color" class="hidden-picker"></div>
+      <button type="button" class="bg-remove" id="pBgRemove" data-t="background.remove"></button>
+    </div>
     <div id="pErr" class="err"></div>
     <div class="bar">
       <button type="button" id="pRemove" class="danger" data-t-title="profile_dialog.unlink">
@@ -350,6 +369,35 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
     <div id="screenErr" class="err"></div>
     <div class="bar" style="justify-content: flex-end">
       <button type="button" id="screenCancel" data-t="common.cancel"></button>
+      <button type="submit" class="primary" data-t="common.save"></button>
+    </div>
+  </form>
+</dialog>
+<dialog id="pageDlg">
+  <form id="pageForm">
+    <h2 id="pgHeader"></h2>
+    <label><span data-t="page_dialog.name"></span> <input id="pgName" type="text" maxlength="30" autocomplete="off"></label>
+    <div class="bg-field">
+      <label><span data-t="page_dialog.background"></span>
+        <select id="pgBgMode">
+          <option value=""></option>
+          <option value="image" data-t="background.image"></option>
+          <option value="color" data-t="background.color"></option>
+        </select></label>
+      <div class="pick" id="pgBgImageRow"><select id="pgBgImg"></select><button type="button" data-pick="pgBgImg" data-t="common.new"></button></div>
+      <div class="pick" id="pgBgColorRow" style="position: relative"><button type="button" class="swatch" id="pgBgSwatch" aria-hidden="true"></button><input id="pgBgColor" type="text" placeholder="#000000" autocomplete="off"><input id="pgBgColorPicker" type="color" class="hidden-picker"></div>
+      <button type="button" class="bg-remove" id="pgBgRemove" data-t="background.remove"></button>
+    </div>
+    <div style="margin-top: 14px; font-size: 13px; color: var(--muted)"><span data-t="page_dialog.order"></span>
+      <div class="bar" style="margin-top: 6px"><button type="button" id="pgLeft" data-t="page_dialog.move_left"></button><button type="button" id="pgRight" data-t="page_dialog.move_right"></button></div></div>
+    <div class="hint" data-t="page_dialog.hint"></div>
+    <div id="pgErr" class="err"></div>
+    <div class="bar">
+      <button type="button" id="pgRemove" class="danger" data-t-title="page_dialog.remove">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+      <span style="flex: 1"></span>
+      <button type="button" id="pgCancel" data-t="common.cancel"></button>
       <button type="submit" class="primary" data-t="common.save"></button>
     </div>
   </form>
@@ -425,7 +473,15 @@ function viewedProfile() {
 
 function viewedPages() {
   if (isActiveView()) return state.pages;
-  return [...new Set(viewedProfile().buttons.map((b) => b.page))].sort((a, b) => a - b);
+  return viewedProfile().pages || [...new Set(viewedProfile().buttons.map((b) => b.page))].sort((a, b) => a - b);
+}
+
+function pageSettings(page) {
+  return (viewedProfile().page_settings || {})[page] || {};
+}
+
+function pageLabel(page) {
+  return pageSettings(page).name || t('grid.page_tab', { page });
 }
 
 function viewedPage() {
@@ -517,7 +573,7 @@ function buildTargetOptions(current) {
   const select = $('kTarget');
   select.textContent = '';
   const options = [['home', t('key_dialog.page_home')], ['next', t('key_dialog.page_next')], ['previous', t('key_dialog.page_previous')],
-    ...viewedPages().map((p) => [String(p), t('key_dialog.page_number', { page: p })])];
+    ...viewedPages().map((p) => [String(p), t('key_dialog.page_number', { page: p }) + (pageSettings(p).name ? ` · ${pageSettings(p).name}` : '')])];
   if (current && !options.some(([value]) => value === current)) options.push([current, t('key_dialog.page_number', { page: current })]);
   for (const [value, label] of options) {
     const option = document.createElement('option');
@@ -680,7 +736,7 @@ async function browse(dir) {
     button.onclick = () => guarded(async () => {
       const name = prompt(t(bgSelect ? 'image_dialog.save_as_background' : 'image_dialog.save_as_icon'), file.name.replace(/\.[^.]+$/, ''));
       if (!name) return;
-      const errBox = $({ kClockImg: 'kErr', pBgImg: 'pErr' }[bgSelect] || (bgSelect ? 'dErr' : 'kErr'));
+      const errBox = $({ kClockImg: 'kErr', pBgImg: 'pErr', pgBgImg: 'pgErr' }[bgSelect] || (bgSelect ? 'dErr' : 'kErr'));
       try {
         if (bgSelect) {
           const result = await api('/api/background', { source: file.path, name });
@@ -944,7 +1000,7 @@ function renderTabs() {
   for (const page of viewedPages()) {
     const tab = document.createElement('button');
     tab.className = 'tab' + (page === current ? ' active' : '');
-    tab.textContent = t('grid.page_tab', { page });
+    tab.textContent = pageLabel(page);
     tab.onclick = () => guarded(async () => {
       if (isActiveView()) {
         await api('/api/page', { page });
@@ -1067,11 +1123,11 @@ async function load(keepText) {
 
 attachColorPicker('dSaverColor', 'dSaverColorPicker', '#000000');
 
-async function loadBackgrounds(id, current) {
+async function loadBackgrounds(id, current, emptyLabel = t('common.none')) {
   const data = await api('/api/backgrounds');
   const select = $(id);
   select.textContent = '';
-  const options = [['', t('common.none')], ...data.backgrounds.map((i) => [i, i])];
+  const options = [['', emptyLabel], ...data.backgrounds.map((i) => [i, i])];
   if (current && !options.some(([value]) => value === current)) options.push([current, current]);
   for (const [value, label] of options) {
     const option = document.createElement('option');
@@ -1132,6 +1188,105 @@ $('deviceForm').onsubmit = (e) => {
   });
 };
 
+// A background field: none / an image / a solid color (with a color picker), and a button that removes it.
+function setupBackgroundField(prefix) {
+  attachColorPicker(prefix + 'BgColor', prefix + 'BgColorPicker', '#000000');
+  const sync = () => {
+    const mode = $(prefix + 'BgMode').value;
+    $(prefix + 'BgImageRow').style.display = mode === 'image' ? '' : 'none';
+    $(prefix + 'BgColorRow').style.display = mode === 'color' ? '' : 'none';
+    $(prefix + 'BgRemove').style.display = mode ? '' : 'none';
+    const color = $(prefix + 'BgColor').value.trim();
+    $(prefix + 'BgSwatch').style.background = /^#[0-9a-f]{6}$/i.test(color) ? color : 'transparent';
+  };
+  $(prefix + 'BgMode').onchange = sync;
+  $(prefix + 'BgColor').addEventListener('input', sync);
+  $(prefix + 'BgColorPicker').addEventListener('input', sync);
+  $(prefix + 'BgSwatch').onclick = () => $(prefix + 'BgColor').click();
+  $(prefix + 'BgRemove').onclick = () => {
+    $(prefix + 'BgMode').value = '';
+    sync();
+  };
+  return sync;
+}
+
+const syncBackground = { p: setupBackgroundField('p'), pg: setupBackgroundField('pg') };
+
+async function fillBackgroundField(prefix, values, noneLabel) {
+  $(prefix + 'BgMode').options[0].textContent = noneLabel;
+  $(prefix + 'BgMode').value = values.background_image ? 'image' : values.background_color ? 'color' : '';
+  $(prefix + 'BgColor').value = values.background_color || '';
+  await loadBackgrounds(prefix + 'BgImg', values.background_image || '');
+  syncBackground[prefix]();
+}
+
+function readBackgroundField(prefix) {
+  const mode = $(prefix + 'BgMode').value;
+  return {
+    background_image: mode === 'image' ? $(prefix + 'BgImg').value : '',
+    background_color: mode === 'color' ? $(prefix + 'BgColor').value.trim() : '',
+  };
+}
+
+let pageTarget = null;
+
+async function openPageDialog() {
+  const page = viewedPage();
+  const pages = viewedPages();
+  pageTarget = { name: viewName, page };
+  $('pgHeader').textContent = t('page_dialog.title', { page, profile: viewName });
+  $('pgName').value = pageSettings(page).name || '';
+  $('pgName').placeholder = t('grid.page_tab', { page });
+  await fillBackgroundField('pg', pageSettings(page), t('page_dialog.background_profile'));
+  $('pgLeft').disabled = pages.indexOf(page) <= 0;
+  $('pgRight').disabled = pages.indexOf(page) >= pages.length - 1;
+  $('pgRemove').style.display = page === 1 ? 'none' : '';
+  $('pgErr').textContent = '';
+  $('pageDlg').showModal();
+}
+
+async function afterPageChange(page) {
+  $('pageDlg').close();
+  if (!isActiveView()) diagramPage = page;
+  await load(true);
+}
+
+$('pageCfgBtn').onclick = () => guarded(openPageDialog);
+$('pgCancel').onclick = () => $('pageDlg').close();
+$('pageForm').onsubmit = (e) => {
+  e.preventDefault();
+  guarded(async () => {
+    const settings = { name: $('pgName').value.trim(), ...readBackgroundField('pg') };
+    const result = await api('/api/page/settings', { ...pageTarget, settings });
+    if (result.error) {
+      $('pgErr').textContent = result.error;
+      return;
+    }
+    await afterPageChange(pageTarget.page);
+  });
+};
+for (const [id, direction] of [['pgLeft', -1], ['pgRight', 1]]) {
+  $(id).onclick = () => guarded(async () => {
+    const result = await api('/api/page/move', { ...pageTarget, direction });
+    if (result.error) {
+      $('pgErr').textContent = result.error;
+      return;
+    }
+    await afterPageChange(result.page);
+  });
+}
+$('pgRemove').onclick = () => {
+  if (!confirm(t('page_dialog.remove_confirm', { page: pageTarget.page }))) return;
+  guarded(async () => {
+    const result = await api('/api/page/delete', pageTarget);
+    if (result.error) {
+      $('pgErr').textContent = result.error;
+      return;
+    }
+    await afterPageChange(1);
+  });
+};
+
 let profileTarget = null;
 
 function showProfileApp() {
@@ -1149,7 +1304,7 @@ async function openProfileDialog(profile) {
   $('pApp').value = profile.app || '';
   $('pErr').textContent = '';
   showProfileApp();
-  await loadBackgrounds('pBgImg', profile.background_image || '');
+  await fillBackgroundField('p', profile, t('background.none_black'));
   $('profDlg').showModal();
 }
 
@@ -1163,7 +1318,7 @@ $('pCancel').onclick = () => $('profDlg').close();
 $('profForm').onsubmit = (e) => {
   e.preventDefault();
   guarded(async () => {
-    const body = { name: profileTarget, background_image: $('pBgImg').value };
+    const body = { name: profileTarget, ...readBackgroundField('p') };
     if (profileTarget !== 'default') body.app = $('pApp').value;
     const result = await api('/api/profile/settings', body);
     if (result.error) {

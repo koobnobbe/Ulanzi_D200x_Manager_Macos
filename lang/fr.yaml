@@ -44,6 +44,7 @@ grid:
   keys_title: Touches · {profile} · page {page}
   page_tab: Page {page}
   new_page: + Nouvelle page
+  page_config: config
   key_14: touche 14
   clock_window: fenêtre de l'horloge (réglages)
   knob: molette {number}
@@ -159,7 +160,7 @@ profile_dialog:
   app: App qui active ce profil
   no_app: aucune app
   hint_app: Le profil devient actif dès que cette app passe au premier plan sur le Mac.
-  background: Arrière-plan (sur tout l'écran, visible à travers la transparence d'une touche ; noir sans image)
+  background: Arrière-plan (sur tout l'écran, visible à travers la transparence d'une touche)
   unlink: Dissocier l'app
   unlink_confirm: Dissocier l'app du profil {name} ? Le profil lui-même est conservé.
 
@@ -176,6 +177,24 @@ screen_dialog:
   title: Config écran
   language: Langue
   hint: "Enregistré sous ui: dans config.yaml. La page se recharge ensuite."
+
+background:
+  image: Image
+  color: Couleur unie
+  remove: Supprimer l'arrière-plan
+  none_black: aucun (noir)
+
+page_dialog:
+  title: "Page {page} · {profile}"
+  name: Nom (sur l'onglet)
+  background: Arrière-plan de cette page
+  background_profile: comme le profil
+  order: Ordre
+  move_left: ← Vers la gauche
+  move_right: Vers la droite →
+  remove: Supprimer la page
+  remove_confirm: Supprimer la page {page} avec toutes ses touches ? Les touches qui vont vers cette page iront à la page 1.
+  hint: "Enregistré sous page_settings: dans le fichier du profil. Le déplacement à gauche ou à droite est immédiat ; les touches suivent."
 
 new_profile_dialog:
   title: Nouveau profil
@@ -215,6 +234,10 @@ errors:
   saver_image_needed: choisissez une image pour l'économiseur
   unknown_language: "langue inconnue : {language}"
   file_missing: "{field} : fichier introuvable"
+  first_page: la page 1 ne peut pas être supprimée
+  page_edge: cette page est déjà au bord
+  page_name_long: le nom peut comporter au maximum {max} caractères
+  unknown_page_number: la page {page} n'existe pas
   bad_zip: pas un zip valide d'icônes png
 
 # Erreurs dans config.yaml ou un profil. La config précédente reste alors active.

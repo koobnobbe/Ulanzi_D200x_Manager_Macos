@@ -52,12 +52,13 @@ ui:
 
 | Sectie | Uitleg |
 |---|---|
-| `background_image` | Achtergrond van het profiel default. Zie [Achtergronden en klok](achtergronden.md). |
+| `background_image` / `background_color` | Achtergrond van het profiel default: een afbeelding of een effen kleur. Zie [Achtergronden en klok](achtergronden.md). |
 | `device` | Helderheid, screensaver en keep-alive. Zie [Apparaat en screensaver](apparaat.md). |
 | `button_defaults` | Standaardwaarden voor alle toetsen. Een toets hoeft alleen te noemen wat afwijkt. |
 | `pages` | De pagina's met toetsen. Zie [Pagina's](paginas.md) en [Toetsen](toetsen.md). |
 | `knobs` | De draaiknoppen. Zie [Draaiknoppen](draaiknoppen.md). |
 | `ui` | Instellingen van de webinterface, zoals de taal. Zie [Taal](#taal). |
+| `page_settings` | Naam en achtergrond per pagina. Zie [Pagina's](paginas.md#pagina-instellingen). |
 
 ## Alle velden van een toets
 
