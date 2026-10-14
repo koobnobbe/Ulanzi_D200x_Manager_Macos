@@ -1089,7 +1089,7 @@ async def main():
     print("Druk op een knop (Ctrl+C om te stoppen)")
     pressed_at = {}
     async for action in deck.read_packet():
-        if manager.wake(redraw=True):
+        if action and manager.wake(redraw=True):
             continue  # the press that wakes the deck does nothing else
         if isinstance(action, KnobAction):
             if action.value != KNOB_RELEASE:

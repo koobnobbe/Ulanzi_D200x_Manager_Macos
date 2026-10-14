@@ -54,7 +54,7 @@ Zonder die toestemming worden gewone toetscombinaties stil genegeerd. Mediatoets
 
 ## Ulanzi Studio
 
-Sluit Ulanzi Studio af voordat je de manager start. Beide programma's sturen gegevens naar het deck en zitten elkaar dan in de weg.
+Sluit Ulanzi Studio af voordat je de manager start. Beide programma's willen het deck aansturen en kunnen elkaar in de weg zitten.
 
 ## Na een update
 
