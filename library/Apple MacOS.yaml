@@ -1,60 +1,61 @@
 # Library section "Apple MacOS": macOS shortcuts. Drag an entry onto a key in the web interface.
 # System shortcuts (screenshots, Spotlight, Mission Control, ...) follow the settings in
 # System Settings > Keyboard > Keyboard Shortcuts; if you changed one there, change it here too.
+# The key icons (silver tile with the title below) are in "Apple MacOS.zip"; dragging a key onto the deck copies its icon to icons/.
 buttons:
   # Edit
-  - {type: key, title: Cut, keys: cmd+x, font_size: 44}
-  - {type: key, title: Copy, keys: cmd+c, font_size: 44}
-  - {type: key, title: Paste, keys: cmd+v, font_size: 44}
-  - {type: key, title: Paste plain, keys: cmd+alt+shift+v, font_size: 36}
-  - {type: key, title: Undo, keys: cmd+z, font_size: 44}
-  - {type: key, title: Redo, keys: cmd+shift+z, font_size: 44}
-  - {type: key, title: Select all, keys: cmd+a, font_size: 44}
-  - {type: key, title: Find, keys: cmd+f, font_size: 44}
-  - {type: key, title: Save, keys: cmd+s, font_size: 44}
-  - {type: key, title: Print, keys: cmd+p, font_size: 44}
+  - {type: key, title: Cut, keys: cmd+x, icon: icons/macos-cut.png}
+  - {type: key, title: Copy, keys: cmd+c, icon: icons/macos-copy.png}
+  - {type: key, title: Paste, keys: cmd+v, icon: icons/macos-paste.png}
+  - {type: key, title: Paste plain, keys: cmd+alt+shift+v, icon: icons/macos-paste-plain.png}
+  - {type: key, title: Undo, keys: cmd+z, icon: icons/macos-undo.png}
+  - {type: key, title: Redo, keys: cmd+shift+z, icon: icons/macos-redo.png}
+  - {type: key, title: Select all, keys: cmd+a, icon: icons/macos-select-all.png}
+  - {type: key, title: Find, keys: cmd+f, icon: icons/macos-find.png}
+  - {type: key, title: Save, keys: cmd+s, icon: icons/macos-save.png}
+  - {type: key, title: Print, keys: cmd+p, icon: icons/macos-print.png}
   # Screenshots (Print Screen)
-  - {type: key, title: Screen, keys: cmd+shift+3, font_size: 44}
-  - {type: key, title: Area, keys: cmd+shift+4, font_size: 44}
-  - {type: key, title: Screenshot, keys: cmd+shift+5, font_size: 32}
-  - {type: key, title: Screen clip, keys: ctrl+cmd+shift+3, font_size: 32}
-  - {type: key, title: Area clip, keys: ctrl+cmd+shift+4, font_size: 44}
+  - {type: key, title: Screen, keys: cmd+shift+3, icon: icons/macos-screen.png}
+  - {type: key, title: Area, keys: cmd+shift+4, icon: icons/macos-area.png}
+  - {type: key, title: Screenshot, keys: cmd+shift+5, icon: icons/macos-screenshot.png}
+  - {type: key, title: Screen clip, keys: ctrl+cmd+shift+3, icon: icons/macos-screen-clip.png}
+  - {type: key, title: Area clip, keys: ctrl+cmd+shift+4, icon: icons/macos-area-clip.png}
   # Apps and windows
-  - {type: key, title: App switch, keys: cmd+tab, font_size: 32}
-  - {type: key, title: Window, keys: cmd+`, font_size: 44}
-  - {type: key, title: New, keys: cmd+n, font_size: 44}
-  - {type: key, title: New tab, keys: cmd+t, font_size: 44}
-  - {type: key, title: Reopen tab, keys: cmd+shift+t, font_size: 32}
-  - {type: key, title: Close, keys: cmd+w, font_size: 44}
-  - {type: key, title: Quit, keys: cmd+q, font_size: 44}
-  - {type: key, title: Hide, keys: cmd+h, font_size: 44}
-  - {type: key, title: Hide others, keys: cmd+alt+h, font_size: 32}
-  - {type: key, title: Minimize, keys: cmd+m, font_size: 44}
-  - {type: key, title: Full screen, keys: ctrl+cmd+f, font_size: 36}
-  - {type: key, title: Settings, keys: 'cmd+,', font_size: 44}
-  - {type: key, title: Force quit, keys: cmd+alt+esc, font_size: 36}
+  - {type: key, title: App switch, keys: cmd+tab, icon: icons/macos-app-switch.png}
+  - {type: key, title: Window, keys: cmd+`, icon: icons/macos-window.png}
+  - {type: key, title: New, keys: cmd+n, icon: icons/macos-new.png}
+  - {type: key, title: New tab, keys: cmd+t, icon: icons/macos-new-tab.png}
+  - {type: key, title: Reopen tab, keys: cmd+shift+t, icon: icons/macos-reopen-tab.png}
+  - {type: key, title: Close, keys: cmd+w, icon: icons/macos-close.png}
+  - {type: key, title: Quit, keys: cmd+q, icon: icons/macos-quit.png}
+  - {type: key, title: Hide, keys: cmd+h, icon: icons/macos-hide.png}
+  - {type: key, title: Hide others, keys: cmd+alt+h, icon: icons/macos-hide-others.png}
+  - {type: key, title: Minimize, keys: cmd+m, icon: icons/macos-minimize.png}
+  - {type: key, title: Full screen, keys: ctrl+cmd+f, icon: icons/macos-full-screen.png}
+  - {type: key, title: Settings, keys: 'cmd+,', icon: icons/macos-settings.png}
+  - {type: key, title: Force quit, keys: cmd+alt+esc, icon: icons/macos-force-quit.png}
   # System
-  - {type: key, title: Spotlight, keys: cmd+space, font_size: 44}
-  - {type: key, title: Emoji, keys: ctrl+cmd+space, font_size: 44}
-  - {type: key, title: Mission, keys: ctrl+up, font_size: 44}
-  - {type: key, title: App windows, keys: ctrl+down, font_size: 28}
-  - {type: key, title: Desktop, keys: f11, font_size: 44}
-  - {type: key, title: Space <, keys: ctrl+left, font_size: 44}
-  - {type: key, title: Space >, keys: ctrl+right, font_size: 44}
-  - {type: key, title: Lock, keys: ctrl+cmd+q, font_size: 44}
-  - {type: key, title: Log out, keys: cmd+shift+q, font_size: 44}
+  - {type: key, title: Spotlight, keys: cmd+space, icon: icons/macos-spotlight.png}
+  - {type: key, title: Emoji, keys: ctrl+cmd+space, icon: icons/macos-emoji.png}
+  - {type: key, title: Mission, keys: ctrl+up, icon: icons/macos-mission.png}
+  - {type: key, title: App windows, keys: ctrl+down, icon: icons/macos-app-windows.png}
+  - {type: key, title: Desktop, keys: f11, icon: icons/macos-desktop.png}
+  - {type: key, title: Space <, keys: ctrl+left, icon: icons/macos-space-left.png}
+  - {type: key, title: Space >, keys: ctrl+right, icon: icons/macos-space-right.png}
+  - {type: key, title: Lock, keys: ctrl+cmd+q, icon: icons/macos-lock.png}
+  - {type: key, title: Log out, keys: cmd+shift+q, icon: icons/macos-log-out.png}
   # Finder
-  - {type: key, title: New folder, keys: cmd+shift+n, font_size: 36}
-  - {type: key, title: Go to folder, keys: cmd+shift+g, font_size: 32}
-  - {type: key, title: Get info, keys: cmd+i, font_size: 44}
-  - {type: key, title: Quick Look, keys: space, font_size: 32}
-  - {type: key, title: Trash, keys: cmd+backspace, font_size: 44}
-  - {type: key, title: Empty trash, keys: cmd+shift+backspace, font_size: 32}
-  - {type: key, title: Hidden files, keys: cmd+shift+., font_size: 32}
-  - {type: key, title: Move here, keys: cmd+alt+v, font_size: 36}
+  - {type: key, title: New folder, keys: cmd+shift+n, icon: icons/macos-new-folder.png}
+  - {type: key, title: Go to folder, keys: cmd+shift+g, icon: icons/macos-go-to-folder.png}
+  - {type: key, title: Get info, keys: cmd+i, icon: icons/macos-get-info.png}
+  - {type: key, title: Quick Look, keys: space, icon: icons/macos-quick-look.png}
+  - {type: key, title: Trash, keys: cmd+backspace, icon: icons/macos-trash.png}
+  - {type: key, title: Empty trash, keys: cmd+shift+backspace, icon: icons/macos-empty-trash.png}
+  - {type: key, title: Hidden files, keys: cmd+shift+., icon: icons/macos-hidden-files.png}
+  - {type: key, title: Move here, keys: cmd+alt+v, icon: icons/macos-move-here.png}
   # Text
-  - {type: key, title: Line start, keys: cmd+left, font_size: 40}
-  - {type: key, title: Line end, keys: cmd+right, font_size: 44}
-  - {type: key, title: Top, keys: cmd+up, font_size: 44}
-  - {type: key, title: Bottom, keys: cmd+down, font_size: 44}
-  - {type: key, title: Del word, keys: alt+backspace, font_size: 44}
+  - {type: key, title: Line start, keys: cmd+left, icon: icons/macos-line-start.png}
+  - {type: key, title: Line end, keys: cmd+right, icon: icons/macos-line-end.png}
+  - {type: key, title: Top, keys: cmd+up, icon: icons/macos-top.png}
+  - {type: key, title: Bottom, keys: cmd+down, icon: icons/macos-bottom.png}
+  - {type: key, title: Del word, keys: alt+backspace, icon: icons/macos-del-word.png}

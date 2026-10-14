@@ -1,0 +1,27 @@
+# Library section "Bitwarden": shortcuts of the Bitwarden desktop app (read from its menus, version 2026.9.1)
+# and of the Bitwarden extension in Brave (read from Brave's extension shortcuts on this Mac).
+# Desktop keys only work while the Bitwarden app is in front; extension keys only while Brave is in front.
+# Locking the vault and filling in cards or identities have no shortcut in the extension; give them one in
+# brave://extensions/shortcuts and add a key here.
+# The key icons (blue tile with the title below) are in Bitwarden.zip; dragging a key onto the deck copies its icon to icons/.
+buttons:
+  - {type: app, app: /Applications/Bitwarden.app, title: Bitwarden, font_size: 30}
+  # Desktop app (when Bitwarden is in front), from its menus
+  - {type: key, title: Copy user, keys: cmd+u, icon: icons/bitwarden-copy-user.png}
+  - {type: key, title: Copy pass, keys: cmd+p, icon: icons/bitwarden-copy-pass.png}
+  - {type: key, title: Copy TOTP, keys: cmd+t, icon: icons/bitwarden-copy-totp.png}
+  - {type: key, title: Search, keys: cmd+f, icon: icons/bitwarden-search.png}
+  - {type: key, title: Generator, keys: cmd+g, icon: icons/bitwarden-generator.png}
+  - {type: key, title: Lock, keys: cmd+l, icon: icons/bitwarden-lock.png}
+  - {type: key, title: New login, keys: cmd+n, icon: icons/bitwarden-new-login.png}
+  - {type: key, title: New card, keys: cmd+shift+c, icon: icons/bitwarden-new-card.png}
+  - {type: key, title: New identity, keys: cmd+shift+i, icon: icons/bitwarden-new-identity.png}
+  - {type: key, title: New note, keys: cmd+shift+s, icon: icons/bitwarden-new-note.png}
+  - {type: key, title: New SSH key, keys: cmd+shift+k, icon: icons/bitwarden-new-ssh-key.png}
+  - {type: key, title: Settings, keys: 'cmd+,', icon: icons/bitwarden-settings.png}
+  - {type: key, title: On top, keys: cmd+shift+t, icon: icons/bitwarden-on-top.png}
+  - {type: key, title: To menu bar, keys: cmd+shift+m, icon: icons/bitwarden-to-menu-bar.png}
+  # Browser extension (in Brave), as set in brave://extensions/shortcuts
+  - {type: key, title: Open, keys: cmd+shift+y, icon: icons/bitwarden-open.png}
+  - {type: key, title: Autofill, keys: cmd+shift+l, icon: icons/bitwarden-autofill.png}
+  - {type: key, title: Gen pass, keys: cmd+shift+9, icon: icons/bitwarden-gen-pass.png}

@@ -21,7 +21,4 @@
 # Example entry (delete the leading "#" to use it):
 #   - {title: "Copy", type: key, keys: "cmd+c", background: "#1a1a2e", color: "#ffffff", font_size: 60}
 buttons:
-  - {type: app, title: Bitwarden, output: Bitwarden, app: /Applications/Bitwarden.app, font_size: 35}
-  - {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
-  - {type: app, title: Agenda, app: /Applications/BusyCal.app, profile: none}
-  - {type: app, title: Agenda, app: /Applications/BusyCal.app, profile: none}
+  - {type: key, title: Copy, keys: cmd+c, transparency: 90}
