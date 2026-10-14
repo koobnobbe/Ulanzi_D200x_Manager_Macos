@@ -2,7 +2,14 @@ app: "/Applications/BusyCal.app"
 pages:
   1:
     11: {type: page, page: previous, title: "<"}
-    1: {type: app, title: Agenda, app: /Applications/BusyCal.app, profile: none}
+    4: {type: key, title: + Afspraak, keys: cmd+n, font_size: 30}
+    3: {type: key, title: Nu, keys: cmd+t, font_size: 50}
+    9: {type: key, title: Zoeken, keys: cmd+f, font_size: 36}
+    8: {type: key, title: Maand, keys: cmd+3, font_size: 40}
+    7: {type: key, title: Week, keys: cmd+2, font_size: 44}
+    6: {type: key, title: Dag, keys: cmd+1, font_size: 44}
+    2: {type: key, title: Morgen, keys: [cmd+1, cmd+t, cmd+right], font_size: 36}
+    1: {type: key, title: Vandaag, keys: [cmd+1, cmd+t], font_size: 36}
     12: {type: page, page: home, title: "Home"}
     13: {type: page, page: next, title: ">"}
     14: {type: profile, profile: default}

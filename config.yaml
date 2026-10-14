@@ -1,7 +1,7 @@
 # Ulanzi D200X configuration.
 
+background_image: "backgrounds/Unknown_Unknown_4.png"
 device:
-  background_image: "backgrounds/Unknown_Unknown_4.png"
   screensaver_image: ""
   screensaver_color: "#000000"
   screensaver_brightness: 10
@@ -48,6 +48,7 @@ button_defaults:
 pages:
   1:
     1: {type: key, title: Copy, keys: cmd+c, transparency: 90}
+    10: {type: app, app: /Applications/BusyCal.app, title: BusyCal, font_size: 30}
     6: {background: '#000000'}
     2: {type: app, title: Finder, app: /System/Library/CoreServices/Finder.app, transparency: 90}
     3: {type: key, title: Paste, keys: cmd+v, transparency: 90}

@@ -68,9 +68,15 @@ button.danger { color: var(--err); border-color: var(--err); display: inline-fle
 button.danger:hover { background: var(--err); color: #fff; }
 .lib-new { width: 100%; margin-bottom: 14px; color: var(--muted); border-style: dashed; }
 @media (max-width: 900px) { .shell { grid-template-columns: 1fr; } }
-.side { border-right: 1px solid var(--line); padding: 14px; overflow: auto; }
+.side { border-right: 1px solid var(--line); padding: 14px; overflow: auto; display: flex; flex-direction: column; }
+.doc-link { margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); text-decoration: none; position: sticky; bottom: 0; background: var(--bg); }
+.doc-link:hover { color: var(--text); border-color: var(--accent); }
 .content { min-width: 0; }
 .tree { display: flex; flex-direction: column; gap: 6px; }
+.plugin-list { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+.plugin-list label { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
+.plugin-list input { display: inline; width: auto; margin: 0; }
+.plugin-list .count { margin-left: auto; color: var(--muted); font-size: 12px; }
 .profile-row { display: flex; gap: 6px; align-items: stretch; }
 .profile-row .profile-btn { flex: 1; min-width: 0; }
 .profile-icon { flex: none; width: 38px; padding: 3px; display: flex; align-items: center; justify-content: center; }
@@ -109,12 +115,17 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
   <label>Helderheid <input id="bright" type="range" min="0" max="100" style="width: 160px"> <span id="brightVal"></span></label>
   <label><input id="run" type="checkbox"> Echt uitvoeren (anders alleen preview)</label>
   <button id="deviceBtn">Apparaat…</button>
+  <button id="pluginsBtn">Plugins…</button>
   <button id="reload">Herlaad config</button>
 </header>
 <div class="shell">
 <aside class="side">
   <h2>Profielen</h2>
   <div id="tree" class="tree"></div>
+  <a class="doc-link" href="/docs" target="_blank" rel="noopener">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
+    Documentatie
+  </a>
 </aside>
 <div class="content">
 <main>
@@ -222,7 +233,7 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
         <div class="pick"><input id="kApp" type="text" placeholder="/Applications/..."><button type="button" id="kAppPick">Kies…</button></div></label>
       <label>Profiel bij deze app
         <select id="kAppProfile"></select></label>
-      <div class="hint">Standaard wordt het profiel met dezelfde naam als de app geladen. Kies "geen" om er geen te laden.</div>
+      <div class="hint">Standaard wordt het profiel geladen dat aan deze app gekoppeld is. Kies "geen" om er geen te laden.</div>
     </div>
     <div class="tpanel" data-type="page">
       <label>Pagina (page)
@@ -268,11 +279,6 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
 <dialog id="deviceDlg">
   <form id="deviceForm">
     <h2>Apparaat-instellingen</h2>
-    <h3>Achtergrond</h3>
-    <div class="grid2">
-      <label style="grid-column: 1 / -1">Afbeelding over het hele scherm (zichtbaar via de transparantie van een toets)
-        <div class="pick"><select id="dBgImg"></select><button type="button" data-pick="dBgImg">Nieuw…</button></div></label>
-    </div>
     <h3>Screensaver</h3>
     <div class="grid2">
       <label style="grid-column: 1 / -1">Modus
@@ -304,9 +310,13 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
 <dialog id="profDlg">
   <form id="profForm">
     <h2 id="pHeader">Profiel</h2>
-    <label>App die dit profiel activeert
-      <div class="pick"><img id="pIcon" class="profile-app-preview" alt=""><input id="pApp" type="text" placeholder="geen app" readonly><button type="button" id="pAppPick">Kies…</button></div></label>
-    <div class="hint">Het profiel wordt actief zodra deze app op de Mac vooraan komt.</div>
+    <div id="pAppWrap">
+      <label>App die dit profiel activeert
+        <div class="pick"><img id="pIcon" class="profile-app-preview" alt=""><input id="pApp" type="text" placeholder="geen app" readonly><button type="button" id="pAppPick">Kies…</button></div></label>
+      <div class="hint">Het profiel wordt actief zodra deze app op de Mac vooraan komt.</div>
+    </div>
+    <label style="display: block; margin-top: 14px">Achtergrond (over het hele scherm, zichtbaar via de transparantie van een toets; zonder afbeelding zwart)
+      <div class="pick"><select id="pBgImg"></select><button type="button" data-pick="pBgImg">Nieuw…</button></div></label>
     <div id="pErr" class="err"></div>
     <div class="bar">
       <button type="button" id="pRemove" class="danger" title="App loskoppelen">
@@ -317,6 +327,20 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
       <button type="submit" class="primary">Opslaan</button>
     </div>
   </form>
+</dialog>
+<dialog id="pluginsDlg">
+  <div style="min-width: 360px">
+    <h2>Plugins</h2>
+    <div class="hint" style="margin-top: 0">Alleen aangevinkte bibliotheken staan in het bibliotheekpaneel.</div>
+    <div id="pluginList" class="plugin-list"></div>
+    <div id="pluginErr" class="err"></div>
+    <div class="bar">
+      <button type="button" id="pluginImport">Importeren…</button>
+      <input id="pluginFile" type="file" accept=".yaml,.yml" hidden>
+      <span style="flex: 1"></span>
+      <button type="button" id="pluginsClose">Sluiten</button>
+    </div>
+  </div>
 </dialog>
 <dialog id="newDlg">
   <form id="newForm">
@@ -380,11 +404,39 @@ function viewedPage() {
   return isActiveView() ? state.page : diagramPage;
 }
 
+// Rendered images for a profile that is not on the deck, fetched per page.
+let preview = null;
+
+function viewedPreview() {
+  const key = `${viewName}|${viewedPage()}`;
+  if (preview && preview.key === key) return preview;
+  if (!preview || preview.pending !== key) {
+    preview = { pending: key };
+    api(`/api/preview?name=${encodeURIComponent(viewName)}&page=${viewedPage()}`)
+      .then((data) => {
+        if (!preview || preview.pending !== key) return;
+        preview = { key, ...data };
+        renderKeys();
+      })
+      .catch((e) => log('fout: ' + e.message));
+  }
+  return null;
+}
+
 function viewedKeys() {
   if (isActiveView()) return state.keys;
+  const images = viewedPreview();
   const keys = {};
-  for (const b of viewedProfile().buttons) if (b.page === diagramPage) keys[b.number] = b;
+  for (const b of viewedProfile().buttons) {
+    if (b.page === diagramPage) keys[b.number] = { ...b, icon: images ? images.keys[b.number] : null };
+  }
   return keys;
+}
+
+function viewedClock() {
+  if (isActiveView()) return state.clock || [];
+  const images = viewedPreview();
+  return images ? images.clock : [];
 }
 
 function showResult(title, steps) {
@@ -429,7 +481,7 @@ $('kLpBtn').onclick = () => setLongpress(!longpressOn());
 function buildAppProfileOptions(current) {
   const select = $('kAppProfile');
   select.textContent = '';
-  const options = [['', 'automatisch (zelfde naam)'], ['none', 'geen profiel'], ...state.profiles.map((p) => [p.name, p.name])];
+  const options = [['', 'automatisch (gekoppeld profiel)'], ['none', 'geen profiel'], ...state.profiles.map((p) => [p.name, p.name])];
   if (current && !options.some(([value]) => value === current)) options.push([current, current]);
   for (const [value, label] of options) {
     const option = document.createElement('option');
@@ -607,7 +659,7 @@ async function browse(dir) {
     button.onclick = () => guarded(async () => {
       const name = prompt(`Opslaan als ${bgSelect ? 'achtergrond' : 'icoon'} (naam zonder .png):`, file.name.replace(/\.[^.]+$/, ''));
       if (!name) return;
-      const errBox = bgSelect === 'kClockImg' || !bgSelect ? $('kErr') : $('dErr');
+      const errBox = $({ kClockImg: 'kErr', pBgImg: 'pErr' }[bgSelect] || (bgSelect ? 'dErr' : 'kErr'));
       try {
         if (bgSelect) {
           const result = await api('/api/background', { source: file.path, name });
@@ -805,7 +857,7 @@ function renderKeys() {
   const keys = viewedKeys();
   for (let n = 1; n <= 13; n++) box.append(keyButton(n, keys[n] || {}));
   const first = keys[14] || {};
-  const tiles = (isActiveView() && state.clock) || [];
+  const tiles = viewedClock();
   const clockKey = keyButton(14, first);
   clockKey.classList.remove('text');
   clockKey.classList.add('clockkey');
@@ -907,19 +959,21 @@ function renderTree() {
     button.onclick = () => guarded(() => openInEditor(profile.name));
     const icon = document.createElement('button');
     icon.type = 'button';
-    icon.className = 'profile-icon' + (profile.name === 'default' ? ' none' : profile.app ? '' : ' empty');
-    if (profile.name !== 'default') {
-      icon.title = profile.app ? `Geactiveerd door ${profile.app}` : 'Geen app: klik om er een te kiezen';
-      if (profile.app) {
-        const img = document.createElement('img');
-        img.src = '/appicon?path=' + encodeURIComponent(profile.app);
-        img.alt = '';
-        icon.append(img);
-      } else {
-        icon.textContent = '+';
-      }
-      icon.onclick = () => openProfileDialog(profile);
+    icon.className = 'profile-icon' + (profile.app ? '' : ' empty');
+    if (profile.name === 'default') {
+      icon.title = 'Instellingen (achtergrond)';
+      icon.textContent = '…';
+    } else if (profile.app) {
+      icon.title = `Geactiveerd door ${profile.app}`;
+      const img = document.createElement('img');
+      img.src = '/appicon?path=' + encodeURIComponent(profile.app);
+      img.alt = '';
+      icon.append(img);
+    } else {
+      icon.title = 'Geen app: klik om er een te kiezen';
+      icon.textContent = '+';
     }
+    icon.onclick = () => guarded(() => openProfileDialog(profile));
     const row = document.createElement('div');
     row.className = 'profile-row';
     row.append(button, icon);
@@ -980,6 +1034,7 @@ async function openInEditor(name) {
 
 async function load(keepText) {
   state = await api('/api/state');
+  preview = null;
   render(keepText);
 }
 
@@ -1019,7 +1074,6 @@ $('dSaver').onchange = showSaverFields;
 
 $('deviceBtn').onclick = () => guarded(async () => {
   const d = await api('/api/device');
-  await loadBackgrounds('dBgImg', d.background_image);
   $('dSaver').value = d.screensaver;
   $('dTimeout').value = d.screensaver_timeout;
   $('dSaverBright').value = d.screensaver_brightness;
@@ -1035,7 +1089,6 @@ $('deviceForm').onsubmit = (e) => {
   e.preventDefault();
   guarded(async () => {
     const result = await api('/api/device', {
-      background_image: $('dBgImg').value,
       screensaver: $('dSaver').value,
       screensaver_timeout: Number($('dTimeout').value),
       screensaver_brightness: Number($('dSaverBright').value),
@@ -1060,12 +1113,16 @@ function showProfileApp() {
   if (app) $('pIcon').src = '/appicon?path=' + encodeURIComponent(app);
 }
 
-function openProfileDialog(profile) {
+async function openProfileDialog(profile) {
   profileTarget = profile.name;
+  const isDefault = profile.name === 'default';
   $('pHeader').textContent = `Profiel ${profile.name}`;
+  $('pAppWrap').style.display = isDefault ? 'none' : '';
+  $('pRemove').style.display = isDefault ? 'none' : '';
   $('pApp').value = profile.app || '';
   $('pErr').textContent = '';
   showProfileApp();
+  await loadBackgrounds('pBgImg', profile.background_image || '');
   $('profDlg').showModal();
 }
 
@@ -1079,7 +1136,9 @@ $('pCancel').onclick = () => $('profDlg').close();
 $('profForm').onsubmit = (e) => {
   e.preventDefault();
   guarded(async () => {
-    const result = await api('/api/profile/app', { name: profileTarget, app: $('pApp').value });
+    const body = { name: profileTarget, background_image: $('pBgImg').value };
+    if (profileTarget !== 'default') body.app = $('pApp').value;
+    const result = await api('/api/profile/settings', body);
     if (result.error) {
       $('pErr').textContent = result.error;
       return;
@@ -1091,7 +1150,7 @@ $('profForm').onsubmit = (e) => {
 $('pRemove').onclick = () => {
   if (!confirm(`De app loskoppelen van profiel ${profileTarget}? Het profiel zelf blijft bestaan.`)) return;
   guarded(async () => {
-    const result = await api('/api/profile/app', { name: profileTarget, app: '' });
+    const result = await api('/api/profile/settings', { name: profileTarget, app: '' });
     if (result.error) {
       $('pErr').textContent = result.error;
       return;
@@ -1100,6 +1159,53 @@ $('pRemove').onclick = () => {
     await load(true);
   });
 };
+
+function renderPlugins() {
+  const box = $('pluginList');
+  box.textContent = '';
+  for (const section of libraryData.sections) {
+    const label = document.createElement('label');
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    check.checked = section.enabled;
+    check.onchange = () => guarded(async () => {
+      await api('/api/library/enabled', { section: section.section, enabled: check.checked });
+      libraryData = await api('/api/library');
+      renderLibrary();
+    });
+    const count = document.createElement('span');
+    count.className = 'count';
+    count.textContent = `${section.items.length} toetsen`;
+    label.append(check, document.createTextNode(section.section), count);
+    box.append(label);
+  }
+}
+
+$('pluginImport').onclick = () => $('pluginFile').click();
+$('pluginFile').onchange = () => guarded(async () => {
+  const file = $('pluginFile').files[0];
+  $('pluginFile').value = '';
+  if (!file) return;
+  $('pluginErr').textContent = '';
+  try {
+    const result = await api('/api/library/import', { filename: file.name, text: await file.text() });
+    log(`Bibliotheek ${result.section} geïmporteerd`);
+  } catch (err) {
+    $('pluginErr').textContent = `${file.name} niet geïmporteerd: ${err.message}`;
+    return;
+  }
+  libraryData = await api('/api/library');
+  renderPlugins();
+  renderLibrary();
+});
+
+$('pluginsBtn').onclick = () => guarded(async () => {
+  libraryData = await api('/api/library');
+  $('pluginErr').textContent = '';
+  renderPlugins();
+  $('pluginsDlg').showModal();
+});
+$('pluginsClose').onclick = () => $('pluginsDlg').close();
 
 $('reload').onclick = () => guarded(async () => {
   await api('/api/reload', {});
@@ -1181,7 +1287,7 @@ function libSetOpen(name, open) {
 function renderLibrary() {
   const box = $('library');
   box.textContent = '';
-  for (const section of libraryData.sections) {
+  for (const section of libraryData.sections.filter((s) => s.enabled)) {
     const wrap = document.createElement('details');
     wrap.className = 'lib-section';
     wrap.open = libOpen(section.section);

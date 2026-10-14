@@ -347,6 +347,64 @@ def check_button(number, button):
     if not 0 <= button.get('transparency', 0) <= 100:
         raise ValueError(f'key {number}: transparency must be 0-100')
 
+KEY_FIELDS = {'title', 'type', 'keys', 'app', 'profile', 'page', 'icon', 'background', 'color', 'font_size',
+              'transparency', 'hold', 'output', 'background_image'}
+
+
+def check_key_entry(entry, where):
+    """Check one key definition as written in a config, profile or library file."""
+    if not isinstance(entry, dict):
+        raise ValueError(f'{where}: moet een toets zijn, bijv. {{type: key, title: Copy, keys: cmd+c}}')
+    unknown = sorted(set(entry) - KEY_FIELDS)
+    if unknown:
+        raise ValueError(f"{where}: onbekend veld {', '.join(unknown)}")
+    kind = entry.get('type', 'text')
+    if kind == 'page' and entry.get('page') is None:
+        raise ValueError(f'{where}: type page heeft "page" nodig (home, next, previous of een nummer)')
+    if kind == 'profile' and not entry.get('profile'):
+        raise ValueError(f'{where}: type profile heeft "profile" nodig')
+    for field in ('background', 'color'):
+        if field in entry:
+            try:
+                ImageColor.getrgb(str(entry[field]))
+            except ValueError:
+                raise ValueError(f'{where}: {field} is geen kleur: {entry[field]}')
+    if 'font_size' in entry and not (isinstance(entry['font_size'], int) and 8 <= entry['font_size'] <= 200):
+        raise ValueError(f'{where}: font_size moet een getal van 8 tot 200 zijn')
+    if 'transparency' in entry and not isinstance(entry['transparency'], (int, float)):
+        raise ValueError(f'{where}: transparency moet een getal van 0 tot 100 zijn')
+    if entry.get('icon') and not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), entry['icon'])):
+        raise ValueError(f"{where}: icoon niet gevonden: {entry['icon']}")
+    try:
+        check_button(0, dict(entry))
+    except ValueError as e:
+        raise ValueError(f"{where}: {str(e).removeprefix('key 0: ')}")
+    if 'hold' in entry:
+        if 'hold' in (entry['hold'] or {}):
+            raise ValueError(f'{where}: hold kan zelf geen hold hebben')
+        check_key_entry(entry['hold'], f'{where} (hold)')
+
+
+def check_library(text):
+    """Validate the text of a library file. Returns its key definitions or raises ValueError."""
+    try:
+        data = yaml.safe_load(text)
+    except yaml.YAMLError as e:
+        raise ValueError(f'geen geldige YAML: {e}')
+    if not isinstance(data, dict) or 'buttons' not in data:
+        raise ValueError('een library-bestand heeft bovenaan "buttons:" met daaronder een lijst toetsen')
+    extra = sorted(set(data) - {'buttons'})
+    if extra:
+        raise ValueError(f"onbekend veld bovenaan: {', '.join(extra)} (alleen \"buttons\" is toegestaan)")
+    buttons = data['buttons'] or []
+    if not isinstance(buttons, list):
+        raise ValueError('"buttons" moet een lijst zijn: elke toets op een regel die begint met "  - "')
+    for i, entry in enumerate(buttons, 1):
+        title = entry.get('title') if isinstance(entry, dict) else None
+        check_key_entry(entry, f'toets {i}' + (f' ({title})' if title else ''))
+    return buttons
+
+
 def render_button(number, button, wallpaper=None):
     """Render a key. `wallpaper` is the list of per-slot background images that shows through
     the key's background when it has a transparency above 0."""
@@ -489,6 +547,8 @@ def replace_knob_line(text, name, data):
 
 
 class Manager:
+    check_library = staticmethod(check_library)
+
     def __init__(self, deck, config_path):
         self.deck = deck
         self.config_path = config_path
@@ -522,9 +582,12 @@ class Manager:
         self.mtimes = self.file_mtimes()
         try:
             config = load_config(self.config_path) or {}
+            # Each profile has its own background picture; without one the screen is black.
+            background = config.get('background_image')
             if self.profile:
                 profile = load_config(self.active_path()) or {}
                 config = {**config, **{k: profile[k] for k in ('pages', 'knobs') if k in profile}}
+                background = profile.get('background_image')
             device = config.get('device') or {}
             defaults = config.get('button_defaults') or {}
             # Config keys are numbered from 1; the deck index is number - 1
@@ -538,13 +601,13 @@ class Manager:
             knobs = {k['index']: parse_knob(name, {**k, 'name': name}) for name, k in (config.get('knobs') or {}).items()}
 
             clear_icons()
-            wallpaper = cover_tiles(device['background_image'], UlanziD200Device.BUTTON_COLS, UlanziD200Device.BUTTON_ROWS) \
-                if device.get('background_image') else None
+            wallpaper = cover_tiles(background, UlanziD200Device.BUTTON_COLS, UlanziD200Device.BUTTON_ROWS) \
+                if background else None
             # Key 14 has no screen of its own, but it shows an icon over the clock when it has a title or icon.
             icons = {p: {n: render_button(n, b, wallpaper) for n, b in keys.items()
                          if n not in INPUT_ONLY_KEYS or (n == CLOCK_KEY and (b.get('title') or b.get('icon')))}
                      for p, keys in pages.items()}
-            blank = render_solid(defaults.get('background', '#1a1a2e'))
+            blank = render_solid('#000000')
             # Slots 13 and 14 (cols 3-4 of the bottom row) are the clock window. Give them
             # a solid background so the deck's default image doesn't show behind the time.
             clock_first = UlanziD200Device.BUTTON_COUNT
@@ -803,6 +866,37 @@ class Manager:
             fp.write(PROFILE_TEMPLATE)
         return name
 
+    def preview(self, name, page):
+        """Key and clock images for one page of any profile, rendered as on the deck but not sent to it."""
+        config = load_config(self.config_path) or {}
+        background = config.get('background_image')
+        if name != 'default':
+            profile = load_config(self.file_for(name)) or {}
+            config = {**config, **{k: profile[k] for k in ('pages', 'knobs') if k in profile}}
+            background = profile.get('background_image')
+        device = config.get('device') or {}
+        defaults = config.get('button_defaults') or {}
+        raw = (config.get('pages') or {}).get(page) or {}
+        wallpaper = cover_tiles(background, UlanziD200Device.BUTTON_COLS, UlanziD200Device.BUTTON_ROWS) \
+            if background else None
+        icons = {}
+        for n, b in raw.items():
+            button = {**defaults, **(b or {})}
+            if int(n) in INPUT_ONLY_KEYS and not (int(n) == CLOCK_KEY and (button.get('title') or button.get('icon'))):
+                continue
+            try:
+                icons[int(n)] = render_button(int(n), button, wallpaper)
+            except Exception:
+                pass  # a broken key shows as text; the error is reported when the profile loads
+        raw_clock = raw.get(CLOCK_KEY) or {}
+        clock = clock_window_tiles(wallpaper, {
+            'background': raw_clock.get('background', device.get('clock_background', '#000000')),
+            'transparency': raw_clock.get('transparency', 0),
+            'background_image': raw_clock.get('background_image')})
+        if CLOCK_KEY in icons:
+            clock[0] = icons[CLOCK_KEY]
+        return {'keys': icons, 'clock': clock}
+
     def profile_apps(self):
         """{profile name: app path} for every profile that names the app that activates it."""
         apps = {}
@@ -821,22 +915,33 @@ class Manager:
         path = os.path.normpath(path)
         return next((name for name, app in self.profile_apps().items() if app == path), None)
 
-    def set_profile_app(self, name, app):
-        if name == 'default':
-            return 'het default-profiel hoort niet bij een app'
+    def set_profile_settings(self, name, data):
+        """Change the app that activates a profile and/or its background picture. Only given fields change."""
         path = self.file_for(name)
-        if app:
-            if not (app.endswith('.app') and os.path.isdir(app)):
-                return f'geen app: {app}'
-            other = self.profile_for_app(app)
-            if other and other != name:
-                return f'{os.path.basename(app)} activeert al profiel {other}'
         with open(path) as fp:
-            text = set_top_line(fp.read(), 'app', app or None)
+            text = fp.read()
+        if 'app' in data:
+            app = data['app'] or None
+            if app and name == 'default':
+                return 'het default-profiel hoort niet bij een app'
+            if app:
+                if not (app.endswith('.app') and os.path.isdir(app)):
+                    return f'geen app: {app}'
+                other = self.profile_for_app(app)
+                if other and other != name:
+                    return f'{os.path.basename(app)} activeert al profiel {other}'
+            text = set_top_line(text, 'app', app)
+        if 'background_image' in data:
+            image = data['background_image'] or None
+            if image and not os.path.isfile(image):
+                return f'achtergrond niet gevonden: {image}'
+            text = set_top_line(text, 'background_image', image)
         yaml.safe_load(text)
         with open(path, 'w') as fp:
             fp.write(text)
-        self.last_app = None  # re-check the frontmost app against the new link
+        self.last_app = None  # re-check the frontmost app against a changed link
+        if name == (self.profile or 'default'):
+            self.load()
         return None
 
     def key_data(self, name, page, number):
@@ -845,8 +950,7 @@ class Manager:
 
     def device_settings(self):
         d = self.device
-        return {'background_image': d.get('background_image') or '',
-                'screensaver': screensaver_mode(d),
+        return {'screensaver': screensaver_mode(d),
                 'screensaver_timeout': d.get('screensaver_timeout', 60),
                 'screensaver_brightness': d.get('screensaver_brightness', 10),
                 'screensaver_color': d.get('screensaver_color', '#000000'),
@@ -871,10 +975,10 @@ class Manager:
             return 'screensaver-helderheid moet tussen 0 en 100 zijn'
         if data['screensaver'] == 'image' and not data['screensaver_image']:
             return 'kies een afbeelding voor de screensaver'
-        for field in ('background_image', 'screensaver_image'):
+        for field in ('screensaver_image',):
             if data[field] and not os.path.isfile(data[field]):
                 return f'{field}: bestand niet gevonden'
-        values = {'background_image': data['background_image'], 'screensaver': data['screensaver'], 'screensaver_timeout': timeout,
+        values = {'screensaver': data['screensaver'], 'screensaver_timeout': timeout,
                   'screensaver_brightness': saver_brightness, 'screensaver_color': data['screensaver_color'],
                   'screensaver_image': data['screensaver_image'], 'keep_alive_interval': interval}
         with open(self.config_path) as fp:
@@ -943,6 +1047,7 @@ class Manager:
                        for p, keys in sorted(pages.items()) for n, b in sorted((keys or {}).items())]
             result.append({'name': name, 'buttons': buttons, 'error': error,
                            'app': config.get('app') if name != 'default' else None,
+                           'background_image': config.get('background_image'),
                            'active': name == (self.profile or 'default')})
         return result
 

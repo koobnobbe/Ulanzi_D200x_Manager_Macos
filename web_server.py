@@ -12,6 +12,7 @@ import yaml
 from PIL import Image
 
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'index.html')
+DOCS_PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'docs.html')
 
 
 IMAGE_EXTS = ('.png', '.jpg', '.jpeg', '.ico', '.icns')
@@ -37,17 +38,41 @@ ICON_SIZE = 192
 BACKGROUND_MAX = 1960  # wide enough for 5 keys of 196px
 
 
+HIDDEN_LIBRARIES = os.path.join(PROJECT_DIR, 'library', 'hidden.json')
+
+
+def hidden_libraries():
+    try:
+        with open(HIDDEN_LIBRARIES) as fp:
+            return set(json.load(fp).get('hidden') or [])
+    except FileNotFoundError:
+        return set()
+
+
+def set_library_enabled(section, enabled):
+    if not os.path.isfile(library_path(section)):
+        raise ValueError('onbekende sectie')
+    hidden = hidden_libraries()
+    if enabled:
+        hidden.discard(section)
+    else:
+        hidden.add(section)
+    with open(HIDDEN_LIBRARIES, 'w') as fp:
+        json.dump({'hidden': sorted(hidden)}, fp, indent=2)
+
+
 def list_library():
     folder = os.path.join(PROJECT_DIR, 'library')
     if not os.path.isdir(folder):
         return []
+    hidden = hidden_libraries()
     sections = []
     for name in sorted(os.listdir(folder), key=str.lower):
         if not name.endswith('.yaml'):
             continue
         with open(os.path.join(folder, name)) as fp:
             entries = (yaml.safe_load(fp) or {}).get('buttons') or []
-        sections.append({'section': os.path.splitext(name)[0],
+        sections.append({'section': os.path.splitext(name)[0], 'enabled': os.path.splitext(name)[0] not in hidden,
                          'items': [{'title': e.get('title') or str(e.get('keys', '')), 'data': e} for e in entries]})
     return sections
 
@@ -100,6 +125,29 @@ def create_library(name):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'x') as fp:
         fp.write(f'# Library section "{name}". Each entry is a key definition you can drag onto a key.\nbuttons: []\n')
+
+
+def import_library(filename, text, check):
+    """Copy a library file into library/ after `check` (which raises on a bad file) accepts it."""
+    name = os.path.splitext(os.path.basename(filename or ''))[0]
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9 _-]{0,40}', name):
+        raise ValueError('ongeldige bestandsnaam: gebruik letters, cijfers, spatie, - of _')
+    if not (filename or '').lower().endswith(('.yaml', '.yml')):
+        raise ValueError('kies een .yaml-bestand')
+    path = library_path(name)
+    if os.path.exists(path):
+        raise ValueError(f'bibliotheek {name} bestaat al')
+    entries = check(text)
+    # Moving and deleting entries works line by line, so every key must sit on one "  - {...}" line.
+    lines = [line for line in text.split('\n') if line.startswith('  - ')]
+    one_per_line = len(lines) == len(entries) and all(yaml.safe_load(line[4:]) == e for line, e in zip(lines, entries))
+    if not one_per_line:
+        flows = [yaml.safe_dump(e, default_flow_style=True, sort_keys=False, allow_unicode=True, width=10 ** 6).strip()
+                 for e in entries]
+        text = f'# Library section "{name}" (imported).\nbuttons:' + ''.join(f'\n  - {f}' for f in flows) + ('\n' if flows else ' []\n')
+    with open(path, 'x') as fp:
+        fp.write(text)
+    return name
 
 
 def take_library_line(section, index):
@@ -214,6 +262,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path == '/':
             with open(PAGE, 'rb') as fp:
                 self.send(200, fp.read(), 'text/html; charset=utf-8')
+        elif path in ('/docs', '/docs/'):
+            with open(DOCS_PAGE, 'rb') as fp:
+                self.send(200, fp.read(), 'text/html; charset=utf-8')
+        elif path.startswith('/docs/'):
+            # Wiki pages are the Markdown files in docs/; images next to them are served too.
+            name = unquote(path[len('/docs/'):])
+            file = os.path.join(PROJECT_DIR, 'docs', name)
+            types = {'.md': 'text/markdown; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg'}
+            kind = types.get(os.path.splitext(name)[1].lower())
+            if os.path.basename(name) != name or not kind or not os.path.isfile(file):
+                self.send_json({'error': 'not found'}, 404)
+                return
+            with open(file, 'rb') as fp:
+                self.send(200, fp.read(), kind)
         elif path == '/api/library':
             try:
                 self.send_json({'sections': list_library()})
@@ -250,6 +312,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             try:
                 knob = self.call(manager.knob_data, query['profile'][0], query['name'][0])
                 self.send_json({'knob': knob})
+            except Exception as e:
+                self.send_json({'error': str(e)}, 400)
+        elif path == '/api/preview':
+            query = parse_qs(urlsplit(self.path).query)
+            try:
+                self.send_json(self.call(manager.preview, query['name'][0], int(query['page'][0])))
             except Exception as e:
                 self.send_json({'error': str(e)}, 400)
         elif path == '/api/key':
@@ -332,6 +400,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return {}
         if path == '/api/key/clear':
             return {'error': self.call(manager.clear_key, body['name'], int(body['page']), int(body['number']))}
+        if path == '/api/library/import':
+            return {'section': import_library(body.get('filename'), body.get('text', ''), manager.check_library)}
+        if path == '/api/library/enabled':
+            set_library_enabled(body['section'], bool(body['enabled']))
+            return {}
         if path == '/api/library/move':
             move_library_entry(body['section'], int(body['index']), body['target'])
             return {}
@@ -348,8 +421,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return {'error': self.call(manager.set_knob, body['profile'], body['name'], body['data'])}
         if path == '/api/key':
             return {'error': self.call(manager.set_key, body['name'], int(body['page']), int(body['number']), body['data'])}
-        if path == '/api/profile/app':
-            return {'error': self.call(manager.set_profile_app, body['name'], body.get('app') or None)}
+        if path == '/api/profile/settings':
+            data = {k: body[k] for k in ('app', 'background_image') if k in body}
+            return {'error': self.call(manager.set_profile_settings, body['name'], data)}
         if path == '/api/profile/new':
             return {'name': self.call(manager.create_profile, body.get('name', ''))}
         if path == '/api/press':

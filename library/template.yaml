@@ -7,7 +7,7 @@
 #   keys:       (type key) key combo, e.g. "cmd+c", or a list ["cmd+a", "cmd+c"]
 #               media keys: volumeup, volumedown, mute, brightnessup, brightnessdown, play, next, previous
 #   app:        (type app) path to a .app bundle, e.g. /System/Applications/Calculator.app
-#   profile:    (type app) profile to load with the app; "none" loads none; omit = profile with the same name
+#   profile:    (type app) profile to load with the app; "none" loads none; omit = the profile linked to that app
 #               (type profile) the profile to load: default or a profile name
 #   page:       (type page) next | previous | home | a page number
 #   icon:       path to an image, e.g. icons/name.png
@@ -23,4 +23,5 @@
 buttons:
   - {type: app, title: Bitwarden, output: Bitwarden, app: /Applications/Bitwarden.app, font_size: 35}
   - {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
+  - {type: app, title: Agenda, app: /Applications/BusyCal.app, profile: none}
   - {type: app, title: Agenda, app: /Applications/BusyCal.app, profile: none}
