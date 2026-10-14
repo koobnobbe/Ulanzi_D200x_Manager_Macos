@@ -21,7 +21,7 @@ pages:
   2:
     11: {type: page, page: previous, title: "<-"}
     2: {type: key, title: Paste, keys: cmd+v}
-    1: {type: key, title: copy, keys: cmd+c}
+    1: {type: key, title: copy, keys: cmd+c, icon: icons/Copy.png}
     12: {type: page, page: home, title: "Home"}
     13: {type: page, page: next, title: "->"}
     14: {type: profile, profile: default}

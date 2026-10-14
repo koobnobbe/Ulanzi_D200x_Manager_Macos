@@ -376,6 +376,29 @@ def remove_key_line(text, page, number):
     return '\n'.join(lines)
 
 
+def replace_device_lines(text, data):
+    lines = text.split('\n')
+    if 'device:' not in lines:
+        lines.insert(0, 'device:')
+    start = lines.index('device:')
+
+    def block_end():
+        return next((i for i in range(start + 1, len(lines))
+                     if lines[i].strip() and not lines[i].startswith('#') and not lines[i].startswith(' ')),
+                    len(lines))
+
+    for key, value in data.items():
+        rendered = 'true' if value is True else 'false' if value is False else json.dumps(value)
+        end = block_end()
+        for i in range(start + 1, end):
+            if re.match(rf'  {key}:', lines[i]):
+                lines[i] = f'  {key}: {rendered}'
+                break
+        else:
+            lines.insert(start + 1, f'  {key}: {rendered}')
+    return '\n'.join(lines)
+
+
 def replace_knob_line(text, name, data):
     lines = text.split('\n')
     if 'knobs:' not in lines:
@@ -525,7 +548,8 @@ class Manager:
         # Without regular host traffic the deck switches to its screensaver after
         # ~30s. Ulanzi Studio pushes the small-window clock every second; do the same.
         while True:
-            self.deck.keep_alive()
+            if not self.device.get('screensaver', False):
+                self.deck.keep_alive()
             await asyncio.sleep(self.device.get('keep_alive_interval', 1.0))
 
     def page_number(self, target):
@@ -665,6 +689,31 @@ class Manager:
     def key_data(self, name, page, number):
         pages = (load_config(self.file_for(name)) or {}).get('pages') or {}
         return dict((pages.get(page) or {}).get(number) or {})
+
+    def device_settings(self):
+        return {'clock_background': self.device.get('clock_background', '#000000'),
+                'screensaver': bool(self.device.get('screensaver', False)),
+                'keep_alive_interval': self.device.get('keep_alive_interval', 1.0)}
+
+    def set_device(self, data):
+        if not re.fullmatch(r'#[0-9a-fA-F]{6}', str(data['clock_background'])):
+            return 'achtergrond moet een hex-kleur zijn, bijv. #1a1a2e'
+        interval = float(data['keep_alive_interval'])
+        if not 0.2 <= interval <= 10:
+            return 'keep-alive interval moet tussen 0.2 en 10 seconden zijn'
+        values = {'clock_background': data['clock_background'], 'screensaver': bool(data['screensaver']),
+                  'keep_alive_interval': interval}
+        with open(self.config_path) as fp:
+            old = fp.read()
+        with open(self.config_path, 'w') as fp:
+            fp.write(replace_device_lines(old, values))
+        if self.load():
+            return None
+        error = self.last_error
+        with open(self.config_path, 'w') as fp:
+            fp.write(old)
+        self.load()
+        return error
 
     def knob_data(self, profile, name):
         knobs = (load_config(self.file_for(profile)) or {}).get('knobs') or {}
