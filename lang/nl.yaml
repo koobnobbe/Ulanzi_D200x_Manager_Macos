@@ -1,0 +1,255 @@
+# Teksten van de D200X Manager (webinterface en de meldingen die daarin verschijnen).
+#
+# Een andere taal: kopieer dit bestand naar bijvoorbeeld lang/en.yaml, vertaal de teksten (ook
+# app.language_name) en kies de taal in de webinterface onder "Scherm config…".
+# Ontbreekt een tekst in een taal, dan wordt de Engelse uit lang/en.yaml gebruikt.
+# Laat de sleutels (links van de dubbele punt) en de {namen} tussen accolades staan.
+# Zet een tekst met een dubbele punt, # of { tussen aanhalingstekens.
+
+app:
+  title: D200X Manager
+  heading: Ulanzi D200X
+  language_name: Nederlands   # naam van deze taal in de keuzelijst
+  lang: nl
+  locale: nl-NL          # voor de tijd op de klok in de webinterface
+
+common:
+  cancel: Annuleren
+  save: Opslaan
+  close: Sluiten
+  create: Aanmaken
+  choose: Kies…
+  new: Nieuw…
+  none: geen
+  remove: Verwijderen
+
+header:
+  profile: "Profiel: {name}"
+  brightness: Helderheid
+  screen: Scherm config…
+  device: Apparaat…
+  plugins: Plugins…
+  reload: Herlaad config
+
+sidebar:
+  profiles: Profielen
+  active: "{name}  (actief)"
+  default_settings: Instellingen (achtergrond)
+  linked_app: Geactiveerd door {app}
+  no_app: "Geen app: klik om er een te kiezen"
+  new_profile: + Nieuw profiel
+  docs: Documentatie
+
+grid:
+  pages: Pagina's
+  keys: Toetsen
+  keys_title: Toetsen · {profile} · pagina {page}
+  page_tab: Pagina {page}
+  new_page: + Nieuwe pagina
+  key_14: toets 14
+  clock_window: klok-venster (instellingen)
+  knob: knop {number}
+  knob_tooltip: "{knob}\nlinks: {left}  |  druk: {press}  |  rechts: {right}"
+  config_error: "Laatste config is fout, de vorige config blijft actief:\n{error}"
+  log: Log
+
+log:
+  error: "fout: {message}"
+  profile_created: Profiel {name} aangemaakt (profiles/{name}.yaml)
+  library_created: Bibliotheek {name} aangemaakt
+  library_imported: Bibliotheek {name} geïmporteerd
+  library_deleted: Verwijderd uit library/{section}.yaml
+  library_added: Toets toegevoegd aan library/template.yaml
+  library_moved: Verplaatst naar {section}
+
+library:
+  title: Bibliotheek
+  bin: Sleep hierheen om te verwijderen
+  new: + Nieuwe bibliotheek
+  new_prompt: "Naam van de nieuwe bibliotheek:"
+  item: "{title}  ({type})"
+  item_tooltip: Sleep naar een toets of naar de prullenbak
+
+key_dialog:
+  title: Toets
+  header: "{profile} · pagina {page} · toets {number}"
+  tab_text: Tekst
+  tab_key: Toetsen (key)
+  tab_app: App
+  tab_page: Pagina
+  tab_profile: Profiel
+  key_title: Titel
+  icon: Icoon (pad)
+  no_icon: geen icoon
+  hint_text: Alleen tekst op de toets. De output wordt geprint bij een druk.
+  pick_key: Kies een toets
+  keys: Toetsen (key)
+  keys_placeholder: cmd+c of cmd+a, cmd+c
+  hint_key: Toetscombinatie(s), gescheiden door komma voor een reeks.
+  key_groups:
+    media: Media
+    special: Speciaal
+    letters: Letters
+    digits: Cijfers
+    other: Overig
+  app: App (pad .app)
+  app_profile: Profiel bij deze app
+  app_profile_auto: automatisch (gekoppeld profiel)
+  app_profile_none: geen profiel
+  hint_app: Standaard wordt het profiel geladen dat aan deze app gekoppeld is. Kies "geen" om er geen te laden.
+  page: Pagina (page)
+  page_home: home (pagina 1)
+  page_next: next (volgende pagina)
+  page_previous: previous (vorige pagina)
+  page_number: pagina {page}
+  hint_page: Gaat naar een pagina van het huidige profiel.
+  profile: Profiel (profile)
+  hint_profile: Laadt dit profiel. default is config.yaml.
+  background: Achtergrond
+  color: Tekstkleur
+  clock_image: Klok-venster afbeelding (over de dubbele toets; Achtergrond en Transparantie gelden dan ook voor het klok-venster)
+  transparency: Transparantie (%)
+  font_size: Lettergrootte
+  longpress_on: Activeer longpress
+  longpress_off: Longpress uitzetten
+  hold_type: Vasthouden (hold) type
+  hold_value: Vasthouden waarde
+  remove_confirm: Deze toets verwijderen?
+
+knob_dialog:
+  header: "{knob} · {profile}"
+  type: Type
+  type_text: text (tekst printen)
+  type_key: key (toetsen sturen)
+  type_brightness: device_brightness (helderheid van het deck)
+  left: Links (tegen de klok in)
+  right: Rechts (met de klok mee)
+  press: Druk
+  step: Stap (alleen device_brightness)
+  hint: "Bij text: tekst die geprint wordt. Bij key: toetscombinatie(s). Bij device_brightness wordt alleen de stap gebruikt."
+
+image_dialog:
+  title: Kies een afbeelding (wordt 192x192 in icons/)
+  up: Omhoog
+  save_as_icon: "Opslaan als icoon (naam zonder .png):"
+  save_as_background: "Opslaan als achtergrond (naam zonder .png):"
+
+app_dialog:
+  title: Kies een app
+  finder_folder: /System/Library/CoreServices (Finder)
+  filter: filter op naam
+
+device_dialog:
+  title: Apparaat-instellingen
+  screensaver: Screensaver
+  mode: Modus
+  mode_off: Uit (deck blijft wakker)
+  mode_firmware: Firmware-screensaver (na ~30s, zonder keep-alive)
+  mode_dim: Dimmen
+  mode_color: Effen kleur
+  mode_image: Afbeelding over alle toetsen
+  timeout: Na (seconden inactief)
+  saver_brightness: Helderheid tijdens screensaver
+  color: Kleur
+  image: Afbeelding
+  other: Overig
+  keep_alive: Keep-alive interval (s)
+  hint: "Wordt opgeslagen onder device: in config.yaml. De screensaver gaat weg met een druk op een toets of knop; die druk doet verder niets. Helderheid staat bovenaan de pagina."
+
+profile_dialog:
+  header: Profiel {name}
+  app: App die dit profiel activeert
+  no_app: geen app
+  hint_app: Het profiel wordt actief zodra deze app op de Mac vooraan komt.
+  background: Achtergrond (over het hele scherm, zichtbaar via de transparantie van een toets; zonder afbeelding zwart)
+  unlink: App loskoppelen
+  unlink_confirm: De app loskoppelen van profiel {name}? Het profiel zelf blijft bestaan.
+
+plugins_dialog:
+  title: Plugins
+  hint: Alleen aangevinkte bibliotheken staan in het bibliotheekpaneel.
+  count: "{count} toetsen"
+  import: Importeren…
+  import_failed: "{file} niet geïmporteerd: {error}"
+  import_hint: Kies het .yaml-bestand, en tegelijk de .zip met dezelfde naam als de bibliotheek eigen iconen heeft.
+  zip_without_yaml: "{file}: kies ook het .yaml-bestand met dezelfde naam"
+
+screen_dialog:
+  title: Scherm config
+  language: Taal
+  hint: "Wordt opgeslagen onder ui: in config.yaml. De pagina wordt daarna opnieuw geladen."
+
+new_profile_dialog:
+  title: Nieuw profiel
+  name: Naam (wordt profiles/<naam>.yaml)
+
+docs_viewer:
+  title: D200X Manager · Documentatie
+  not_found_title: Niet gevonden
+  not_found: pagina {name} niet gevonden
+  home_link: Naar de startpagina
+  no_sidebar: docs/_sidebar.md ontbreekt
+
+# Meldingen van de server die in de webinterface verschijnen.
+errors:
+  at: "{where}: {error}"
+  unknown_section: onbekende sectie
+  unknown_item: onbekend item
+  unknown_profile: "onbekend profiel: {name}"
+  invalid_name: "ongeldige naam: gebruik letters, cijfers, spatie, - of _"
+  invalid_filename: "ongeldige bestandsnaam: gebruik letters, cijfers, spatie, - of _"
+  library_exists: bibliotheek {name} bestaat al
+  profile_exists: profiel {name} bestaat al
+  choose_yaml: kies een .yaml-bestand
+  not_an_image: "geen afbeelding: kies een png, jpg, ico of icns"
+  icon_name_needed: geef een naam voor het icoon
+  image_name_needed: geef een naam voor de afbeelding
+  key_empty: deze toets is leeg
+  default_no_app: het default-profiel hoort niet bij een app
+  not_an_app: "geen app: {app}"
+  app_taken: "{app} activeert al profiel {profile}"
+  background_missing: "achtergrond niet gevonden: {path}"
+  hex_color: "{field} moet een hex-kleur zijn, bijv. #1a1a2e"
+  saver_mode: onbekende screensaver-modus
+  keep_alive_range: keep-alive interval moet tussen 0.2 en 10 seconden zijn
+  saver_timeout_range: screensaver-timeout moet tussen 5 en 3600 seconden zijn
+  saver_brightness_range: screensaver-helderheid moet tussen 0 en 100 zijn
+  saver_image_needed: kies een afbeelding voor de screensaver
+  unknown_language: "onbekende taal: {language}"
+  file_missing: "{field}: bestand niet gevonden"
+  bad_zip: geen geldige zip met png-iconen
+
+# Fouten in config.yaml of een profiel. De vorige config blijft dan actief.
+config:
+  key: "toets {number}: {error}"
+  knob: "draaiknop {name}: {error}"
+  unknown_combo: "onbekende toetscombinatie: {combo}"
+  unknown_type: "onbekend type: {type}"
+  app_not_found: "app niet gevonden: {app}"
+  keys_needed: type key heeft "keys" nodig
+  background_image_missing: "background_image niet gevonden: {path}"
+  transparency_range: transparency moet tussen 0 en 100 liggen
+  key_out_of_range: "pagina {page}: toets {number} bestaat niet"
+  unknown_page: "pagina {page} toets {number}: onbekende pagina: {target}"
+  no_pages: dit bestand heeft geen pages-sectie
+  page_missing: pagina {page} staat niet in dit bestand
+  buttons_moved: '"buttons" is verplaatst: zet de toetsen onder "pages: 1:"'
+
+# Controle van een bibliotheekbestand bij importeren.
+library_check:
+  entry: toets {number}
+  entry_titled: toets {number} ({title})
+  hold: "{where} (hold)"
+  not_a_key: "moet een toets zijn, bijv. {type: key, title: Copy, keys: cmd+c}"
+  unknown_field: onbekend veld {fields}
+  page_needed: type page heeft "page" nodig (home, next, previous of een nummer)
+  profile_needed: type profile heeft "profile" nodig
+  not_a_color: "{field} is geen kleur: {value}"
+  font_size_range: font_size moet een getal van 8 tot 200 zijn
+  transparency_number: transparency moet een getal van 0 tot 100 zijn
+  icon_missing: "icoon niet gevonden: {path}"
+  hold_in_hold: hold kan zelf geen hold hebben
+  invalid_yaml: "geen geldige YAML: {error}"
+  needs_buttons: een library-bestand heeft bovenaan "buttons:" met daaronder een lijst toetsen
+  top_field: onbekend veld bovenaan {fields} (alleen "buttons" is toegestaan)
+  buttons_list: '"buttons" moet een lijst zijn: elke toets op een regel die begint met "  - "'

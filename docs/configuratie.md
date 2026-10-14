@@ -15,6 +15,7 @@ Bevat een bestand een fout, dan blijft de vorige configuratie actief. De foutmel
 | `icons/` | Iconen voor toetsen, 192×192 png. |
 | `backgrounds/` | Achtergronden voor profielen, het klok-venster en de screensaver. |
 | `docs/` | Deze documentatie. |
+| `lang/` | De teksten van de webinterface, per taal. Zie [Taal](#taal). |
 | `.env` | De tijdzone van de klok. |
 | `.cache/`, `.build/` | Gegenereerde plaatjes en bestanden voor het deck. Die kun je negeren. |
 
@@ -44,6 +45,9 @@ pages:
 
 knobs:
   K1: {index: 0x11, type: key, left: volumedown, right: volumeup, press: mute}
+
+ui:
+  language: "nl"                              # taal van de webinterface; zonder deze regel Engels
 ```
 
 | Sectie | Uitleg |
@@ -53,6 +57,7 @@ knobs:
 | `button_defaults` | Standaardwaarden voor alle toetsen. Een toets hoeft alleen te noemen wat afwijkt. |
 | `pages` | De pagina's met toetsen. Zie [Pagina's](paginas.md) en [Toetsen](toetsen.md). |
 | `knobs` | De draaiknoppen. Zie [Draaiknoppen](draaiknoppen.md). |
+| `ui` | Instellingen van de webinterface, zoals de taal. Zie [Taal](#taal). |
 
 ## Alle velden van een toets
 
@@ -72,6 +77,20 @@ knobs:
 | `background_image` | alleen toets 14 | afbeelding achter de klok |
 | `hold` | alle | actie bij lang indrukken, bijvoorbeeld `{type: profile, profile: default}` |
 | `output` | alle | tekst die bij een druk in de terminal wordt geprint |
+
+## Taal
+
+Alle teksten van de webinterface en de meldingen die daarin verschijnen, staan per taal in `lang/`, bijvoorbeeld `lang/nl.yaml`. De documentatie staat daar niet in.
+
+De taal kies je in de webinterface met **Scherm config…** in de bovenbalk. Er zijn bestanden voor Engels, Nederlands, Frans, Duits en Spaans; de keuzelijst toont elk bestand in `lang/`. De keuze wordt opgeslagen onder `ui: language:` in `config.yaml`. Staat daar niets, dan is de webinterface Engels.
+
+Een andere taal toevoegen:
+
+1. Kopieer `lang/en.yaml` naar bijvoorbeeld `lang/it.yaml`.
+2. Vertaal de teksten, ook `language_name` bovenaan: dat is de naam in de keuzelijst. Laat de sleutels links van de dubbele punt en de namen tussen accolades, zoals `{name}`, staan.
+3. Kies de taal onder **Scherm config…**.
+
+Ontbreekt een tekst in de nieuwe taal, dan wordt de Engelse gebruikt. Wijzigingen in een taalbestand zie je na het verversen van de pagina, zonder herstart.
 
 ## Tips voor handmatig bewerken
 

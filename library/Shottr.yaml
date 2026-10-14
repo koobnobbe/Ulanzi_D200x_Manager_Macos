@@ -1,0 +1,11 @@
+# Library section "Shottr": the global shortcuts set in Shottr on this Mac (Shottr > Settings > Hotkeys).
+# If you change a hotkey in Shottr, change it here too. "Window" capture has no hotkey set in Shottr,
+# so it is not in this list; give it one in Shottr and add a key for it here.
+# The key icons (orange tile with the title below) are in Shottr.zip; dragging a key onto the deck copies its icon to icons/.
+buttons:
+  - {type: app, app: /Applications/Shottr.app, title: Shottr, profile: none, font_size: 40}
+  - {type: key, title: Area, keys: ctrl+p, icon: icons/shottr-area.png}
+  - {type: key, title: Full screen, keys: cmd+shift+4, icon: icons/shottr-fullscreen.png}
+  - {type: key, title: Scrolling, keys: alt+shift+p, icon: icons/shottr-scrolling.png}
+  - {type: key, title: OCR text, keys: ctrl+cmd+shift+3, icon: icons/shottr-ocr.png}
+  - {type: key, title: Reopen last, keys: alt+p, icon: icons/shottr-reopen.png}

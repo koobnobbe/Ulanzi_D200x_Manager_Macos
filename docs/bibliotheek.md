@@ -25,6 +25,14 @@ De bibliotheek staat rechts in de webinterface. Hij bevat kant-en-klare toetsen 
 
 De Agenda-toetsen gebruiken de sneltoetsen van BusyCal. Sommige sturen een reeks: **Morgen** gaat naar de dagweergave (`cmd+1`), naar vandaag (`cmd+t`) en één dag verder (`cmd+right`).
 
+## Eigen iconen in een zip
+
+Gebruiken toetsen in een bibliotheek een eigen icoon-bestand (zoals `icon: icons/mute.png`), dan staan die bestanden in een zip naast het yaml-bestand, met dezelfde naam: bij `library/Shottr.yaml` hoort `library/Shottr.zip`. Iconen van apps zijn geen bestanden en staan er niet in.
+
+- De zip wordt vanzelf bijgehouden als je toetsen toevoegt, verplaatst of verwijdert. Een bibliotheek zonder eigen iconen heeft geen zip.
+- Sleep je een toets uit de bibliotheek op het deck, dan wordt het icoon uit de zip naar `icons/` gekopieerd. Staat er in `icons/` al een bestand met die naam, dan blijft dat staan.
+- Wil je een bibliotheek delen, geef dan het yaml-bestand en de zip samen door.
+
 ## Plugins
 
 Klik in de bovenbalk op **Plugins…** voor een lijst van alle bibliotheken.
@@ -36,10 +44,10 @@ Welke bibliotheken verborgen zijn, staat in `library/hidden.json`.
 
 ### Een bibliotheek importeren
 
-Klik in het Plugins-venster op **Importeren…** en kies een `.yaml`-bestand. Het bestand wordt eerst gecontroleerd. Alleen een geldig bestand wordt naar `library/` gekopieerd; anders zie je in het venster wat er mis is, bijvoorbeeld:
+Klik in het Plugins-venster op **Importeren…** en kies een `.yaml`-bestand. Heeft de bibliotheek eigen iconen, kies dan tegelijk de `.zip` met dezelfde naam. Het bestand wordt eerst gecontroleerd. Alleen een geldig bestand wordt naar `library/` gekopieerd; anders zie je in het venster wat er mis is, bijvoorbeeld:
 
 ```
-toets 3 (Morgen): unknown key combo: cmd+ü
+toets 3 (Morgen): onbekende toetscombinatie: cmd+ü
 ```
 
 De naam van de bibliotheek wordt de bestandsnaam zonder `.yaml`. Bestaat er al een bibliotheek met die naam, dan wordt het bestand niet geïmporteerd.
@@ -64,7 +72,7 @@ Bij het importeren wordt gecontroleerd dat:
 - elke toets een bekend type heeft (`text`, `key`, `app`, `page` of `profile`) en alleen bekende velden;
 - toetscombinaties bestaan en apps op deze Mac staan;
 - kleuren geldig zijn, de lettergrootte tussen 8 en 200 ligt en de transparantie tussen 0 en 100;
-- iconen en afbeeldingen bestaan;
+- iconen en afbeeldingen bestaan, in `icons/` of in de meegegeven zip; de zip mag alleen png-bestanden bevatten;
 - een `page`-toets een `page` heeft en een `profile`-toets een `profile`;
 - de `hold`-actie aan dezelfde regels voldoet.
 

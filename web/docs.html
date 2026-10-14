@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>D200X Manager · Documentatie</title>
+<title></title>
 <style>
 :root { color-scheme: dark; --bg: #111116; --panel: #1b1b24; --line: #2c2c3a; --text: #e8e8ef; --muted: #8a8aa0; --accent: #6c8cff; --err: #ff6b6b; --code: #0c0c12; }
 body { margin: 0; font: 15px/1.6 system-ui, sans-serif; background: var(--bg); color: var(--text); }
@@ -45,7 +45,7 @@ article hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
 </head>
 <body>
 <header>
-  <h1>D200X Manager · Documentatie</h1>
+  <h1 id="heading"></h1>
 </header>
 <div class="shell">
   <nav id="nav"></nav>
@@ -54,6 +54,15 @@ article hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
 <script>
 // Wiki pages are Markdown files in docs/. The menu is docs/_sidebar.md; links to "page.md" open that page here.
 const $ = (id) => document.getElementById(id);
+
+// Texts of this viewer come from lang/<language>.yaml via /api/lang, like the manager itself.
+let TEXTS = {};
+
+function t(key, values = {}) {
+  let text = TEXTS[key] ?? key;
+  for (const [name, value] of Object.entries(values)) text = text.replaceAll('{' + name + '}', value);
+  return text;
+}
 
 function escapeHtml(text) {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -160,7 +169,7 @@ let currentPage = 'README';
 
 async function fetchPage(name) {
   const response = await fetch(`/docs/${encodeURIComponent(name)}.md`);
-  if (!response.ok) throw new Error(`pagina ${name} niet gevonden`);
+  if (!response.ok) throw new Error(t('docs_viewer.not_found', { name }));
   return response.text();
 }
 
@@ -171,9 +180,10 @@ async function showPage() {
     const text = await fetchPage(name);
     $('page').innerHTML = markdown(text);
     const title = $('page').querySelector('h1');
-    document.title = (title ? title.textContent + ' · ' : '') + 'D200X Manager';
+    document.title = (title ? title.textContent + ' · ' : '') + t('app.title');
   } catch (e) {
-    $('page').innerHTML = `<h1>Niet gevonden</h1><p class="missing">${escapeHtml(e.message)}</p><p><a href="#/README">Naar de startpagina</a></p>`;
+    $('page').innerHTML = `<h1>${escapeHtml(t('docs_viewer.not_found_title'))}</h1><p class="missing">${escapeHtml(e.message)}</p>` +
+      `<p><a href="#/README">${escapeHtml(t('docs_viewer.home_link'))}</a></p>`;
   }
   for (const a of $('nav').querySelectorAll('a')) a.classList.toggle('current', a.getAttribute('href') === '#/' + name);
   const target = anchor && document.getElementById(anchor);
@@ -183,9 +193,17 @@ async function showPage() {
 
 async function start() {
   try {
+    TEXTS = await (await fetch('/api/lang')).json();
+  } catch (e) {
+    // without texts the keys are shown
+  }
+  document.documentElement.lang = t('app.lang');
+  document.title = t('docs_viewer.title');
+  $('heading').textContent = t('docs_viewer.title');
+  try {
     $('nav').innerHTML = markdown(await fetchPage('_sidebar'));
   } catch (e) {
-    $('nav').innerHTML = '<p class="missing">docs/_sidebar.md ontbreekt</p>';
+    $('nav').innerHTML = `<p class="missing">${escapeHtml(t('docs_viewer.no_sidebar'))}</p>`;
   }
   await showPage();
 }

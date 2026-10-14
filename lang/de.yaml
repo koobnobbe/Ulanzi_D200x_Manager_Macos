@@ -1,0 +1,253 @@
+# Texte des D200X Manager (Weboberfläche und die Meldungen, die darin erscheinen).
+#
+# Texte, die hier fehlen, werden aus lang/en.yaml genommen.
+# Die Schlüssel (links vom Doppelpunkt) und die {Namen} in geschweiften Klammern unverändert lassen.
+# Einen Text mit Doppelpunkt plus Leerzeichen, # oder { in Anführungszeichen setzen.
+
+app:
+  title: D200X Manager
+  heading: Ulanzi D200X
+  language_name: Deutsch   # Name dieser Sprache in der Auswahlliste
+  lang: de
+  locale: de-DE          # für die Uhrzeit der Uhr in der Weboberfläche
+
+common:
+  cancel: Abbrechen
+  save: Speichern
+  close: Schließen
+  create: Erstellen
+  choose: Auswählen…
+  new: Neu…
+  none: keine
+  remove: Entfernen
+
+header:
+  profile: "Profil: {name}"
+  brightness: Helligkeit
+  screen: Bildschirm-Config…
+  device: Gerät…
+  plugins: Plugins…
+  reload: Config neu laden
+
+sidebar:
+  profiles: Profile
+  active: "{name}  (aktiv)"
+  default_settings: Einstellungen (Hintergrund)
+  linked_app: Aktiviert durch {app}
+  no_app: "Keine App: klicken, um eine auszuwählen"
+  new_profile: + Neues Profil
+  docs: Dokumentation
+
+grid:
+  pages: Seiten
+  keys: Tasten
+  keys_title: Tasten · {profile} · Seite {page}
+  page_tab: Seite {page}
+  new_page: + Neue Seite
+  key_14: Taste 14
+  clock_window: Uhrfenster (Einstellungen)
+  knob: Drehknopf {number}
+  knob_tooltip: "{knob}\nlinks: {left}  |  drücken: {press}  |  rechts: {right}"
+  config_error: "Die letzte Config enthält einen Fehler, die vorherige Config bleibt aktiv:\n{error}"
+  log: Protokoll
+
+log:
+  error: "Fehler: {message}"
+  profile_created: Profil {name} erstellt (profiles/{name}.yaml)
+  library_created: Bibliothek {name} erstellt
+  library_imported: Bibliothek {name} importiert
+  library_deleted: Entfernt aus library/{section}.yaml
+  library_added: Taste zu library/template.yaml hinzugefügt
+  library_moved: Verschoben nach {section}
+
+library:
+  title: Bibliothek
+  bin: Zum Entfernen hierher ziehen
+  new: + Neue Bibliothek
+  new_prompt: "Name der neuen Bibliothek:"
+  item: "{title}  ({type})"
+  item_tooltip: Auf eine Taste oder in den Papierkorb ziehen
+
+key_dialog:
+  title: Taste
+  header: "{profile} · Seite {page} · Taste {number}"
+  tab_text: Text
+  tab_key: Tasten (key)
+  tab_app: App
+  tab_page: Seite
+  tab_profile: Profil
+  key_title: Titel
+  icon: Symbol (Pfad)
+  no_icon: kein Symbol
+  hint_text: Nur Text auf der Taste. Die Ausgabe (output) wird bei jedem Drücken ausgegeben.
+  pick_key: Taste auswählen
+  keys: Tasten (key)
+  keys_placeholder: cmd+c oder cmd+a, cmd+c
+  hint_key: Tastenkombination(en), durch Kommas getrennt für eine Folge.
+  key_groups:
+    media: Medien
+    special: Spezial
+    letters: Buchstaben
+    digits: Ziffern
+    other: Sonstige
+  app: App (Pfad zur .app)
+  app_profile: Profil für diese App
+  app_profile_auto: automatisch (verknüpftes Profil)
+  app_profile_none: kein Profil
+  hint_app: Standardmäßig wird das mit dieser App verknüpfte Profil geladen. Mit "kein Profil" wird keines geladen.
+  page: Seite (page)
+  page_home: home (Seite 1)
+  page_next: next (nächste Seite)
+  page_previous: previous (vorherige Seite)
+  page_number: Seite {page}
+  hint_page: Wechselt zu einer Seite des aktuellen Profils.
+  profile: Profil (profile)
+  hint_profile: Lädt dieses Profil. default ist config.yaml.
+  background: Hintergrund
+  color: Textfarbe
+  clock_image: Bild für das Uhrfenster (über die Doppeltaste; Hintergrund und Transparenz gelten dann auch für das Uhrfenster)
+  transparency: Transparenz (%)
+  font_size: Schriftgröße
+  longpress_on: Langes Drücken aktivieren
+  longpress_off: Langes Drücken deaktivieren
+  hold_type: Typ bei langem Drücken (hold)
+  hold_value: Wert bei langem Drücken
+  remove_confirm: Diese Taste entfernen?
+
+knob_dialog:
+  header: "{knob} · {profile}"
+  type: Typ
+  type_text: text (Text ausgeben)
+  type_key: key (Tasten senden)
+  type_brightness: device_brightness (Helligkeit des Decks)
+  left: Links (gegen den Uhrzeigersinn)
+  right: Rechts (im Uhrzeigersinn)
+  press: Drücken
+  step: Schritt (nur device_brightness)
+  hint: "Bei text: der ausgegebene Text. Bei key: Tastenkombination(en). Bei device_brightness wird nur der Schritt verwendet."
+
+image_dialog:
+  title: Bild auswählen (wird 192x192 in icons/)
+  up: Nach oben
+  save_as_icon: "Als Symbol speichern (Name ohne .png):"
+  save_as_background: "Als Hintergrund speichern (Name ohne .png):"
+
+app_dialog:
+  title: App auswählen
+  finder_folder: /System/Library/CoreServices (Finder)
+  filter: nach Name filtern
+
+device_dialog:
+  title: Geräteeinstellungen
+  screensaver: Bildschirmschoner
+  mode: Modus
+  mode_off: Aus (Deck bleibt wach)
+  mode_firmware: Firmware-Bildschirmschoner (nach ~30 s, ohne Keep-alive)
+  mode_dim: Dimmen
+  mode_color: Einfarbig
+  mode_image: Bild über alle Tasten
+  timeout: Nach (Sekunden inaktiv)
+  saver_brightness: Helligkeit im Bildschirmschoner
+  color: Farbe
+  image: Bild
+  other: Sonstiges
+  keep_alive: Keep-alive-Intervall (s)
+  hint: "Wird unter device: in config.yaml gespeichert. Ein Druck auf eine Taste oder einen Drehknopf beendet den Bildschirmschoner; dieser Druck bewirkt sonst nichts. Die Helligkeit steht oben auf der Seite."
+
+profile_dialog:
+  header: Profil {name}
+  app: App, die dieses Profil aktiviert
+  no_app: keine App
+  hint_app: Das Profil wird aktiv, sobald diese App auf dem Mac in den Vordergrund kommt.
+  background: Hintergrund (über den ganzen Bildschirm, sichtbar durch die Transparenz einer Taste; ohne Bild schwarz)
+  unlink: App trennen
+  unlink_confirm: App von Profil {name} trennen? Das Profil selbst bleibt erhalten.
+
+plugins_dialog:
+  title: Plugins
+  hint: Nur angehakte Bibliotheken erscheinen im Bibliotheksbereich.
+  count: "{count} Tasten"
+  import: Importieren…
+  import_failed: "{file} nicht importiert: {error}"
+  import_hint: Die .yaml-Datei wählen, zusammen mit der .zip gleichen Namens, wenn die Bibliothek eigene Symbole hat.
+  zip_without_yaml: "{file}: auch die .yaml-Datei mit demselben Namen wählen"
+
+screen_dialog:
+  title: Bildschirm-Config
+  language: Sprache
+  hint: "Wird unter ui: in config.yaml gespeichert. Die Seite wird danach neu geladen."
+
+new_profile_dialog:
+  title: Neues Profil
+  name: Name (wird zu profiles/<name>.yaml)
+
+docs_viewer:
+  title: D200X Manager · Dokumentation
+  not_found_title: Nicht gefunden
+  not_found: Seite {name} nicht gefunden
+  home_link: Zur Startseite
+  no_sidebar: docs/_sidebar.md fehlt
+
+# Meldungen des Servers, die in der Weboberfläche erscheinen.
+errors:
+  at: "{where}: {error}"
+  unknown_section: unbekannter Abschnitt
+  unknown_item: unbekanntes Element
+  unknown_profile: "unbekanntes Profil: {name}"
+  invalid_name: "ungültiger Name: Buchstaben, Ziffern, Leerzeichen, - oder _ verwenden"
+  invalid_filename: "ungültiger Dateiname: Buchstaben, Ziffern, Leerzeichen, - oder _ verwenden"
+  library_exists: Bibliothek {name} existiert bereits
+  profile_exists: Profil {name} existiert bereits
+  choose_yaml: bitte eine .yaml-Datei wählen
+  not_an_image: "kein Bild: bitte png, jpg, ico oder icns wählen"
+  icon_name_needed: bitte dem Symbol einen Namen geben
+  image_name_needed: bitte dem Bild einen Namen geben
+  key_empty: diese Taste ist leer
+  default_no_app: das Profil default kann nicht zu einer App gehören
+  not_an_app: "keine App: {app}"
+  app_taken: "{app} aktiviert bereits Profil {profile}"
+  background_missing: "Hintergrund nicht gefunden: {path}"
+  hex_color: "{field} muss eine Hex-Farbe sein, z. B. #1a1a2e"
+  saver_mode: unbekannter Bildschirmschoner-Modus
+  keep_alive_range: Keep-alive-Intervall muss zwischen 0,2 und 10 Sekunden liegen
+  saver_timeout_range: Bildschirmschoner-Wartezeit muss zwischen 5 und 3600 Sekunden liegen
+  saver_brightness_range: Bildschirmschoner-Helligkeit muss zwischen 0 und 100 liegen
+  saver_image_needed: bitte ein Bild für den Bildschirmschoner wählen
+  unknown_language: "unbekannte Sprache: {language}"
+  file_missing: "{field}: Datei nicht gefunden"
+  bad_zip: keine gültige Zip-Datei mit png-Symbolen
+
+# Fehler in config.yaml oder einem Profil. Die vorherige Config bleibt dann aktiv.
+config:
+  key: "Taste {number}: {error}"
+  knob: "Drehknopf {name}: {error}"
+  unknown_combo: "unbekannte Tastenkombination: {combo}"
+  unknown_type: "unbekannter Typ: {type}"
+  app_not_found: "App nicht gefunden: {app}"
+  keys_needed: Typ key benötigt "keys"
+  background_image_missing: "background_image nicht gefunden: {path}"
+  transparency_range: transparency muss zwischen 0 und 100 liegen
+  key_out_of_range: "Seite {page}: Taste {number} existiert nicht"
+  unknown_page: "Seite {page} Taste {number}: unbekannte Seite: {target}"
+  no_pages: diese Datei hat keinen pages-Abschnitt
+  page_missing: Seite {page} ist nicht in dieser Datei
+  buttons_moved: '"buttons" wurde verschoben: Tasten unter "pages: 1:" eintragen'
+
+# Prüfung einer Bibliotheksdatei beim Importieren.
+library_check:
+  entry: Taste {number}
+  entry_titled: Taste {number} ({title})
+  hold: "{where} (hold)"
+  not_a_key: "muss eine Taste sein, z. B. {type: key, title: Copy, keys: cmd+c}"
+  unknown_field: unbekanntes Feld {fields}
+  page_needed: Typ page benötigt "page" (home, next, previous oder eine Nummer)
+  profile_needed: Typ profile benötigt "profile"
+  not_a_color: "{field} ist keine Farbe: {value}"
+  font_size_range: font_size muss eine Zahl von 8 bis 200 sein
+  transparency_number: transparency muss eine Zahl von 0 bis 100 sein
+  icon_missing: "Symbol nicht gefunden: {path}"
+  hold_in_hold: hold kann kein eigenes hold haben
+  invalid_yaml: "kein gültiges YAML: {error}"
+  needs_buttons: eine Bibliotheksdatei beginnt mit "buttons:" und einer Liste von Tasten
+  top_field: unbekanntes Feld auf oberster Ebene {fields} (nur "buttons" ist erlaubt)
+  buttons_list: '"buttons" muss eine Liste sein: jede Taste auf einer Zeile, die mit "  - " beginnt'

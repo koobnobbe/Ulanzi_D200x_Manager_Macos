@@ -6,7 +6,7 @@ Zolang de manager draait, is de webinterface bereikbaar op **http://127.0.0.1:87
 
 | Plek | Wat er staat |
 |---|---|
-| Bovenbalk | Het actieve profiel, de helderheid, en de knoppen **Apparaat…**, **Plugins…** en **Herlaad config** |
+| Bovenbalk | Het actieve profiel, de helderheid, en de knoppen **Scherm config…**, **Apparaat…**, **Plugins…** en **Herlaad config** |
 | Links | De profielen, en onderaan de link naar deze documentatie |
 | Midden | De pagina's van het gekozen profiel en een afbeelding van het deck met de toetsen erop |
 | Rechts | De bibliotheek met kant-en-klare toetsen, en een prullenbak |
@@ -37,6 +37,7 @@ Boven de afbeelding staan tabbladen voor de pagina's van het profiel. Bij het ac
 ## Knoppen in de bovenbalk
 
 - **Helderheid**: de helderheid van het deck, van 0 tot 100.
+- **Scherm config…**: instellingen van de webinterface, zoals de taal. Zie [Configuratiebestanden](configuratie.md#taal).
 - **Apparaat…**: screensaver en keep-alive. Zie [Apparaat en screensaver](apparaat.md).
 - **Plugins…**: welke bibliotheken je ziet, en bibliotheken importeren. Zie [Bibliotheek en plugins](bibliotheek.md).
 - **Herlaad config**: leest alle bestanden opnieuw in. Meestal is dat niet nodig, want de manager ziet wijzigingen zelf.

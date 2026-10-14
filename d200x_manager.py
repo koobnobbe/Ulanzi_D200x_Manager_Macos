@@ -5,7 +5,6 @@ import hashlib
 import io
 import json
 import os
-import plistlib
 import re
 import subprocess
 import sys
@@ -18,6 +17,9 @@ import yaml
 from strmdck.device import ButtonAction
 from strmdck.devices.ulanzi_d200 import UlanziD200Device
 import web_server
+from appicon import app_icon as load_app_icon
+import i18n
+from i18n import t
 
 ICON_DIR = os.path.join('.cache', 'icons', '_generated')
 SIZE = UlanziD200Device.ICON_WIDTH  # 196x196
@@ -152,7 +154,7 @@ def parse_keys(keys):
             combos.append(('media', MEDIA_KEYS[key], 0))
             continue
         if key not in KEY_CODES or any(m not in MODIFIERS for m in mods):
-            raise ValueError(f'unknown key combo: {combo}')
+            raise ValueError(t('config.unknown_combo', combo=combo))
         flags = 0
         for m in mods:
             flags |= MODIFIERS[m]
@@ -187,9 +189,9 @@ def parse_knob(name, knob):
         try:
             knob['combos'] = {e: parse_keys(knob[e]) for e in KNOB_EVENTS.values() if knob.get(e)}
         except ValueError as e:
-            raise ValueError(f'knob {name}: {e}')
+            raise ValueError(t('config.knob', name=name, error=e))
     elif kind not in ('text', 'device_brightness'):
-        raise ValueError(f'knob {name}: unknown type: {kind}')
+        raise ValueError(t('config.knob', name=name, error=t('config.unknown_type', type=kind)))
     return knob
 
 
@@ -307,101 +309,102 @@ def screensaver_mode(device):
     return 'firmware' if mode is True else 'off' if not mode else mode
 
 
-def load_app_icon(app):
-    """Return the .app bundle's icon as an RGBA image, or None if it has no .icns."""
-    with open(os.path.join(app, 'Contents', 'Info.plist'), 'rb') as fp:
-        icon = plistlib.load(fp).get('CFBundleIconFile')
-    if not icon:
-        return None
-    if not icon.endswith('.icns'):
-        icon += '.icns'
-    path = os.path.join(app, 'Contents', 'Resources', icon)
-    if not os.path.exists(path):
-        return None
-    return Image.open(path).convert('RGBA')  # Pillow loads the largest size in the .icns
-
-
 def draw_title(img, button, center):
     draw = ImageDraw.Draw(img)
     draw.text(center, str(button.get('title', '')),
               font=load_font(button['font_size']), fill=button['color'], anchor='mm')
 
 
-def check_button(number, button):
+def button_problem(button):
+    """What is wrong with a key definition, or None. Also parses "keys" into button['combos']."""
     kind = button.get('type', 'text')
     if kind == 'app':
         app = button.get('app')
         if not app or not os.path.isdir(app):
-            raise ValueError(f'key {number}: app not found: {app}')
+            return t('config.app_not_found', app=app)
     elif kind == 'key':
         try:
             button['combos'] = parse_keys(button.get('keys') or [])
         except ValueError as e:
-            raise ValueError(f'key {number}: {e}')
+            return str(e)
         if not button['combos']:
-            raise ValueError(f'key {number}: type key needs "keys"')
+            return t('config.keys_needed')
     elif kind not in ('text', 'page', 'profile'):
-        raise ValueError(f'key {number}: unknown type: {kind}')
+        return t('config.unknown_type', type=kind)
     if button.get('background_image') and not os.path.isfile(button['background_image']):
-        raise ValueError(f"key {number}: background_image not found: {button['background_image']}")
+        return t('config.background_image_missing', path=button['background_image'])
     if not 0 <= button.get('transparency', 0) <= 100:
-        raise ValueError(f'key {number}: transparency must be 0-100')
+        return t('config.transparency_range')
+    return None
+
+
+def check_button(number, button):
+    problem = button_problem(button)
+    if problem:
+        raise ValueError(t('config.key', number=number, error=problem))
+
 
 KEY_FIELDS = {'title', 'type', 'keys', 'app', 'profile', 'page', 'icon', 'background', 'color', 'font_size',
               'transparency', 'hold', 'output', 'background_image'}
 
 
-def check_key_entry(entry, where):
-    """Check one key definition as written in a config, profile or library file."""
+def check_key_entry(entry, where, icons=()):
+    """Check one key definition as written in a config, profile or library file.
+    `icons` are extra icon file names that are available, e.g. from a library's zip."""
+    def fail(message):
+        raise ValueError(t('errors.at', where=where, error=message))
+
     if not isinstance(entry, dict):
-        raise ValueError(f'{where}: moet een toets zijn, bijv. {{type: key, title: Copy, keys: cmd+c}}')
+        fail(t('library_check.not_a_key'))
     unknown = sorted(set(entry) - KEY_FIELDS)
     if unknown:
-        raise ValueError(f"{where}: onbekend veld {', '.join(unknown)}")
+        fail(t('library_check.unknown_field', fields=', '.join(unknown)))
     kind = entry.get('type', 'text')
     if kind == 'page' and entry.get('page') is None:
-        raise ValueError(f'{where}: type page heeft "page" nodig (home, next, previous of een nummer)')
+        fail(t('library_check.page_needed'))
     if kind == 'profile' and not entry.get('profile'):
-        raise ValueError(f'{where}: type profile heeft "profile" nodig')
+        fail(t('library_check.profile_needed'))
     for field in ('background', 'color'):
         if field in entry:
             try:
                 ImageColor.getrgb(str(entry[field]))
             except ValueError:
-                raise ValueError(f'{where}: {field} is geen kleur: {entry[field]}')
+                fail(t('library_check.not_a_color', field=field, value=entry[field]))
     if 'font_size' in entry and not (isinstance(entry['font_size'], int) and 8 <= entry['font_size'] <= 200):
-        raise ValueError(f'{where}: font_size moet een getal van 8 tot 200 zijn')
+        fail(t('library_check.font_size_range'))
     if 'transparency' in entry and not isinstance(entry['transparency'], (int, float)):
-        raise ValueError(f'{where}: transparency moet een getal van 0 tot 100 zijn')
-    if entry.get('icon') and not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), entry['icon'])):
-        raise ValueError(f"{where}: icoon niet gevonden: {entry['icon']}")
-    try:
-        check_button(0, dict(entry))
-    except ValueError as e:
-        raise ValueError(f"{where}: {str(e).removeprefix('key 0: ')}")
+        fail(t('library_check.transparency_number'))
+    if (entry.get('icon') and not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), entry['icon']))
+            and os.path.basename(entry['icon']) not in icons):
+        fail(t('library_check.icon_missing', path=entry['icon']))
+    problem = button_problem(dict(entry))
+    if problem:
+        fail(problem)
     if 'hold' in entry:
         if 'hold' in (entry['hold'] or {}):
-            raise ValueError(f'{where}: hold kan zelf geen hold hebben')
-        check_key_entry(entry['hold'], f'{where} (hold)')
+            fail(t('library_check.hold_in_hold'))
+        check_key_entry(entry['hold'], t('library_check.hold', where=where), icons)
 
 
-def check_library(text):
-    """Validate the text of a library file. Returns its key definitions or raises ValueError."""
+def check_library(text, icons=()):
+    """Validate the text of a library file. Returns its key definitions or raises ValueError.
+    `icons` are the icon file names in the zip that comes with the library."""
     try:
         data = yaml.safe_load(text)
     except yaml.YAMLError as e:
-        raise ValueError(f'geen geldige YAML: {e}')
+        raise ValueError(t('library_check.invalid_yaml', error=e))
     if not isinstance(data, dict) or 'buttons' not in data:
-        raise ValueError('een library-bestand heeft bovenaan "buttons:" met daaronder een lijst toetsen')
+        raise ValueError(t('library_check.needs_buttons'))
     extra = sorted(set(data) - {'buttons'})
     if extra:
-        raise ValueError(f"onbekend veld bovenaan: {', '.join(extra)} (alleen \"buttons\" is toegestaan)")
+        raise ValueError(t('library_check.top_field', fields=', '.join(extra)))
     buttons = data['buttons'] or []
     if not isinstance(buttons, list):
-        raise ValueError('"buttons" moet een lijst zijn: elke toets op een regel die begint met "  - "')
+        raise ValueError(t('library_check.buttons_list'))
     for i, entry in enumerate(buttons, 1):
         title = entry.get('title') if isinstance(entry, dict) else None
-        check_key_entry(entry, f'toets {i}' + (f' ({title})' if title else ''))
+        where = t('library_check.entry_titled', number=i, title=title) if title else t('library_check.entry', number=i)
+        check_key_entry(entry, where, icons)
     return buttons
 
 
@@ -434,14 +437,14 @@ def check_pages(pages):
     for page, keys in pages.items():
         for number, button in keys.items():
             if number not in KEY_NUMBERS:
-                raise ValueError(f'page {page}: key {number} is out of range')
+                raise ValueError(t('config.key_out_of_range', page=page, number=number))
             check_button(number, button)
             if button.get('hold'):
                 check_button(number, button['hold'])
             if button.get('type') == 'page':
                 target = button.get('page')
                 if target not in ('home', 'next', 'previous') and not (str(target).isdigit() and int(target) in pages):
-                    raise ValueError(f'page {page} key {number}: unknown page: {target}')
+                    raise ValueError(t('config.unknown_page', page=page, number=number, target=target))
 
 
 PROFILE_TEMPLATE = """pages:
@@ -470,11 +473,11 @@ def check_text(text):
 def replace_key_line(text, page, number, data):
     lines = text.split('\n')
     if 'pages:' not in lines:
-        raise ValueError('no pages section in this file')
+        raise ValueError(t('config.no_pages'))
     start = lines.index('pages:')
     header = next((i for i in range(start + 1, len(lines)) if lines[i].rstrip() == f'  {page}:'), None)
     if header is None:
-        raise ValueError(f'page {page} not found in this file')
+        raise ValueError(t('config.page_missing', page=page))
     end = next((i for i in range(header + 1, len(lines))
                 if lines[i].strip() and not lines[i].startswith('#') and len(lines[i]) - len(lines[i].lstrip()) <= 2),
                len(lines))
@@ -493,7 +496,7 @@ def remove_key_line(text, page, number):
     lines = text.split('\n')
     header = next((i for i in range(len(lines)) if lines[i].rstrip() == f'  {page}:'), None)
     if header is None:
-        raise ValueError(f'page {page} not found in this file')
+        raise ValueError(t('config.page_missing', page=page))
     end = next((i for i in range(header + 1, len(lines))
                 if lines[i].strip() and not lines[i].startswith('#') and len(lines[i]) - len(lines[i].lstrip()) <= 2),
                len(lines))
@@ -504,11 +507,14 @@ def remove_key_line(text, page, number):
     return '\n'.join(lines)
 
 
-def replace_device_lines(text, data):
+def replace_block_lines(text, block, data):
+    """Set `key: value` lines inside a top-level block such as "device:", keeping the rest of the file."""
     lines = text.split('\n')
-    if 'device:' not in lines:
-        lines.insert(0, 'device:')
-    start = lines.index('device:')
+    if f'{block}:' not in lines:
+        while lines and not lines[-1].strip():
+            lines.pop()
+        lines += ['', f'{block}:', '']
+    start = lines.index(f'{block}:')
 
     def block_end():
         return next((i for i in range(start + 1, len(lines))
@@ -582,6 +588,7 @@ class Manager:
         self.mtimes = self.file_mtimes()
         try:
             config = load_config(self.config_path) or {}
+            i18n.set_language((config.get('ui') or {}).get('language'))
             # Each profile has its own background picture; without one the screen is black.
             background = config.get('background_image')
             if self.profile:
@@ -593,7 +600,7 @@ class Manager:
             # Config keys are numbered from 1; the deck index is number - 1
             # (left-to-right, top-to-bottom, index = row * 5 + col).
             if config.get('buttons'):
-                raise ValueError('"buttons" moved: put the keys under "pages: 1:"')
+                raise ValueError(t('config.buttons_moved'))
             pages = {int(p): {int(n): {**defaults, **(b or {})} for n, b in (keys or {}).items()}
                      for p, keys in (config.get('pages') or {}).items()}
             pages.setdefault(1, {})
@@ -858,9 +865,9 @@ class Manager:
 
     def create_profile(self, name):
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9 _-]{0,40}', name or ''):
-            raise ValueError('ongeldige naam: gebruik letters, cijfers, spatie, - of _')
+            raise ValueError(t('errors.invalid_name'))
         if name in self.profile_names():
-            raise ValueError(f'profiel {name} bestaat al')
+            raise ValueError(t('errors.profile_exists', name=name))
         os.makedirs(os.path.dirname(self.profile_path(name)), exist_ok=True)
         with open(self.profile_path(name), 'x') as fp:
             fp.write(PROFILE_TEMPLATE)
@@ -923,18 +930,18 @@ class Manager:
         if 'app' in data:
             app = data['app'] or None
             if app and name == 'default':
-                return 'het default-profiel hoort niet bij een app'
+                return t('errors.default_no_app')
             if app:
                 if not (app.endswith('.app') and os.path.isdir(app)):
-                    return f'geen app: {app}'
+                    return t('errors.not_an_app', app=app)
                 other = self.profile_for_app(app)
                 if other and other != name:
-                    return f'{os.path.basename(app)} activeert al profiel {other}'
+                    return t('errors.app_taken', app=os.path.basename(app), profile=other)
             text = set_top_line(text, 'app', app)
         if 'background_image' in data:
             image = data['background_image'] or None
             if image and not os.path.isfile(image):
-                return f'achtergrond niet gevonden: {image}'
+                return t('errors.background_missing', path=image)
             text = set_top_line(text, 'background_image', image)
         yaml.safe_load(text)
         with open(path, 'w') as fp:
@@ -957,34 +964,54 @@ class Manager:
                 'screensaver_image': d.get('screensaver_image') or '',
                 'keep_alive_interval': d.get('keep_alive_interval', 1.0)}
 
+    def ui_settings(self):
+        return {'language': i18n.language(), 'languages': i18n.languages()}
+
+    def set_ui(self, data):
+        """Save the web interface settings under "ui:" in config.yaml."""
+        code = data.get('language')
+        if code not in [lang['code'] for lang in i18n.languages()]:
+            return t('errors.unknown_language', language=code)
+        with open(self.config_path) as fp:
+            old = fp.read()
+        with open(self.config_path, 'w') as fp:
+            fp.write(replace_block_lines(old, 'ui', {'language': code}))
+        if self.load():
+            return None
+        error = self.last_error
+        with open(self.config_path, 'w') as fp:
+            fp.write(old)
+        self.load()
+        return error
+
     def set_device(self, data):
         hexcolor = r'#[0-9a-fA-F]{6}'
         for field in ('screensaver_color',):
             if not re.fullmatch(hexcolor, str(data[field])):
-                return f'{field} moet een hex-kleur zijn, bijv. #1a1a2e'
+                return t('errors.hex_color', field=field)
         if data['screensaver'] not in ('off', 'firmware', 'dim', 'color', 'image'):
-            return 'onbekende screensaver-modus'
+            return t('errors.saver_mode')
         interval = float(data['keep_alive_interval'])
         if not 0.2 <= interval <= 10:
-            return 'keep-alive interval moet tussen 0.2 en 10 seconden zijn'
+            return t('errors.keep_alive_range')
         timeout = int(data['screensaver_timeout'])
         if not 5 <= timeout <= 3600:
-            return 'screensaver-timeout moet tussen 5 en 3600 seconden zijn'
+            return t('errors.saver_timeout_range')
         saver_brightness = int(data['screensaver_brightness'])
         if not 0 <= saver_brightness <= 100:
-            return 'screensaver-helderheid moet tussen 0 en 100 zijn'
+            return t('errors.saver_brightness_range')
         if data['screensaver'] == 'image' and not data['screensaver_image']:
-            return 'kies een afbeelding voor de screensaver'
+            return t('errors.saver_image_needed')
         for field in ('screensaver_image',):
             if data[field] and not os.path.isfile(data[field]):
-                return f'{field}: bestand niet gevonden'
+                return t('errors.file_missing', field=field)
         values = {'screensaver': data['screensaver'], 'screensaver_timeout': timeout,
                   'screensaver_brightness': saver_brightness, 'screensaver_color': data['screensaver_color'],
                   'screensaver_image': data['screensaver_image'], 'keep_alive_interval': interval}
         with open(self.config_path) as fp:
             old = fp.read()
         with open(self.config_path, 'w') as fp:
-            fp.write(replace_device_lines(old, values))
+            fp.write(replace_block_lines(old, 'device', values))
         if self.load():
             return None
         error = self.last_error
@@ -1027,7 +1054,7 @@ class Manager:
 
     def file_for(self, name):
         if name not in self.profile_names():
-            raise ValueError(f'unknown profile: {name}')
+            raise ValueError(t('errors.unknown_profile', name=name))
         return self.config_path if name == 'default' else self.profile_path(name)
 
     def read_file(self, name):

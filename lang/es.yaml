@@ -1,0 +1,253 @@
+# Textos del D200X Manager (interfaz web y los mensajes que aparecen en ella).
+#
+# Los textos que falten aquí se toman de lang/en.yaml.
+# Deja tal cual las claves (a la izquierda de los dos puntos) y los {nombres} entre llaves.
+# Pon entre comillas un texto que contenga dos puntos seguidos de un espacio, # o {.
+
+app:
+  title: D200X Manager
+  heading: Ulanzi D200X
+  language_name: Español   # nombre de este idioma en la lista
+  lang: es
+  locale: es-ES          # para la hora del reloj en la interfaz web
+
+common:
+  cancel: Cancelar
+  save: Guardar
+  close: Cerrar
+  create: Crear
+  choose: Elegir…
+  new: Nuevo…
+  none: ninguno
+  remove: Eliminar
+
+header:
+  profile: "Perfil: {name}"
+  brightness: Brillo
+  screen: Config. de pantalla…
+  device: Dispositivo…
+  plugins: Plugins…
+  reload: Recargar config
+
+sidebar:
+  profiles: Perfiles
+  active: "{name}  (activo)"
+  default_settings: Ajustes (fondo)
+  linked_app: Activado por {app}
+  no_app: "Sin app: haz clic para elegir una"
+  new_profile: + Nuevo perfil
+  docs: Documentación
+
+grid:
+  pages: Páginas
+  keys: Teclas
+  keys_title: Teclas · {profile} · página {page}
+  page_tab: Página {page}
+  new_page: + Nueva página
+  key_14: tecla 14
+  clock_window: ventana del reloj (ajustes)
+  knob: mando {number}
+  knob_tooltip: "{knob}\nizquierda: {left}  |  pulsar: {press}  |  derecha: {right}"
+  config_error: "La última config tiene un error, la config anterior sigue activa:\n{error}"
+  log: Registro
+
+log:
+  error: "error: {message}"
+  profile_created: Perfil {name} creado (profiles/{name}.yaml)
+  library_created: Biblioteca {name} creada
+  library_imported: Biblioteca {name} importada
+  library_deleted: Eliminado de library/{section}.yaml
+  library_added: Tecla añadida a library/template.yaml
+  library_moved: Movido a {section}
+
+library:
+  title: Biblioteca
+  bin: Arrastra aquí para eliminar
+  new: + Nueva biblioteca
+  new_prompt: "Nombre de la nueva biblioteca:"
+  item: "{title}  ({type})"
+  item_tooltip: Arrastra a una tecla o a la papelera
+
+key_dialog:
+  title: Tecla
+  header: "{profile} · página {page} · tecla {number}"
+  tab_text: Texto
+  tab_key: Teclas (key)
+  tab_app: App
+  tab_page: Página
+  tab_profile: Perfil
+  key_title: Título
+  icon: Icono (ruta)
+  no_icon: sin icono
+  hint_text: Solo texto en la tecla. La salida (output) se imprime en cada pulsación.
+  pick_key: Elige una tecla
+  keys: Teclas (key)
+  keys_placeholder: cmd+c o cmd+a, cmd+c
+  hint_key: Combinación(es) de teclas, separadas por comas para una secuencia.
+  key_groups:
+    media: Multimedia
+    special: Especiales
+    letters: Letras
+    digits: Números
+    other: Otros
+  app: App (ruta .app)
+  app_profile: Perfil para esta app
+  app_profile_auto: automático (perfil vinculado)
+  app_profile_none: sin perfil
+  hint_app: Por defecto se carga el perfil vinculado a esta app. Elige "sin perfil" para no cargar ninguno.
+  page: Página (page)
+  page_home: home (página 1)
+  page_next: next (página siguiente)
+  page_previous: previous (página anterior)
+  page_number: página {page}
+  hint_page: Va a una página del perfil actual.
+  profile: Perfil (profile)
+  hint_profile: Carga este perfil. default es config.yaml.
+  background: Fondo
+  color: Color del texto
+  clock_image: Imagen de la ventana del reloj (sobre la tecla doble; Fondo y Transparencia también se aplican a la ventana del reloj)
+  transparency: Transparencia (%)
+  font_size: Tamaño de letra
+  longpress_on: Activar pulsación larga
+  longpress_off: Desactivar pulsación larga
+  hold_type: Tipo de pulsación larga (hold)
+  hold_value: Valor de pulsación larga
+  remove_confirm: ¿Eliminar esta tecla?
+
+knob_dialog:
+  header: "{knob} · {profile}"
+  type: Tipo
+  type_text: text (imprimir texto)
+  type_key: key (enviar teclas)
+  type_brightness: device_brightness (brillo del deck)
+  left: Izquierda (sentido antihorario)
+  right: Derecha (sentido horario)
+  press: Pulsar
+  step: Paso (solo device_brightness)
+  hint: "Con text: el texto que se imprime. Con key: combinación(es) de teclas. Con device_brightness solo se usa el paso."
+
+image_dialog:
+  title: Elige una imagen (se convierte en 192x192 en icons/)
+  up: Subir
+  save_as_icon: "Guardar como icono (nombre sin .png):"
+  save_as_background: "Guardar como fondo (nombre sin .png):"
+
+app_dialog:
+  title: Elige una app
+  finder_folder: /System/Library/CoreServices (Finder)
+  filter: filtrar por nombre
+
+device_dialog:
+  title: Ajustes del dispositivo
+  screensaver: Salvapantallas
+  mode: Modo
+  mode_off: Apagado (el deck sigue activo)
+  mode_firmware: Salvapantallas del firmware (tras ~30 s, sin keep-alive)
+  mode_dim: Atenuar
+  mode_color: Color sólido
+  mode_image: Imagen sobre todas las teclas
+  timeout: Tras (segundos de inactividad)
+  saver_brightness: Brillo durante el salvapantallas
+  color: Color
+  image: Imagen
+  other: Otros
+  keep_alive: Intervalo de keep-alive (s)
+  hint: "Se guarda en device: de config.yaml. Una pulsación en una tecla o mando termina el salvapantallas; esa pulsación no hace nada más. El brillo está arriba en la página."
+
+profile_dialog:
+  header: Perfil {name}
+  app: App que activa este perfil
+  no_app: sin app
+  hint_app: El perfil se activa en cuanto esta app pasa al primer plano en el Mac.
+  background: Fondo (sobre toda la pantalla, visible a través de la transparencia de una tecla; negro sin imagen)
+  unlink: Desvincular app
+  unlink_confirm: ¿Desvincular la app del perfil {name}? El perfil se conserva.
+
+plugins_dialog:
+  title: Plugins
+  hint: Solo las bibliotecas marcadas aparecen en el panel de biblioteca.
+  count: "{count} teclas"
+  import: Importar…
+  import_failed: "{file} no importado: {error}"
+  import_hint: Elige el archivo .yaml, junto con el .zip del mismo nombre si la biblioteca tiene iconos propios.
+  zip_without_yaml: "{file}: elige también el archivo .yaml con el mismo nombre"
+
+screen_dialog:
+  title: Config. de pantalla
+  language: Idioma
+  hint: "Se guarda en ui: de config.yaml. Después la página se recarga."
+
+new_profile_dialog:
+  title: Nuevo perfil
+  name: Nombre (se convierte en profiles/<nombre>.yaml)
+
+docs_viewer:
+  title: D200X Manager · Documentación
+  not_found_title: No encontrado
+  not_found: página {name} no encontrada
+  home_link: Ir a la página de inicio
+  no_sidebar: falta docs/_sidebar.md
+
+# Mensajes del servidor que aparecen en la interfaz web.
+errors:
+  at: "{where}: {error}"
+  unknown_section: sección desconocida
+  unknown_item: elemento desconocido
+  unknown_profile: "perfil desconocido: {name}"
+  invalid_name: "nombre no válido: usa letras, números, espacio, - o _"
+  invalid_filename: "nombre de archivo no válido: usa letras, números, espacio, - o _"
+  library_exists: la biblioteca {name} ya existe
+  profile_exists: el perfil {name} ya existe
+  choose_yaml: elige un archivo .yaml
+  not_an_image: "no es una imagen: elige un png, jpg, ico o icns"
+  icon_name_needed: ponle un nombre al icono
+  image_name_needed: ponle un nombre a la imagen
+  key_empty: esta tecla está vacía
+  default_no_app: el perfil default no puede pertenecer a una app
+  not_an_app: "no es una app: {app}"
+  app_taken: "{app} ya activa el perfil {profile}"
+  background_missing: "fondo no encontrado: {path}"
+  hex_color: "{field} debe ser un color hexadecimal, p. ej. #1a1a2e"
+  saver_mode: modo de salvapantallas desconocido
+  keep_alive_range: el intervalo de keep-alive debe estar entre 0,2 y 10 segundos
+  saver_timeout_range: el tiempo del salvapantallas debe estar entre 5 y 3600 segundos
+  saver_brightness_range: el brillo del salvapantallas debe estar entre 0 y 100
+  saver_image_needed: elige una imagen para el salvapantallas
+  unknown_language: "idioma desconocido: {language}"
+  file_missing: "{field}: archivo no encontrado"
+  bad_zip: no es un zip válido de iconos png
+
+# Errores en config.yaml o en un perfil. La config anterior sigue activa.
+config:
+  key: "tecla {number}: {error}"
+  knob: "mando {name}: {error}"
+  unknown_combo: "combinación de teclas desconocida: {combo}"
+  unknown_type: "tipo desconocido: {type}"
+  app_not_found: "app no encontrada: {app}"
+  keys_needed: el tipo key necesita "keys"
+  background_image_missing: "background_image no encontrada: {path}"
+  transparency_range: transparency debe estar entre 0 y 100
+  key_out_of_range: "página {page}: la tecla {number} no existe"
+  unknown_page: "página {page} tecla {number}: página desconocida: {target}"
+  no_pages: este archivo no tiene sección pages
+  page_missing: la página {page} no está en este archivo
+  buttons_moved: '"buttons" se ha movido: pon las teclas bajo "pages: 1:"'
+
+# Comprobación de un archivo de biblioteca al importarlo.
+library_check:
+  entry: tecla {number}
+  entry_titled: tecla {number} ({title})
+  hold: "{where} (hold)"
+  not_a_key: "debe ser una tecla, p. ej. {type: key, title: Copy, keys: cmd+c}"
+  unknown_field: campo desconocido {fields}
+  page_needed: el tipo page necesita "page" (home, next, previous o un número)
+  profile_needed: el tipo profile necesita "profile"
+  not_a_color: "{field} no es un color: {value}"
+  font_size_range: font_size debe ser un número de 8 a 200
+  transparency_number: transparency debe ser un número de 0 a 100
+  icon_missing: "icono no encontrado: {path}"
+  hold_in_hold: hold no puede tener su propio hold
+  invalid_yaml: "YAML no válido: {error}"
+  needs_buttons: un archivo de biblioteca empieza con "buttons:" seguido de una lista de teclas
+  top_field: campo de nivel superior desconocido {fields} (solo se permite "buttons")
+  buttons_list: '"buttons" debe ser una lista: cada tecla en una línea que empiece por "  - "'

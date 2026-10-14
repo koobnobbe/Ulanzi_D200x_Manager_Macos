@@ -49,13 +49,13 @@ pages:
   1:
     1: {type: key, title: Copy, keys: cmd+c, transparency: 90}
     10: {type: app, app: /Applications/BusyCal.app, title: BusyCal, font_size: 30}
-    6: {background: '#000000'}
+    6: {type: key, title: Quit, keys: cmd+q, font_size: 44}
     2: {type: app, title: Finder, app: /System/Library/CoreServices/Finder.app, transparency: 90}
     3: {type: key, title: Paste, keys: cmd+v, transparency: 90}
     4:  {type: app, app: "/System/Applications/Calculator.app",profile: Calculator,  title: "Calc"}
     5:  {type: app, app: "/Applications/iStatistica\ Pro.app", title: "Stats"}
     7: {type: app, title: Bitwarden, output: Bitwarden, app: /Applications/Bitwarden.app, font_size: 35}
-    8: {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
+    8: {type: key, title: Area, keys: ctrl+p, icon: icons/shottr-area.png, background: '#1b1b2d', transparency: 0}
     9: {type: key, title: mute, keys: mute, icon: icons/james.png, hold: {type: profile, profile: Calculator}}
     11: {type: page, page: previous, title: "<"}
     12: {type: page, page: home, title: "Home"}
@@ -109,3 +109,6 @@ knobs:
   K1: {index: 0x11, type: key, left: "volumedown", right: "volumeup", press: "mute"}
   K2: {index: 0x12, type: key, left: "brightnessdown", right: "brightnessup"}
   K3: {index: 0x13, type: device_brightness, step: 10}
+
+ui:
+  language: "nl"

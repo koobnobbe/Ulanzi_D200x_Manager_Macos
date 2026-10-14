@@ -1,15 +1,20 @@
+import base64
 import concurrent.futures
 import http.server
 import io
 import json
 import os
-import plistlib
 import re
 import threading
+import zipfile
 from urllib.parse import parse_qs, unquote, urlsplit
 
 import yaml
 from PIL import Image
+
+import i18n
+from appicon import app_icon
+from i18n import t
 
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'index.html')
 DOCS_PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'docs.html')
@@ -51,7 +56,7 @@ def hidden_libraries():
 
 def set_library_enabled(section, enabled):
     if not os.path.isfile(library_path(section)):
-        raise ValueError('onbekende sectie')
+        raise ValueError(t('errors.unknown_section'))
     hidden = hidden_libraries()
     if enabled:
         hidden.discard(section)
@@ -77,24 +82,19 @@ def list_library():
     return sections
 
 
-def app_icon_png(app, size=32):
-    with open(os.path.join(app, 'Contents', 'Info.plist'), 'rb') as fp:
-        icon = plistlib.load(fp).get('CFBundleIconFile')
-    if not icon:
-        return None
-    if not icon.endswith('.icns'):
-        icon += '.icns'
-    path = os.path.join(app, 'Contents', 'Resources', icon)
-    if not os.path.exists(path):
+def app_icon_png(app, size=64):
+    """The app's icon as PNG bytes for the web interface (64 px, sharp on a Retina screen at 32 px)."""
+    icon = app_icon(app)
+    if icon is None:
         return None
     buf = io.BytesIO()
-    Image.open(path).convert('RGBA').resize((size, size), Image.LANCZOS).save(buf, format='PNG')
+    icon.resize((size, size), Image.LANCZOS).save(buf, format='PNG')
     return buf.getvalue()
 
 
 def library_path(section):
     if '/' in section or section.startswith('.'):
-        raise ValueError('onbekende sectie')
+        raise ValueError(t('errors.unknown_section'))
     return os.path.join(PROJECT_DIR, 'library', f'{section}.yaml')
 
 
@@ -114,30 +114,128 @@ def append_library_line(path, line):
 def add_library_entry(data):
     entry = yaml.safe_dump(data, default_flow_style=True, sort_keys=False, allow_unicode=True, width=10 ** 6).strip()
     append_library_line(library_path('template'), f'  - {entry}')
+    sync_library_zip('template')
+
+
+# Icon files a library uses travel with it in library/<section>.zip, next to library/<section>.yaml.
+# App icons are not files and are not in the zip.
+
+def library_zip_path(section):
+    return os.path.splitext(library_path(section))[0] + '.zip'
+
+
+def library_entries(section):
+    with open(library_path(section)) as fp:
+        return (yaml.safe_load(fp) or {}).get('buttons') or []
+
+
+def icon_file(entry):
+    """The file name in icons/ of an entry's own icon ("icons/x.png" -> "x.png"), or None."""
+    icon = entry.get('icon') if isinstance(entry, dict) else None
+    name = os.path.basename(icon) if isinstance(icon, str) else ''
+    return name if icon == f'icons/{name}' and name.lower().endswith('.png') else None
+
+
+def zip_icon(section, name):
+    path = library_zip_path(section)
+    if not os.path.isfile(path):
+        return None
+    with zipfile.ZipFile(path) as archive:
+        return archive.read(name) if name in archive.namelist() else None
+
+
+def sync_library_zip(section):
+    """Make the section's zip hold exactly the icon files its keys use, taken from the zip or from icons/."""
+    files = {}
+    for name in sorted({icon_file(e) for e in library_entries(section)} - {None}):
+        data = zip_icon(section, name)
+        if data is None and os.path.isfile(os.path.join(PROJECT_DIR, 'icons', name)):
+            with open(os.path.join(PROJECT_DIR, 'icons', name), 'rb') as fp:
+                data = fp.read()
+        if data is not None:
+            files[name] = data
+    path = library_zip_path(section)
+    if not files:
+        if os.path.exists(path):
+            os.remove(path)
+        return
+    with zipfile.ZipFile(path + '.tmp', 'w', zipfile.ZIP_DEFLATED) as archive:
+        for name, data in files.items():
+            archive.writestr(name, data)
+    os.replace(path + '.tmp', path)
+
+
+def extract_library_icon(section, index):
+    """Copy the icon of a library entry from its zip into icons/, unless icons/ already has that file."""
+    entries = library_entries(section)
+    if not 0 <= index < len(entries):
+        raise ValueError(t('errors.unknown_item'))
+    name = icon_file(entries[index])
+    target = os.path.join(PROJECT_DIR, 'icons', name) if name else None
+    if not name or os.path.exists(target):
+        return
+    data = zip_icon(section, name)
+    if data is not None:
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        with open(target, 'wb') as fp:
+            fp.write(data)
+
+
+def library_icon(section, name):
+    """PNG bytes of a library entry's icon for the library panel: from icons/, else from the section's zip."""
+    if os.path.basename(name) != name or not name.lower().endswith('.png'):
+        return None
+    path = os.path.join(PROJECT_DIR, 'icons', name)
+    if os.path.isfile(path):
+        with open(path, 'rb') as fp:
+            return fp.read()
+    return zip_icon(section, name)
+
+
+def read_icon_zip(data):
+    """{name: png bytes} from an uploaded icon zip; raises ValueError if it is not a zip of png images."""
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(data))
+        files = {}
+        for info in archive.infolist():
+            if info.is_dir():
+                continue
+            name = os.path.basename(info.filename)
+            if name.startswith('.') or '__MACOSX' in info.filename:
+                continue  # Finder adds these when it makes a zip
+            if not name.lower().endswith('.png'):
+                raise ValueError(name)
+            content = archive.read(info)
+            Image.open(io.BytesIO(content)).verify()
+            files[name] = content
+        return files
+    except Exception:
+        raise ValueError(t('errors.bad_zip'))
 
 
 def create_library(name):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9 _-]{0,40}', name or ''):
-        raise ValueError('ongeldige naam: gebruik letters, cijfers, spatie, - of _')
+        raise ValueError(t('errors.invalid_name'))
     path = library_path(name)
     if os.path.exists(path):
-        raise ValueError(f'bibliotheek {name} bestaat al')
+        raise ValueError(t('errors.library_exists', name=name))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'x') as fp:
         fp.write(f'# Library section "{name}". Each entry is a key definition you can drag onto a key.\nbuttons: []\n')
 
 
-def import_library(filename, text, check):
-    """Copy a library file into library/ after `check` (which raises on a bad file) accepts it."""
+def import_library(filename, text, check, zip_data=None):
+    """Copy a library file (and its icon zip) into library/ after `check` (which raises on a bad file) accepts it."""
     name = os.path.splitext(os.path.basename(filename or ''))[0]
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9 _-]{0,40}', name):
-        raise ValueError('ongeldige bestandsnaam: gebruik letters, cijfers, spatie, - of _')
+        raise ValueError(t('errors.invalid_filename'))
     if not (filename or '').lower().endswith(('.yaml', '.yml')):
-        raise ValueError('kies een .yaml-bestand')
+        raise ValueError(t('errors.choose_yaml'))
     path = library_path(name)
     if os.path.exists(path):
-        raise ValueError(f'bibliotheek {name} bestaat al')
-    entries = check(text)
+        raise ValueError(t('errors.library_exists', name=name))
+    icons = read_icon_zip(zip_data) if zip_data else {}
+    entries = check(text, icons)
     # Moving and deleting entries works line by line, so every key must sit on one "  - {...}" line.
     lines = [line for line in text.split('\n') if line.startswith('  - ')]
     one_per_line = len(lines) == len(entries) and all(yaml.safe_load(line[4:]) == e for line, e in zip(lines, entries))
@@ -147,18 +245,23 @@ def import_library(filename, text, check):
         text = f'# Library section "{name}" (imported).\nbuttons:' + ''.join(f'\n  - {f}' for f in flows) + ('\n' if flows else ' []\n')
     with open(path, 'x') as fp:
         fp.write(text)
+    if icons:
+        with zipfile.ZipFile(library_zip_path(name), 'w', zipfile.ZIP_DEFLATED) as archive:
+            for icon, data in icons.items():
+                archive.writestr(icon, data)
+        sync_library_zip(name)  # keep only the icons the keys use
     return name
 
 
 def take_library_line(section, index):
     path = library_path(section)
     if not os.path.isfile(path):
-        raise ValueError('onbekende sectie')
+        raise ValueError(t('errors.unknown_section'))
     with open(path) as fp:
         lines = fp.read().split('\n')
     entries = [i for i, line in enumerate(lines) if line.startswith('  - ')]
     if not 0 <= index < len(entries):
-        raise ValueError('onbekend item')
+        raise ValueError(t('errors.unknown_item'))
     line = lines.pop(entries[index])
     with open(path, 'w') as fp:
         fp.write('\n'.join(lines))
@@ -167,15 +270,24 @@ def take_library_line(section, index):
 
 def delete_library_entry(section, index):
     take_library_line(section, index)
+    sync_library_zip(section)
 
 
 def move_library_entry(section, index, target):
     if target == section:
         return
     if not os.path.isfile(library_path(target)):
-        raise ValueError('onbekende sectie')
+        raise ValueError(t('errors.unknown_section'))
+    name = icon_file(library_entries(section)[index]) if 0 <= index < len(library_entries(section)) else None
+    data = zip_icon(section, name) if name else None
     line = take_library_line(section, index)
     append_library_line(library_path(target), line)
+    if data is not None and zip_icon(target, name) is None:
+        # Bring the icon along before the source zip forgets it.
+        with zipfile.ZipFile(library_zip_path(target), 'a', zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr(name, data)
+    sync_library_zip(target)
+    sync_library_zip(section)
 
 
 def list_icons():
@@ -187,10 +299,10 @@ def list_icons():
 
 def make_icon(source, name=None):
     if not os.path.isfile(source) or not source.lower().endswith(IMAGE_EXTS):
-        raise ValueError('geen afbeelding: kies een png, jpg, ico of icns')
+        raise ValueError(t('errors.not_an_image'))
     stem = re.sub(r'[^A-Za-z0-9_-]+', '_', name or os.path.splitext(os.path.basename(source))[0]).strip('_')
     if not stem:
-        raise ValueError('geef een naam voor het icoon')
+        raise ValueError(t('errors.icon_name_needed'))
     os.makedirs(os.path.join(PROJECT_DIR, 'icons'), exist_ok=True)
     image = Image.open(source).convert('RGBA')
     image.thumbnail((ICON_SIZE, ICON_SIZE), Image.LANCZOS)
@@ -209,10 +321,10 @@ def list_backgrounds():
 
 def make_background(source, name=None):
     if not os.path.isfile(source) or not source.lower().endswith(IMAGE_EXTS):
-        raise ValueError('geen afbeelding: kies een png, jpg, ico of icns')
+        raise ValueError(t('errors.not_an_image'))
     stem = re.sub(r'[^A-Za-z0-9_-]+', '_', name or os.path.splitext(os.path.basename(source))[0]).strip('_')
     if not stem:
-        raise ValueError('geef een naam voor de afbeelding')
+        raise ValueError(t('errors.image_name_needed'))
     os.makedirs(os.path.join(PROJECT_DIR, 'backgrounds'), exist_ok=True)
     image = Image.open(source).convert('RGB')
     image.thumbnail((BACKGROUND_MAX, BACKGROUND_MAX), Image.LANCZOS)
@@ -276,6 +388,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return
             with open(file, 'rb') as fp:
                 self.send(200, fp.read(), kind)
+        elif path == '/api/ui':
+            self.send_json(self.call(manager.ui_settings))
+        elif path == '/api/lang':
+            self.send_json(i18n.texts())
+        elif path == '/library/icon':
+            query = parse_qs(urlsplit(self.path).query)
+            try:
+                data = library_icon(query['section'][0], query['name'][0])
+            except Exception:
+                data = None
+            if data is None:
+                self.send_json({'error': 'not found'}, 404)
+            else:
+                self.send(200, data, 'image/png')
         elif path == '/api/library':
             try:
                 self.send_json({'sections': list_library()})
@@ -391,6 +517,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return {'error': self.call(manager.save_file, body.get('name', 'default'), body['text'])}
         if path == '/api/device':
             return {'error': self.call(manager.set_device, body)}
+        if path == '/api/ui':
+            return {'error': self.call(manager.set_ui, body)}
         if path == '/api/background':
             return {'background': make_background(body['source'], body.get('name'))}
         if path == '/api/icon':
@@ -401,7 +529,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path == '/api/key/clear':
             return {'error': self.call(manager.clear_key, body['name'], int(body['page']), int(body['number']))}
         if path == '/api/library/import':
-            return {'section': import_library(body.get('filename'), body.get('text', ''), manager.check_library)}
+            zip_data = base64.b64decode(body['zip']) if body.get('zip') else None
+            return {'section': import_library(body.get('filename'), body.get('text', ''), manager.check_library, zip_data)}
+        if path == '/api/library/extract':
+            extract_library_icon(body['section'], int(body['index']))
+            return {}
         if path == '/api/library/enabled':
             set_library_enabled(body['section'], bool(body['enabled']))
             return {}
@@ -414,7 +546,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path == '/api/library/add':
             key = self.call(manager.key_data, body['name'], int(body['page']), int(body['number']))
             if not key:
-                raise ValueError('deze toets is leeg')
+                raise ValueError(t('errors.key_empty'))
             add_library_entry(key)
             return {}
         if path == '/api/knobcfg':

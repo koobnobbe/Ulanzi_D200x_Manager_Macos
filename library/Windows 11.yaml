@@ -1,0 +1,67 @@
+# Library section "Windows 11": Windows 11 shortcuts for a Windows machine controlled from this Mac
+# (Windows App / Remote Desktop, Parallels, VMware). The manager sends Mac keys, which the client passes on:
+#   ctrl = Ctrl, alt = Alt, cmd = the Windows key.
+# Check how your client maps the Windows key; change "cmd" in the entries below if it differs.
+# Some cmd+ combos are also Mac shortcuts; the client must pass them on (e.g. fullscreen with system keys sent).
+# There is no Print Screen key on a Mac keyboard; "Snip" (Windows+Shift+S) takes a screenshot instead.
+buttons:
+  # Edit
+  - {type: key, title: Cut, keys: ctrl+x, font_size: 44}
+  - {type: key, title: Copy, keys: ctrl+c, font_size: 44}
+  - {type: key, title: Paste, keys: ctrl+v, font_size: 44}
+  - {type: key, title: Paste plain, keys: ctrl+shift+v, font_size: 36}
+  - {type: key, title: Clipboard, keys: cmd+v, font_size: 40}
+  - {type: key, title: Undo, keys: ctrl+z, font_size: 44}
+  - {type: key, title: Redo, keys: ctrl+y, font_size: 44}
+  - {type: key, title: Select all, keys: ctrl+a, font_size: 44}
+  - {type: key, title: Find, keys: ctrl+f, font_size: 44}
+  - {type: key, title: Save, keys: ctrl+s, font_size: 44}
+  - {type: key, title: Print, keys: ctrl+p, font_size: 44}
+  # Screenshots (Print Screen)
+  - {type: key, title: Snip, keys: cmd+shift+s, font_size: 44}
+  - {type: key, title: Game Bar, keys: cmd+g, font_size: 40}
+  - {type: key, title: Record, keys: cmd+alt+r, font_size: 44}
+  # Apps and windows
+  - {type: key, title: Start, keys: ctrl+esc, font_size: 44}
+  - {type: key, title: Search, keys: cmd+s, font_size: 44}
+  - {type: key, title: Run, keys: cmd+r, font_size: 44}
+  - {type: key, title: Explorer, keys: cmd+e, font_size: 44}
+  - {type: key, title: Settings, keys: cmd+i, font_size: 44}
+  - {type: key, title: Alt+Tab, keys: alt+tab, font_size: 44}
+  - {type: key, title: Close, keys: alt+f4, font_size: 44}
+  - {type: key, title: New, keys: ctrl+n, font_size: 44}
+  - {type: key, title: New tab, keys: ctrl+t, font_size: 44}
+  - {type: key, title: Close tab, keys: ctrl+w, font_size: 40}
+  - {type: key, title: Reopen tab, keys: ctrl+shift+t, font_size: 32}
+  - {type: key, title: Refresh, keys: f5, font_size: 44}
+  - {type: key, title: Snap left, keys: cmd+left, font_size: 44}
+  - {type: key, title: Snap right, keys: cmd+right, font_size: 36}
+  - {type: key, title: Maximize, keys: cmd+up, font_size: 40}
+  - {type: key, title: Restore, keys: cmd+down, font_size: 44}
+  - {type: key, title: Desktop, keys: cmd+d, font_size: 44}
+  # System
+  - {type: key, title: Task Mgr, keys: ctrl+shift+esc, font_size: 40}
+  - {type: key, title: Ctrl+Alt+Del, keys: ctrl+alt+end, font_size: 32}
+  - {type: key, title: Lock, keys: cmd+l, font_size: 44}
+  - {type: key, title: Quick set, keys: cmd+a, font_size: 40}
+  - {type: key, title: Notifications, keys: cmd+n, font_size: 32}
+  - {type: key, title: Emoji, keys: cmd+., font_size: 44}
+  - {type: key, title: Desktop <, keys: cmd+ctrl+left, font_size: 36}
+  - {type: key, title: Desktop >, keys: cmd+ctrl+right, font_size: 36}
+  - {type: key, title: New desktop, keys: cmd+ctrl+d, font_size: 30}
+  - {type: key, title: Power menu, keys: cmd+x, font_size: 32}
+  # Explorer
+  - {type: key, title: New folder, keys: ctrl+shift+n, font_size: 36}
+  - {type: key, title: Rename, keys: f2, font_size: 44}
+  - {type: key, title: Properties, keys: alt+enter, font_size: 36}
+  - {type: key, title: Delete, keys: forwarddelete, font_size: 44}
+  - {type: key, title: Delete perm, keys: shift+forwarddelete, font_size: 32}
+  - {type: key, title: Address, keys: alt+d, font_size: 44}
+  - {type: key, title: Back, keys: alt+left, font_size: 44}
+  - {type: key, title: Up, keys: alt+up, font_size: 44}
+  # Text
+  - {type: key, title: Line start, keys: home, font_size: 40}
+  - {type: key, title: Line end, keys: end, font_size: 44}
+  - {type: key, title: Top, keys: ctrl+home, font_size: 44}
+  - {type: key, title: Bottom, keys: ctrl+end, font_size: 44}
+  - {type: key, title: Del word, keys: ctrl+backspace, font_size: 44}

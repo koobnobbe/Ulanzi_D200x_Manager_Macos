@@ -1,0 +1,255 @@
+# Texts of the D200X Manager (web interface and the messages shown in it).
+#
+# Another language: copy this file to e.g. lang/de.yaml, translate the texts (including
+# app.language_name) and pick the language in the web interface under "Screen config…".
+# Texts missing from another language fall back to this file. English is also the default language.
+# Keep the keys (left of the colon) and the {names} in curly braces as they are.
+# Put a text that contains a colon, # or { in quotes.
+
+app:
+  title: D200X Manager
+  heading: Ulanzi D200X
+  language_name: English   # name of this language in the dropdown
+  lang: en
+  locale: en-GB          # for the time on the clock in the web interface
+
+common:
+  cancel: Cancel
+  save: Save
+  close: Close
+  create: Create
+  choose: Choose…
+  new: New…
+  none: none
+  remove: Remove
+
+header:
+  profile: "Profile: {name}"
+  brightness: Brightness
+  screen: Screen config…
+  device: Device…
+  plugins: Plugins…
+  reload: Reload config
+
+sidebar:
+  profiles: Profiles
+  active: "{name}  (active)"
+  default_settings: Settings (background)
+  linked_app: Activated by {app}
+  no_app: "No app: click to choose one"
+  new_profile: + New profile
+  docs: Documentation
+
+grid:
+  pages: Pages
+  keys: Keys
+  keys_title: Keys · {profile} · page {page}
+  page_tab: Page {page}
+  new_page: + New page
+  key_14: key 14
+  clock_window: clock window (settings)
+  knob: knob {number}
+  knob_tooltip: "{knob}\nleft: {left}  |  press: {press}  |  right: {right}"
+  config_error: "The last config has an error, the previous config stays active:\n{error}"
+  log: Log
+
+log:
+  error: "error: {message}"
+  profile_created: Profile {name} created (profiles/{name}.yaml)
+  library_created: Library {name} created
+  library_imported: Library {name} imported
+  library_deleted: Removed from library/{section}.yaml
+  library_added: Key added to library/template.yaml
+  library_moved: Moved to {section}
+
+library:
+  title: Library
+  bin: Drag here to remove
+  new: + New library
+  new_prompt: "Name of the new library:"
+  item: "{title}  ({type})"
+  item_tooltip: Drag onto a key or onto the bin
+
+key_dialog:
+  title: Key
+  header: "{profile} · page {page} · key {number}"
+  tab_text: Text
+  tab_key: Keys (key)
+  tab_app: App
+  tab_page: Page
+  tab_profile: Profile
+  key_title: Title
+  icon: Icon (path)
+  no_icon: no icon
+  hint_text: Text on the key only. The output is printed when the key is pressed.
+  pick_key: Pick a key
+  keys: Keys (key)
+  keys_placeholder: cmd+c or cmd+a, cmd+c
+  hint_key: Key combo(s), separated by commas for a sequence.
+  key_groups:
+    media: Media
+    special: Special
+    letters: Letters
+    digits: Digits
+    other: Other
+  app: App (path to .app)
+  app_profile: Profile for this app
+  app_profile_auto: automatic (linked profile)
+  app_profile_none: no profile
+  hint_app: By default the profile linked to this app is loaded. Choose "no profile" to load none.
+  page: Page (page)
+  page_home: home (page 1)
+  page_next: next (next page)
+  page_previous: previous (previous page)
+  page_number: page {page}
+  hint_page: Goes to a page of the current profile.
+  profile: Profile (profile)
+  hint_profile: Loads this profile. default is config.yaml.
+  background: Background
+  color: Text color
+  clock_image: Clock window image (across the double key; Background and Transparency then apply to the clock window too)
+  transparency: Transparency (%)
+  font_size: Font size
+  longpress_on: Enable long press
+  longpress_off: Disable long press
+  hold_type: Hold type
+  hold_value: Hold value
+  remove_confirm: Remove this key?
+
+knob_dialog:
+  header: "{knob} · {profile}"
+  type: Type
+  type_text: text (print text)
+  type_key: key (send keys)
+  type_brightness: device_brightness (brightness of the deck)
+  left: Left (counter-clockwise)
+  right: Right (clockwise)
+  press: Press
+  step: Step (device_brightness only)
+  hint: "With text: the text that is printed. With key: key combo(s). With device_brightness only the step is used."
+
+image_dialog:
+  title: Choose an image (becomes 192x192 in icons/)
+  up: Up
+  save_as_icon: "Save as icon (name without .png):"
+  save_as_background: "Save as background (name without .png):"
+
+app_dialog:
+  title: Choose an app
+  finder_folder: /System/Library/CoreServices (Finder)
+  filter: filter by name
+
+device_dialog:
+  title: Device settings
+  screensaver: Screensaver
+  mode: Mode
+  mode_off: Off (deck stays awake)
+  mode_firmware: Firmware screensaver (after ~30s, no keep-alive)
+  mode_dim: Dim
+  mode_color: Solid color
+  mode_image: Image across all keys
+  timeout: After (seconds idle)
+  saver_brightness: Brightness during screensaver
+  color: Color
+  image: Image
+  other: Other
+  keep_alive: Keep-alive interval (s)
+  hint: "Saved under device: in config.yaml. A press on a key or knob ends the screensaver; that press does nothing else. Brightness is at the top of the page."
+
+profile_dialog:
+  header: Profile {name}
+  app: App that activates this profile
+  no_app: no app
+  hint_app: The profile becomes active as soon as this app comes to the front on the Mac.
+  background: Background (across the whole screen, visible through a key's transparency; black without an image)
+  unlink: Unlink app
+  unlink_confirm: Unlink the app from profile {name}? The profile itself is kept.
+
+plugins_dialog:
+  title: Plugins
+  hint: Only checked libraries are shown in the library panel.
+  count: "{count} keys"
+  import: Import…
+  import_failed: "{file} not imported: {error}"
+  import_hint: Choose the .yaml file, together with the .zip of the same name if the library has its own icons.
+  zip_without_yaml: "{file}: also choose the .yaml file with the same name"
+
+screen_dialog:
+  title: Screen config
+  language: Language
+  hint: "Saved under ui: in config.yaml. The page reloads afterwards."
+
+new_profile_dialog:
+  title: New profile
+  name: Name (becomes profiles/<name>.yaml)
+
+docs_viewer:
+  title: D200X Manager · Documentation
+  not_found_title: Not found
+  not_found: page {name} not found
+  home_link: Go to the start page
+  no_sidebar: docs/_sidebar.md is missing
+
+# Server messages shown in the web interface.
+errors:
+  at: "{where}: {error}"
+  unknown_section: unknown section
+  unknown_item: unknown item
+  unknown_profile: "unknown profile: {name}"
+  invalid_name: "invalid name: use letters, digits, space, - or _"
+  invalid_filename: "invalid file name: use letters, digits, space, - or _"
+  library_exists: library {name} already exists
+  profile_exists: profile {name} already exists
+  choose_yaml: choose a .yaml file
+  not_an_image: "not an image: choose a png, jpg, ico or icns"
+  icon_name_needed: give the icon a name
+  image_name_needed: give the image a name
+  key_empty: this key is empty
+  default_no_app: the default profile cannot belong to an app
+  not_an_app: "not an app: {app}"
+  app_taken: "{app} already activates profile {profile}"
+  background_missing: "background not found: {path}"
+  hex_color: "{field} must be a hex color, e.g. #1a1a2e"
+  saver_mode: unknown screensaver mode
+  keep_alive_range: keep-alive interval must be between 0.2 and 10 seconds
+  saver_timeout_range: screensaver timeout must be between 5 and 3600 seconds
+  saver_brightness_range: screensaver brightness must be between 0 and 100
+  saver_image_needed: choose an image for the screensaver
+  unknown_language: "unknown language: {language}"
+  file_missing: "{field}: file not found"
+  bad_zip: not a valid zip of png icons
+
+# Errors in config.yaml or a profile. The previous config then stays active.
+config:
+  key: "key {number}: {error}"
+  knob: "knob {name}: {error}"
+  unknown_combo: "unknown key combo: {combo}"
+  unknown_type: "unknown type: {type}"
+  app_not_found: "app not found: {app}"
+  keys_needed: type key needs "keys"
+  background_image_missing: "background_image not found: {path}"
+  transparency_range: transparency must be between 0 and 100
+  key_out_of_range: "page {page}: key {number} does not exist"
+  unknown_page: "page {page} key {number}: unknown page: {target}"
+  no_pages: this file has no pages section
+  page_missing: page {page} is not in this file
+  buttons_moved: '"buttons" has moved: put the keys under "pages: 1:"'
+
+# Checks on a library file when it is imported.
+library_check:
+  entry: key {number}
+  entry_titled: key {number} ({title})
+  hold: "{where} (hold)"
+  not_a_key: "must be a key, e.g. {type: key, title: Copy, keys: cmd+c}"
+  unknown_field: unknown field {fields}
+  page_needed: type page needs "page" (home, next, previous or a number)
+  profile_needed: type profile needs "profile"
+  not_a_color: "{field} is not a color: {value}"
+  font_size_range: font_size must be a number from 8 to 200
+  transparency_number: transparency must be a number from 0 to 100
+  icon_missing: "icon not found: {path}"
+  hold_in_hold: hold cannot have a hold of its own
+  invalid_yaml: "not valid YAML: {error}"
+  needs_buttons: a library file starts with "buttons:" followed by a list of keys
+  top_field: unknown top-level field {fields} (only "buttons" is allowed)
+  buttons_list: '"buttons" must be a list: each key on a line starting with "  - "'

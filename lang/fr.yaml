@@ -1,0 +1,253 @@
+# Textes du D200X Manager (interface web et messages qui y apparaissent).
+#
+# Les textes absents de ce fichier sont pris dans lang/en.yaml.
+# Gardez les clés (à gauche des deux-points) et les {noms} entre accolades tels quels.
+# Mettez entre guillemets un texte qui contient deux-points suivis d'un espace, # ou {.
+
+app:
+  title: D200X Manager
+  heading: Ulanzi D200X
+  language_name: Français   # nom de cette langue dans la liste
+  lang: fr
+  locale: fr-FR          # pour l'heure de l'horloge dans l'interface web
+
+common:
+  cancel: Annuler
+  save: Enregistrer
+  close: Fermer
+  create: Créer
+  choose: Choisir…
+  new: Nouveau…
+  none: aucun
+  remove: Supprimer
+
+header:
+  profile: "Profil : {name}"
+  brightness: Luminosité
+  screen: Config écran…
+  device: Appareil…
+  plugins: Plugins…
+  reload: Recharger la config
+
+sidebar:
+  profiles: Profils
+  active: "{name}  (actif)"
+  default_settings: Réglages (arrière-plan)
+  linked_app: Activé par {app}
+  no_app: "Aucune app : cliquez pour en choisir une"
+  new_profile: + Nouveau profil
+  docs: Documentation
+
+grid:
+  pages: Pages
+  keys: Touches
+  keys_title: Touches · {profile} · page {page}
+  page_tab: Page {page}
+  new_page: + Nouvelle page
+  key_14: touche 14
+  clock_window: fenêtre de l'horloge (réglages)
+  knob: molette {number}
+  knob_tooltip: "{knob}\ngauche : {left}  |  appui : {press}  |  droite : {right}"
+  config_error: "La dernière config contient une erreur, la config précédente reste active :\n{error}"
+  log: Journal
+
+log:
+  error: "erreur : {message}"
+  profile_created: Profil {name} créé (profiles/{name}.yaml)
+  library_created: Bibliothèque {name} créée
+  library_imported: Bibliothèque {name} importée
+  library_deleted: Supprimé de library/{section}.yaml
+  library_added: Touche ajoutée à library/template.yaml
+  library_moved: Déplacé vers {section}
+
+library:
+  title: Bibliothèque
+  bin: Glissez ici pour supprimer
+  new: + Nouvelle bibliothèque
+  new_prompt: "Nom de la nouvelle bibliothèque :"
+  item: "{title}  ({type})"
+  item_tooltip: Glissez sur une touche ou sur la corbeille
+
+key_dialog:
+  title: Touche
+  header: "{profile} · page {page} · touche {number}"
+  tab_text: Texte
+  tab_key: Touches (key)
+  tab_app: App
+  tab_page: Page
+  tab_profile: Profil
+  key_title: Titre
+  icon: Icône (chemin)
+  no_icon: aucune icône
+  hint_text: Texte seul sur la touche. La sortie (output) est affichée à chaque appui.
+  pick_key: Choisir une touche
+  keys: Touches (key)
+  keys_placeholder: cmd+c ou cmd+a, cmd+c
+  hint_key: Combinaison(s) de touches, séparées par des virgules pour une séquence.
+  key_groups:
+    media: Média
+    special: Spéciales
+    letters: Lettres
+    digits: Chiffres
+    other: Autres
+  app: App (chemin .app)
+  app_profile: Profil pour cette app
+  app_profile_auto: automatique (profil lié)
+  app_profile_none: aucun profil
+  hint_app: Par défaut, le profil lié à cette app est chargé. Choisissez « aucun profil » pour n'en charger aucun.
+  page: Page (page)
+  page_home: home (page 1)
+  page_next: next (page suivante)
+  page_previous: previous (page précédente)
+  page_number: page {page}
+  hint_page: Va à une page du profil actuel.
+  profile: Profil (profile)
+  hint_profile: Charge ce profil. default est config.yaml.
+  background: Arrière-plan
+  color: Couleur du texte
+  clock_image: Image de la fenêtre de l'horloge (sur la touche double ; Arrière-plan et Transparence s'appliquent alors aussi à la fenêtre de l'horloge)
+  transparency: Transparence (%)
+  font_size: Taille du texte
+  longpress_on: Activer l'appui long
+  longpress_off: Désactiver l'appui long
+  hold_type: Type d'appui long (hold)
+  hold_value: Valeur d'appui long
+  remove_confirm: Supprimer cette touche ?
+
+knob_dialog:
+  header: "{knob} · {profile}"
+  type: Type
+  type_text: text (afficher du texte)
+  type_key: key (envoyer des touches)
+  type_brightness: device_brightness (luminosité du deck)
+  left: Gauche (sens antihoraire)
+  right: Droite (sens horaire)
+  press: Appui
+  step: Pas (device_brightness uniquement)
+  hint: "Avec text : le texte affiché. Avec key : combinaison(s) de touches. Avec device_brightness, seul le pas est utilisé."
+
+image_dialog:
+  title: Choisir une image (devient 192x192 dans icons/)
+  up: Dossier parent
+  save_as_icon: "Enregistrer comme icône (nom sans .png) :"
+  save_as_background: "Enregistrer comme arrière-plan (nom sans .png) :"
+
+app_dialog:
+  title: Choisir une app
+  finder_folder: /System/Library/CoreServices (Finder)
+  filter: filtrer par nom
+
+device_dialog:
+  title: Réglages de l'appareil
+  screensaver: Économiseur d'écran
+  mode: Mode
+  mode_off: Désactivé (le deck reste allumé)
+  mode_firmware: Économiseur du firmware (après ~30 s, sans keep-alive)
+  mode_dim: Atténuer
+  mode_color: Couleur unie
+  mode_image: Image sur toutes les touches
+  timeout: Après (secondes d'inactivité)
+  saver_brightness: Luminosité pendant l'économiseur
+  color: Couleur
+  image: Image
+  other: Autres
+  keep_alive: Intervalle keep-alive (s)
+  hint: "Enregistré sous device: dans config.yaml. Un appui sur une touche ou une molette arrête l'économiseur ; cet appui ne fait rien d'autre. La luminosité se règle en haut de la page."
+
+profile_dialog:
+  header: Profil {name}
+  app: App qui active ce profil
+  no_app: aucune app
+  hint_app: Le profil devient actif dès que cette app passe au premier plan sur le Mac.
+  background: Arrière-plan (sur tout l'écran, visible à travers la transparence d'une touche ; noir sans image)
+  unlink: Dissocier l'app
+  unlink_confirm: Dissocier l'app du profil {name} ? Le profil lui-même est conservé.
+
+plugins_dialog:
+  title: Plugins
+  hint: Seules les bibliothèques cochées apparaissent dans le panneau de bibliothèque.
+  count: "{count} touches"
+  import: Importer…
+  import_failed: "{file} non importé : {error}"
+  import_hint: Choisissez le fichier .yaml, avec le .zip du même nom si la bibliothèque a ses propres icônes.
+  zip_without_yaml: "{file} : choisissez aussi le fichier .yaml du même nom"
+
+screen_dialog:
+  title: Config écran
+  language: Langue
+  hint: "Enregistré sous ui: dans config.yaml. La page se recharge ensuite."
+
+new_profile_dialog:
+  title: Nouveau profil
+  name: Nom (devient profiles/<nom>.yaml)
+
+docs_viewer:
+  title: D200X Manager · Documentation
+  not_found_title: Introuvable
+  not_found: page {name} introuvable
+  home_link: Aller à la page d'accueil
+  no_sidebar: docs/_sidebar.md est manquant
+
+# Messages du serveur affichés dans l'interface web.
+errors:
+  at: "{where} : {error}"
+  unknown_section: section inconnue
+  unknown_item: élément inconnu
+  unknown_profile: "profil inconnu : {name}"
+  invalid_name: "nom invalide : utilisez des lettres, des chiffres, un espace, - ou _"
+  invalid_filename: "nom de fichier invalide : utilisez des lettres, des chiffres, un espace, - ou _"
+  library_exists: la bibliothèque {name} existe déjà
+  profile_exists: le profil {name} existe déjà
+  choose_yaml: choisissez un fichier .yaml
+  not_an_image: "pas une image : choisissez un png, jpg, ico ou icns"
+  icon_name_needed: donnez un nom à l'icône
+  image_name_needed: donnez un nom à l'image
+  key_empty: cette touche est vide
+  default_no_app: le profil default ne peut pas être lié à une app
+  not_an_app: "pas une app : {app}"
+  app_taken: "{app} active déjà le profil {profile}"
+  background_missing: "arrière-plan introuvable : {path}"
+  hex_color: "{field} doit être une couleur hexadécimale, par ex. #1a1a2e"
+  saver_mode: mode d'économiseur inconnu
+  keep_alive_range: l'intervalle keep-alive doit être entre 0,2 et 10 secondes
+  saver_timeout_range: le délai de l'économiseur doit être entre 5 et 3600 secondes
+  saver_brightness_range: la luminosité de l'économiseur doit être entre 0 et 100
+  saver_image_needed: choisissez une image pour l'économiseur
+  unknown_language: "langue inconnue : {language}"
+  file_missing: "{field} : fichier introuvable"
+  bad_zip: pas un zip valide d'icônes png
+
+# Erreurs dans config.yaml ou un profil. La config précédente reste alors active.
+config:
+  key: "touche {number} : {error}"
+  knob: "molette {name} : {error}"
+  unknown_combo: "combinaison de touches inconnue : {combo}"
+  unknown_type: "type inconnu : {type}"
+  app_not_found: "app introuvable : {app}"
+  keys_needed: le type key nécessite "keys"
+  background_image_missing: "background_image introuvable : {path}"
+  transparency_range: transparency doit être entre 0 et 100
+  key_out_of_range: "page {page} : la touche {number} n'existe pas"
+  unknown_page: "page {page} touche {number} : page inconnue : {target}"
+  no_pages: ce fichier n'a pas de section pages
+  page_missing: la page {page} n'est pas dans ce fichier
+  buttons_moved: '"buttons" a été déplacé : placez les touches sous "pages: 1:"'
+
+# Vérification d'un fichier de bibliothèque à l'import.
+library_check:
+  entry: touche {number}
+  entry_titled: touche {number} ({title})
+  hold: "{where} (hold)"
+  not_a_key: "doit être une touche, par ex. {type: key, title: Copy, keys: cmd+c}"
+  unknown_field: champ inconnu {fields}
+  page_needed: le type page nécessite "page" (home, next, previous ou un numéro)
+  profile_needed: le type profile nécessite "profile"
+  not_a_color: "{field} n'est pas une couleur : {value}"
+  font_size_range: font_size doit être un nombre de 8 à 200
+  transparency_number: transparency doit être un nombre de 0 à 100
+  icon_missing: "icône introuvable : {path}"
+  hold_in_hold: un hold ne peut pas avoir son propre hold
+  invalid_yaml: "YAML invalide : {error}"
+  needs_buttons: un fichier de bibliothèque commence par "buttons:" suivi d'une liste de touches
+  top_field: champ de premier niveau inconnu {fields} (seul "buttons" est autorisé)
+  buttons_list: '"buttons" doit être une liste : chaque touche sur une ligne qui commence par "  - "'
