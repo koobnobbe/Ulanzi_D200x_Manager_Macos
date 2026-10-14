@@ -1,0 +1,54 @@
+# Library section "Apple Mail": shortcuts read from the menus of Mail 16.0 on this Mac (no custom shortcuts are set).
+# They work while Mail is in front. The key icons (Mail-blue tile with the title below) are in "Apple Mail.zip";
+# dragging a key onto the deck copies its icon to icons/.
+buttons:
+  - {type: app, app: /System/Applications/Mail.app, title: Mail, font_size: 30}
+  # Messages
+  - {type: key, title: New mail, keys: cmd+n, icon: icons/mail-new-message.png}
+  - {type: key, title: Reply, keys: cmd+r, icon: icons/mail-reply.png}
+  - {type: key, title: Reply all, keys: cmd+shift+r, icon: icons/mail-reply-all.png}
+  - {type: key, title: Forward, keys: cmd+shift+f, icon: icons/mail-forward.png}
+  - {type: key, title: Redirect, keys: cmd+shift+e, icon: icons/mail-redirect.png}
+  - {type: key, title: Send, keys: cmd+shift+d, icon: icons/mail-send.png}
+  - {type: key, title: Attach, keys: cmd+shift+a, icon: icons/mail-attach.png}
+  - {type: key, title: Get mail, keys: cmd+shift+n, icon: icons/mail-get-mail.png}
+  - {type: key, title: Archive, keys: ctrl+cmd+a, icon: icons/mail-archive.png}
+  - {type: key, title: Delete, keys: cmd+backspace, icon: icons/mail-delete.png}
+  - {type: key, title: Junk, keys: cmd+shift+j, icon: icons/mail-junk.png}
+  - {type: key, title: Read/unread, keys: cmd+shift+u, icon: icons/mail-mark-read.png}
+  - {type: key, title: Flag, keys: cmd+shift+l, icon: icons/mail-flag.png}
+  - {type: key, title: Mute, keys: ctrl+shift+m, icon: icons/mail-mute.png}
+  - {type: key, title: Move to, keys: ctrl+cmd+m, icon: icons/mail-move.png}
+  - {type: key, title: Rules, keys: alt+cmd+l, icon: icons/mail-rules.png}
+  # Find and go to (Favorite 1-3 are the first mailboxes in the Favorites bar)
+  - {type: key, title: Search, keys: alt+cmd+f, icon: icons/mail-search.png}
+  - {type: key, title: Open quickly, keys: cmd+shift+o, icon: icons/mail-open-quickly.png}
+  - {type: key, title: Filter, keys: cmd+l, icon: icons/mail-filter.png}
+  - {type: key, title: Favorite 1, keys: cmd+1, icon: icons/mail-favorite-1.png}
+  - {type: key, title: Favorite 2, keys: cmd+2, icon: icons/mail-favorite-2.png}
+  - {type: key, title: Favorite 3, keys: cmd+3, icon: icons/mail-favorite-3.png}
+  # Mailbox categories
+  - {type: key, title: Primary, keys: alt+cmd+1, icon: icons/mail-primary.png}
+  - {type: key, title: Transactions, keys: alt+cmd+2, icon: icons/mail-transactions.png}
+  - {type: key, title: Updates, keys: alt+cmd+3, icon: icons/mail-updates.png}
+  - {type: key, title: Promotions, keys: alt+cmd+4, icon: icons/mail-promotions.png}
+  - {type: key, title: All mail, keys: alt+cmd+5, icon: icons/mail-all-mail.png}
+  # View and windows
+  - {type: key, title: Sidebar, keys: ctrl+cmd+s, icon: icons/mail-sidebar.png}
+  - {type: key, title: Full screen, keys: ctrl+cmd+f, icon: icons/mail-full-screen.png}
+  - {type: key, title: Raw source, keys: alt+cmd+u, icon: icons/mail-raw-source.png}
+  - {type: key, title: All headers, keys: cmd+shift+h, icon: icons/mail-all-headers.png}
+  - {type: key, title: Activity, keys: alt+cmd+0, icon: icons/mail-activity.png}
+  - {type: key, title: Viewer, keys: cmd+0, icon: icons/mail-viewer.png}
+  - {type: key, title: New tab, keys: alt+cmd+shift+n, icon: icons/mail-new-tab.png}
+  - {type: key, title: New window, keys: alt+cmd+n, icon: icons/mail-new-window.png}
+  # Writing a message
+  - {type: key, title: Bold, keys: cmd+b, icon: icons/mail-bold.png}
+  - {type: key, title: Italic, keys: cmd+i, icon: icons/mail-italic.png}
+  - {type: key, title: Underline, keys: cmd+u, icon: icons/mail-underline.png}
+  - {type: key, title: Quote +, keys: cmd+', icon: icons/mail-quote-more.png}
+  - {type: key, title: Quote -, keys: alt+cmd+', icon: icons/mail-quote-less.png}
+  - {type: key, title: Rich text, keys: cmd+shift+t, icon: icons/mail-rich-text.png}
+  - {type: key, title: Link, keys: cmd+k, icon: icons/mail-link.png}
+  - {type: key, title: Paste quote, keys: cmd+shift+v, icon: icons/mail-paste-quote.png}
+  - {type: key, title: Bcc field, keys: alt+cmd+b, icon: icons/mail-bcc.png}

@@ -1,0 +1,19 @@
+app: "/System/Applications/Mail.app"
+pages:
+  1:
+    11: {type: page, page: previous, title: "<"}
+    8: {type: key, title: Delete, keys: cmd+backspace, icon: icons/mail-delete.png}
+    4: {type: key, title: Forward, keys: cmd+shift+f, icon: icons/mail-forward.png}
+    10: {type: key, title: Junk, keys: cmd+shift+j, icon: icons/mail-junk.png}
+    9: {type: key, title: Archive, keys: ctrl+cmd+a, icon: icons/mail-archive.png}
+    7: {type: key, title: Attach, keys: cmd+shift+a, icon: icons/mail-attach.png}
+    6: {type: key, title: Send, keys: cmd+shift+d, icon: icons/mail-send.png}
+    5: {type: key, title: Get mail, keys: cmd+shift+n, icon: icons/mail-get-mail.png}
+    3: {type: key, title: Reply all, keys: cmd+shift+r, icon: icons/mail-reply-all.png}
+    2: {type: key, title: Reply, keys: cmd+r, icon: icons/mail-reply.png}
+    1: {type: key, title: New mail, keys: cmd+n, icon: icons/mail-new-message.png}
+    12: {type: page, page: home, title: "Home"}
+    13: {type: page, page: next, title: ">"}
+    14: {type: profile, profile: default}
+    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    17: {type: page, page: next}

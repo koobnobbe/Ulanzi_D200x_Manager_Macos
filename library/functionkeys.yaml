@@ -1,14 +1,15 @@
 # Library section "functionkeys". Each entry is a key definition you can drag onto a key in the web interface.
+# The key icons (keycaps) are in functionkeys.zip; dragging a key onto the deck copies its icon to icons/.
 buttons:
-  - {title: "F1", type: key, keys: f1}
-  - {title: "F2", type: key, keys: f2}
-  - {title: "F3", type: key, keys: f3}
-  - {title: "F4", type: key, keys: f4}
-  - {title: "F5", type: key, keys: f5}
-  - {title: "F6", type: key, keys: f6}
-  - {title: "F7", type: key, keys: f7}
-  - {title: "F8", type: key, keys: f8}
-  - {title: "F9", type: key, keys: f9}
-  - {title: "F10", type: key, keys: f10}
-  - {title: "F11", type: key, keys: f11}
-  - {title: "F12", type: key, keys: f12}
+  - {title: F1, type: key, keys: f1, icon: icons/fkey-f1.png}
+  - {title: F2, type: key, keys: f2, icon: icons/fkey-f2.png}
+  - {title: F3, type: key, keys: f3, icon: icons/fkey-f3.png}
+  - {title: F4, type: key, keys: f4, icon: icons/fkey-f4.png}
+  - {title: F5, type: key, keys: f5, icon: icons/fkey-f5.png}
+  - {title: F6, type: key, keys: f6, icon: icons/fkey-f6.png}
+  - {title: F7, type: key, keys: f7, icon: icons/fkey-f7.png}
+  - {title: F8, type: key, keys: f8, icon: icons/fkey-f8.png}
+  - {title: F9, type: key, keys: f9, icon: icons/fkey-f9.png}
+  - {title: F10, type: key, keys: f10, icon: icons/fkey-f10.png}
+  - {title: F11, type: key, keys: f11, icon: icons/fkey-f11.png}
+  - {title: F12, type: key, keys: f12, icon: icons/fkey-f12.png}

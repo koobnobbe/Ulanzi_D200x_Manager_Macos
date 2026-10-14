@@ -1,11 +1,12 @@
 # Library section "sound". Each entry is a key definition you can drag onto a key in the web interface.
+# The key icons (graphite tile with the title below) are in sound.zip; dragging a key onto the deck copies its icon to icons/.
 buttons:
-  - {title: "Vol +", type: key, keys: volumeup}
-  - {title: "Vol -", type: key, keys: volumedown}
-  - {title: "Mute", type: key, keys: mute}
-  - {title: "Play", type: key, keys: play}
-  - {title: "Next", type: key, keys: next}
-  - {title: "Prev", type: key, keys: previous}
-  - {title: "Helder +", type: key, keys: brightnessup}
-  - {title: "Helder -", type: key, keys: brightnessdown}
-  - {type: key, title: mute, keys: mute, icon: icons/james.png, hold: {type: profile, profile: Calculator}}
+  - {title: Vol +, type: key, keys: volumeup, icon: icons/sound-volume-up.png}
+  - {title: Vol -, type: key, keys: volumedown, icon: icons/sound-volume-down.png}
+  - {title: Mute, type: key, keys: mute, icon: icons/sound-mute.png}
+  - {title: Play, type: key, keys: play, icon: icons/sound-play.png}
+  - {title: Next, type: key, keys: next, icon: icons/sound-next.png}
+  - {title: Prev, type: key, keys: previous, icon: icons/sound-previous.png}
+  - {title: Helder +, type: key, keys: brightnessup, icon: icons/sound-brightness-up.png}
+  - {title: Helder -, type: key, keys: brightnessdown, icon: icons/sound-brightness-down.png}
+  - {type: key, title: Mute (hold), keys: mute, icon: icons/sound-mute-hold.png, hold: {type: profile, profile: Calculator}}

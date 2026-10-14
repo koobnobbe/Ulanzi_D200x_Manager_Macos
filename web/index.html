@@ -773,7 +773,7 @@ $('keyForm').onsubmit = (e) => {
         return;
       }
       $('keyDlg').close();
-      location.reload();
+      await load(true);
     } catch (err) {
       $('kErr').textContent = err.message;
     }
@@ -789,7 +789,7 @@ $('kRemove').onclick = () => {
       return;
     }
     $('keyDlg').close();
-    location.reload();
+    await load(true);
   });
 };
 const KEY_GROUPS = [
@@ -863,7 +863,7 @@ $('knobForm').onsubmit = (e) => {
       return;
     }
     $('knobDlg').close();
-    location.reload();
+    await load(true);
   });
 };
 $('knobCancel').onclick = () => $('knobDlg').close();
@@ -926,7 +926,7 @@ function keyButton(number, key) {
           }
         }
       }
-      location.reload();
+      await load(true);
     });
   };
   button.onclick = () => guarded(() => openKeyDialog(number));
@@ -1023,9 +1023,26 @@ function renderTabs() {
   box.append(add);
 }
 
+function rememberView() {
+  const hash = '#' + encodeURIComponent(viewName) + '/' + viewedPage();
+  if (location.hash !== hash) history.replaceState(null, '', hash);
+}
+
+function restoreView() {
+  // "#Agenda/2" from the address: open that profile and page again after a page reload.
+  const match = location.hash.match(/^#([^/]+)\/(\d+)$/);
+  if (!match) return;
+  const name = decodeURIComponent(match[1]);
+  if (state.profiles.some((p) => p.name === name)) {
+    viewName = name;
+    diagramPage = Number(match[2]);
+  }
+}
+
 function renderViewed() {
   const pages = viewedPages();
   if (!pages.includes(diagramPage)) diagramPage = pages[0] ?? 1;
+  rememberView();
   renderTabs();
   renderKeys();
 }
@@ -1101,14 +1118,17 @@ function render(keepText) {
   renderTree();
   const now = activeName();
   const switched = lastActive !== null && lastActive !== now;
+  // When the deck changes profile, follow it only if you were looking at the profile that was on the deck;
+  // a profile you chose to view (and edit) stays in view.
+  const following = viewName === null || viewName === lastActive;
   lastActive = now;
-  if (switched) viewName = now;
+  if (switched && following) viewName = now;
   renderViewed();
-  if (switched || !keepText) guarded(() => openInEditor(viewName || now));
+  if ((switched && following) || !keepText) guarded(() => openInEditor(viewName || now));
 }
 
 async function openInEditor(name) {
-  if (name !== viewName) diagramPage = 1;
+  if (name !== viewName) diagramPage = 1;   // another profile starts on its first page
   viewName = name;
   $('error').textContent = '';
   renderTree();
@@ -1582,6 +1602,8 @@ guarded(async () => {
   buildKeyPicker();
   libraryData = await api('/api/library');
   renderLibrary();
+  state = await api('/api/state');
+  restoreView();
   await load(false);
 });
 </script>

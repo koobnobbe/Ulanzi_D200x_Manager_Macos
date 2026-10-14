@@ -56,7 +56,7 @@ pages:
     5:  {type: app, app: "/Applications/iStatistica\ Pro.app", title: "Stats"}
     7: {type: key, title: Copy pass, keys: cmd+p, icon: icons/bitwarden-copy-pass.png}
     8: {type: key, title: Area, keys: ctrl+p, icon: icons/shottr-area.png, background: '#1b1b2d', transparency: 0}
-    9: {type: key, title: mute, keys: mute, icon: icons/james.png, hold: {type: profile, profile: Calculator}}
+    9: {type: app, title: Mail, app: /System/Applications/Mail.app, profile: Mail, font_size: 30}
     11: {type: page, page: previous, title: "<"}
     12: {type: page, page: home, title: "Home"}
     13: {type: page, page: next, title: ">"}
