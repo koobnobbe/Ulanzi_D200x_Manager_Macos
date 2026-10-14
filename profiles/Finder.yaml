@@ -1,5 +1,6 @@
 # Profile for Finder: used while Finder is the frontmost app.
 # Only "pages" and "knobs" are read from here; device and button_defaults come from config.yaml.
+app: "/System/Library/CoreServices/Finder.app"
 pages:
   1:
     1:  {type: key, keys: "cmd+n", title: "New window"}

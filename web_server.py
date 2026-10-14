@@ -34,6 +34,7 @@ def browse(directory):
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 ICON_SIZE = 192
+BACKGROUND_MAX = 1960  # wide enough for 5 keys of 196px
 
 
 def list_library():
@@ -151,6 +152,26 @@ def make_icon(source, name=None):
     return f'icons/{stem}.png'
 
 
+def list_backgrounds():
+    folder = os.path.join(PROJECT_DIR, 'backgrounds')
+    if not os.path.isdir(folder):
+        return []
+    return sorted(f'backgrounds/{name}' for name in os.listdir(folder) if name.lower().endswith('.png'))
+
+
+def make_background(source, name=None):
+    if not os.path.isfile(source) or not source.lower().endswith(IMAGE_EXTS):
+        raise ValueError('geen afbeelding: kies een png, jpg, ico of icns')
+    stem = re.sub(r'[^A-Za-z0-9_-]+', '_', name or os.path.splitext(os.path.basename(source))[0]).strip('_')
+    if not stem:
+        raise ValueError('geef een naam voor de afbeelding')
+    os.makedirs(os.path.join(PROJECT_DIR, 'backgrounds'), exist_ok=True)
+    image = Image.open(source).convert('RGB')
+    image.thumbnail((BACKGROUND_MAX, BACKGROUND_MAX), Image.LANCZOS)
+    image.save(os.path.join(PROJECT_DIR, 'backgrounds', f'{stem}.png'))
+    return f'backgrounds/{stem}.png'
+
+
 def list_apps(directory):
     directory = os.path.expanduser(directory)
     entries = [e for e in os.scandir(directory) if e.name.endswith('.app') and e.is_dir()]
@@ -206,6 +227,18 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.send_json(browse(directory))
             except Exception as e:
                 self.send_json({'error': str(e)}, 400)
+        elif path == '/api/device':
+            self.send_json(self.call(manager.device_settings))
+        elif path == '/api/backgrounds':
+            self.send_json({'backgrounds': list_backgrounds()})
+        elif path.startswith('/backgrounds/'):
+            name = unquote(path[len('/backgrounds/'):])
+            file = os.path.join(PROJECT_DIR, 'backgrounds', name)
+            if os.path.basename(name) != name or not name.endswith('.png') or not os.path.isfile(file):
+                self.send_json({'error': 'not found'}, 404)
+                return
+            with open(file, 'rb') as fp:
+                self.send(200, fp.read(), 'image/png')
         elif path == '/api/apps':
             directory = parse_qs(urlsplit(self.path).query).get('dir', ['/Applications'])[0]
             try:
@@ -243,6 +276,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.send_json({'error': 'no icon'}, 404)
             else:
                 self.send(200, data, 'image/png')
+        elif path.startswith('/web/'):
+            name = unquote(path[len('/web/'):])
+            file = os.path.join(os.path.dirname(PAGE), name)
+            if os.path.basename(name) != name or not name.endswith('.png') or not os.path.isfile(file):
+                self.send_json({'error': 'not found'}, 404)
+                return
+            with open(file, 'rb') as fp:
+                self.send(200, fp.read(), 'image/png')
         elif path.startswith('/icons/'):
             name = unquote(path[len('/icons/'):])
             file = os.path.join(PROJECT_DIR, 'icons', name)
@@ -280,6 +321,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
         manager = self.server.manager
         if path == '/api/save':
             return {'error': self.call(manager.save_file, body.get('name', 'default'), body['text'])}
+        if path == '/api/device':
+            return {'error': self.call(manager.set_device, body)}
+        if path == '/api/background':
+            return {'background': make_background(body['source'], body.get('name'))}
         if path == '/api/icon':
             return {'icon': make_icon(body['source'], body.get('name'))}
         if path == '/api/library/new':
@@ -303,6 +348,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return {'error': self.call(manager.set_knob, body['profile'], body['name'], body['data'])}
         if path == '/api/key':
             return {'error': self.call(manager.set_key, body['name'], int(body['page']), int(body['number']), body['data'])}
+        if path == '/api/profile/app':
+            return {'error': self.call(manager.set_profile_app, body['name'], body.get('app') or None)}
         if path == '/api/profile/new':
             return {'name': self.call(manager.create_profile, body.get('name', ''))}
         if path == '/api/press':

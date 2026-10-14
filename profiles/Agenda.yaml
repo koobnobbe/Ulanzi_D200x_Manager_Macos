@@ -1,0 +1,10 @@
+app: "/Applications/BusyCal.app"
+pages:
+  1:
+    11: {type: page, page: previous, title: "<"}
+    1: {type: app, title: Agenda, app: /Applications/BusyCal.app, profile: none}
+    12: {type: page, page: home, title: "Home"}
+    13: {type: page, page: next, title: ">"}
+    14: {type: profile, profile: default}
+    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    17: {type: page, page: next}

@@ -1,9 +1,8 @@
 pages:
   1:
     11: {type: page, page: previous, title: "<"}
-    1: {title: Brave}
     12: {type: page, page: home, title: "Home"}
     13: {type: page, page: next, title: ">"}
-    14: {type: profile, profile: default}
+    14: {type: profile, profile: default, icon: icons/Copy.png}
     16: {type: page, page: previous, hold: {type: profile, profile: default}}
     17: {type: page, page: next}

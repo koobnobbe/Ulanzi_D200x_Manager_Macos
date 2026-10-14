@@ -1,9 +1,15 @@
 # Ulanzi D200X configuration.
 
 device:
+  background_image: "backgrounds/Unknown_Unknown_4.png"
+  screensaver_image: ""
+  screensaver_color: "#000000"
+  screensaver_brightness: 10
+  screensaver_timeout: 60
+  screensaver: "dim"
   brightness: 80              # 0-100
-  keep_alive_interval: 1.0    # seconds; keeps the screensaver away
-  clock_background: "#1a1a2e" #"#000000" # background behind the clock window
+  keep_alive_interval: 1.0
+  clock_background: "#1a1a2e"
 
 # Defaults for every key; a key below only needs the fields it changes.
 button_defaults:
@@ -41,10 +47,10 @@ button_defaults:
 # The manager starts on page 1.
 pages:
   1:
-    1:  {type: "key", keys: "cmd+c", title: "Copy", output: "Copy "}
+    1: {type: key, title: Copy, keys: cmd+c, transparency: 90}
     6: {background: '#000000'}
-    2:  {type: app, app: "/System/Library/CoreServices/Finder.app", title: "Finder"}
-    3:  {type: "key", keys: "cmd+v", title: "Paste", output: "Paste "}
+    2: {type: app, title: Finder, app: /System/Library/CoreServices/Finder.app, transparency: 90}
+    3: {type: key, title: Paste, keys: cmd+v, transparency: 90}
     4:  {type: app, app: "/System/Applications/Calculator.app",profile: Calculator,  title: "Calc"}
     5:  {type: app, app: "/Applications/iStatistica\ Pro.app", title: "Stats"}
     7: {type: app, title: Bitwarden, output: Bitwarden, app: /Applications/Bitwarden.app, font_size: 35}
@@ -54,7 +60,7 @@ pages:
     12: {type: page, page: home, title: "Home"}
     13: {type: page, page: next, title: ">"}
     16: {type: page, page: previous, hold: {type: profile, profile: default}}
-    14: {type: profile, profile: default}
+    14: {type: profile, profile: default, transparency: 90}
     17: {type: page, title: Next, page: next}
   2:
     1:  {title: "2-1", output: "2-1"}

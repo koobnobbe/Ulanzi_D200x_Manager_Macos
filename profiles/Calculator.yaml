@@ -1,5 +1,6 @@
 # Profile for Calculator: used while Calculator is the frontmost app.
 # Only "pages" and "knobs" are read from here; device and button_defaults come from config.yaml.
+app: "/System/Applications/Calculator.app"
 pages:
   1:
     2:  {type: key, keys: "8", title: "8"}

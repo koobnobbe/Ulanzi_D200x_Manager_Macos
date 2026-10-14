@@ -1,3 +1,5 @@
 # Library section "Applications". Each entry is a key definition you can drag onto a key.
 buttons:
   - {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
+  - {type: app, app: /Applications/iStatistica Pro.app, title: Stats}
+  - {type: app, app: /System/Applications/Calculator.app, profile: Calculator, title: Calc}

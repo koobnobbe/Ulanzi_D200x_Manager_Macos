@@ -3,6 +3,7 @@ import binascii
 import ctypes
 import hashlib
 import io
+import json
 import os
 import plistlib
 import re
@@ -11,7 +12,7 @@ import sys
 import time
 from dataclasses import dataclass
 from functools import partial
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageColor, ImageDraw, ImageFont
 import hid
 import yaml
 from strmdck.device import ButtonAction
@@ -108,20 +109,38 @@ NS_SYSTEM_DEFINED = 14
 NS_SUBTYPE_AUX_CONTROL = 8
 MEDIA_DOWN, MEDIA_UP = 0xa, 0xb
 
-_NS_WORKSPACE = _OBJC.objc_getClass(b'NSWorkspace')
-_SEL_SHARED_WORKSPACE = _OBJC.sel_registerName(b'sharedWorkspace')
-_SEL_FRONTMOST = _OBJC.sel_registerName(b'frontmostApplication')
-_SEL_LOCALIZED_NAME = _OBJC.sel_registerName(b'localizedName')
-_SEL_UTF8 = _OBJC.sel_registerName(b'UTF8String')
-_ns_object = ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p)(_MSG_SEND)
-_ns_cstring = ctypes.CFUNCTYPE(ctypes.c_char_p, ctypes.c_void_p, ctypes.c_void_p)(_MSG_SEND)
 
 
-def frontmost_app_name():
-    app = _ns_object(_ns_object(_NS_WORKSPACE, _SEL_SHARED_WORKSPACE), _SEL_FRONTMOST)
-    if not app:
-        return None
-    return _ns_cstring(_ns_object(app, _SEL_LOCALIZED_NAME), _SEL_UTF8).decode()
+def frontmost_app():
+    """(name, bundle path) of the frontmost app, or (None, None).
+
+    NSWorkspace.frontmostApplication goes stale in a process without a Cocoa run loop,
+    so ask launch services instead."""
+    front = subprocess.run(['lsappinfo', 'front'], capture_output=True, text=True, timeout=2).stdout.strip()
+    if not front:
+        return None, None
+    info = subprocess.run(['lsappinfo', 'info', front], capture_output=True, text=True, timeout=2).stdout
+    name = re.match(r'\s*"(.*?)" ASN', info)
+    path = re.search(r'bundle path="(.*?)"', info)
+    return (name.group(1) if name else None), (os.path.normpath(path.group(1)) if path else None)
+
+
+def set_top_line(text, key, value):
+    """Set (or with value None remove) a top-level `key: value` line, keeping the rest of the file."""
+    lines = text.split('\n')
+    index = next((i for i, line in enumerate(lines) if re.match(rf'{key}:', line)), None)
+    if value is None:
+        if index is not None:
+            lines.pop(index)
+    else:
+        line = f'{key}: {json.dumps(value)}'
+        if index is not None:
+            lines[index] = line
+        else:
+            # After the leading comment block, so the file's header stays on top.
+            at = next((i for i, l in enumerate(lines) if l.strip() and not l.startswith('#')), len(lines))
+            lines.insert(at, line)
+    return '\n'.join(lines)
 
 
 def parse_keys(keys):
@@ -247,6 +266,47 @@ def render_solid(color):
     return save_icon(Image.new('RGB', (SIZE, SIZE), color=color), 'solid')
 
 
+def cover_tiles(path, cols, rows):
+    """Cover-fit an image over a cols x rows block of keys. Returns one image per key, row by row."""
+    image = Image.open(path).convert('RGB')
+    width, height = cols * SIZE, rows * SIZE
+    scale = max(width / image.width, height / image.height)
+    image = image.resize((round(image.width * scale), round(image.height * scale)), Image.LANCZOS)
+    left, top = (image.width - width) // 2, (image.height - height) // 2
+    image = image.crop((left, top, left + width, top + height))
+    return [image.crop((c * SIZE, r * SIZE, (c + 1) * SIZE, (r + 1) * SIZE))
+            for r in range(rows) for c in range(cols)]
+
+
+def clock_window_tiles(wallpaper, key):
+    """The two slots behind the clock, from key 14's settings: a color or picture, optionally transparent."""
+    first = UlanziD200Device.BUTTON_COUNT
+    base = Image.new('RGBA', (2 * SIZE, SIZE), (0, 0, 0, 255))
+    for i in range(2):
+        if wallpaper:
+            base.paste(wallpaper[first + i], (i * SIZE, 0))
+    opacity = 1 - float(key.get('transparency', 0)) / 100
+    if key.get('background_image'):
+        layer = cover_tiles(key['background_image'], 2, 1)
+        joined = Image.new('RGBA', (2 * SIZE, SIZE))
+        for i, tile in enumerate(layer):
+            joined.paste(tile, (i * SIZE, 0))
+    else:
+        joined = Image.new('RGBA', (2 * SIZE, SIZE), ImageColor.getrgb(key['background'])[:3] + (255,))
+    joined.putalpha(joined.getchannel('A').point(lambda a: round(a * opacity)))
+    out = Image.alpha_composite(base, joined).convert('RGB')
+    return [save_icon(out.crop((i * SIZE, 0, (i + 1) * SIZE, SIZE)), 'clock') for i in range(2)]
+
+
+def render_tiles(path, cols, rows):
+    return [save_icon(tile, 'bg') for tile in cover_tiles(path, cols, rows)]
+
+
+def screensaver_mode(device):
+    mode = device.get('screensaver', 'off')
+    return 'firmware' if mode is True else 'off' if not mode else mode
+
+
 def load_app_icon(app):
     """Return the .app bundle's icon as an RGBA image, or None if it has no .icns."""
     with open(os.path.join(app, 'Contents', 'Info.plist'), 'rb') as fp:
@@ -282,14 +342,23 @@ def check_button(number, button):
             raise ValueError(f'key {number}: type key needs "keys"')
     elif kind not in ('text', 'page', 'profile'):
         raise ValueError(f'key {number}: unknown type: {kind}')
+    if button.get('background_image') and not os.path.isfile(button['background_image']):
+        raise ValueError(f"key {number}: background_image not found: {button['background_image']}")
+    if not 0 <= button.get('transparency', 0) <= 100:
+        raise ValueError(f'key {number}: transparency must be 0-100')
 
-def render_button(number, button):
+def render_button(number, button, wallpaper=None):
+    """Render a key. `wallpaper` is the list of per-slot background images that shows through
+    the key's background when it has a transparency above 0."""
     check_button(number, button)
     kind = button.get('type', 'text')
+    opacity = 1 - float(button.get('transparency', 0)) / 100
+    fill = ImageColor.getrgb(button['background'])[:3] + (round(255 * opacity),)
     if button.get('icon'):
-        img = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), button['icon'])).convert('RGB').resize((SIZE, SIZE))
+        img = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), button['icon'])).convert('RGBA').resize((SIZE, SIZE))
+        img.putalpha(img.getchannel('A').point(lambda a: round(a * opacity)))
     elif kind == 'app' and (app_icon := load_app_icon(button['app'])):
-        img = Image.new('RGB', (SIZE, SIZE), color=button['background'])
+        img = Image.new('RGBA', (SIZE, SIZE), color=fill)
         # Leave room at the bottom for an optional title.
         icon_size = SIZE - 50 if button.get('title') else SIZE - 20
         app_icon = app_icon.resize((icon_size, icon_size), Image.LANCZOS)
@@ -297,9 +366,10 @@ def render_button(number, button):
         if button.get('title'):
             draw_title(img, {**button, 'font_size': APP_TITLE_SIZE}, (SIZE / 2, SIZE - 20))
     else:
-        img = Image.new('RGB', (SIZE, SIZE), color=button['background'])
+        img = Image.new('RGBA', (SIZE, SIZE), color=fill)
         draw_title(img, button, (SIZE / 2, SIZE / 2))
-    return save_icon(img, f'button_{number}')
+    base = wallpaper[number - 1].convert('RGBA') if wallpaper and number - 1 < len(wallpaper) else Image.new('RGBA', (SIZE, SIZE), (0, 0, 0, 255))
+    return save_icon(Image.alpha_composite(base, img).convert('RGB'), f'button_{number}')
 
 
 def check_pages(pages):
@@ -433,6 +503,9 @@ class Manager:
         self.knobs = {}
         self.icons = {}
         self.last_error = None
+        self.saver_layout = None
+        self.saver_active = False
+        self.last_input = time.monotonic()
 
     def profile_path(self, name):
         return os.path.join(os.path.dirname(os.path.abspath(self.config_path)), 'profiles', f'{name}.yaml')
@@ -465,20 +538,37 @@ class Manager:
             knobs = {k['index']: parse_knob(name, {**k, 'name': name}) for name, k in (config.get('knobs') or {}).items()}
 
             clear_icons()
+            wallpaper = cover_tiles(device['background_image'], UlanziD200Device.BUTTON_COLS, UlanziD200Device.BUTTON_ROWS) \
+                if device.get('background_image') else None
             # Key 14 has no screen of its own, but it shows an icon over the clock when it has a title or icon.
-            icons = {p: {n: render_button(n, b) for n, b in keys.items()
+            icons = {p: {n: render_button(n, b, wallpaper) for n, b in keys.items()
                          if n not in INPUT_ONLY_KEYS or (n == CLOCK_KEY and (b.get('title') or b.get('icon')))}
                      for p, keys in pages.items()}
             blank = render_solid(defaults.get('background', '#1a1a2e'))
             # Slots 13 and 14 (cols 3-4 of the bottom row) are the clock window. Give them
             # a solid background so the deck's default image doesn't show behind the time.
-            clock = render_solid(device.get('clock_background', '#000000'))
+            clock_first = UlanziD200Device.BUTTON_COUNT
+            raw_pages = config.get('pages') or {}
+            mode = screensaver_mode(device)
+            saver_layout = None
+            if mode == 'color':
+                solid = render_solid(device.get('screensaver_color', '#000000'))
+                saver_layout = {i: {'icon': solid} for i in range(UlanziD200Device.BUTTON_ROWS * UlanziD200Device.BUTTON_COLS)}
+            elif mode == 'image':
+                tiles = render_tiles(device['screensaver_image'], UlanziD200Device.BUTTON_COLS, UlanziD200Device.BUTTON_ROWS)
+                saver_layout = {i: {'icon': name} for i, name in enumerate(tiles)}
+            wallpaper_names = [save_icon(t, 'bg') for t in wallpaper] if wallpaper else []
             layouts = {}
             for p in pages:
-                layout = {i: {'icon': blank} for i in range(UlanziD200Device.BUTTON_COUNT)}
+                raw_clock = (raw_pages.get(int(p)) or {}).get(CLOCK_KEY) or {}
+                clock_tiles = clock_window_tiles(wallpaper, {
+                    'background': raw_clock.get('background', device.get('clock_background', '#000000')),
+                    'transparency': raw_clock.get('transparency', 0),
+                    'background_image': raw_clock.get('background_image')})
+                layout = {i: {'icon': wallpaper_names[i] if wallpaper else blank} for i in range(UlanziD200Device.BUTTON_COUNT)}
                 layout.update({n - 1: {'icon': name} for n, name in icons[p].items()})
                 for i in range(UlanziD200Device.BUTTON_COUNT, UlanziD200Device.BUTTON_ROWS * UlanziD200Device.BUTTON_COLS):
-                    layout.setdefault(i, {'icon': clock})
+                    layout.setdefault(i, {'icon': clock_tiles[i - clock_first]})
                 layouts[p] = layout
         except Exception as e:
             self.last_error = str(e)
@@ -487,6 +577,7 @@ class Manager:
 
         self.last_error = None
         self.device, self.pages, self.knobs, self.icons, self.layouts = device, pages, knobs, icons, layouts
+        self.saver_layout, self.saver_active, self.last_input = saver_layout, False, time.monotonic()
         if self.page not in pages:
             self.page = 1
         # Media keys work without it, but normal key combos are dropped silently.
@@ -512,9 +603,9 @@ class Manager:
             if self.file_mtimes() != self.mtimes and self.load():
                 print('config reloaded')
 
-    def open_app_profile(self, app_name, profile):
+    def open_app_profile(self, app, profile):
         # The app activating would otherwise switch to its own profile, so mark it as already seen.
-        self.last_app = app_name
+        self.last_app = os.path.normpath(app)
         self.open_profile(profile)
         self.sticky = profile is not None
 
@@ -533,12 +624,12 @@ class Manager:
         # Only switch when the frontmost app changes, so a profile chosen with a key stays until then.
         while True:
             try:
-                name = frontmost_app_name()
-                if name != self.last_app:
-                    self.last_app = name
-                    print(f'app: {name}')
+                name, path = await asyncio.to_thread(frontmost_app)
+                if path != self.last_app:
+                    self.last_app = path
+                    wanted = self.profile_for_app(path)
+                    print(f'active app: {name} (profile: {wanted or "default"}{", sticky" if self.sticky else ""})')
                     if not self.sticky:
-                        wanted = name if name and '/' not in name and os.path.exists(self.profile_path(name)) else None
                         self.set_profile(wanted)
             except Exception as e:
                 print(f'app watch error: {e}')
@@ -548,9 +639,34 @@ class Manager:
         # Without regular host traffic the deck switches to its screensaver after
         # ~30s. Ulanzi Studio pushes the small-window clock every second; do the same.
         while True:
-            if not self.device.get('screensaver', False):
+            if screensaver_mode(self.device) != 'firmware':
                 self.deck.keep_alive()
             await asyncio.sleep(self.device.get('keep_alive_interval', 1.0))
+
+    async def watch_idle(self):
+        # Software screensaver: after the timeout, dim the deck and/or show a color or picture.
+        while True:
+            await asyncio.sleep(1.0)
+            if (screensaver_mode(self.device) in ('dim', 'color', 'image') and not self.saver_active
+                    and time.monotonic() - self.last_input >= self.device.get('screensaver_timeout', 60)):
+                self.saver_active = True
+                if self.saver_layout:
+                    self.deck.set_buttons(self.saver_layout)
+                self.deck.set_brightness(self.device.get('screensaver_brightness', 10))
+                print('screensaver on')
+
+    def wake(self, redraw=False):
+        """Leave the screensaver. Returns True if it was active."""
+        self.last_input = time.monotonic()
+        if not self.saver_active:
+            return False
+        self.saver_active = False
+        self.deck.set_brightness(self.device.get('brightness', 80))
+        if redraw:
+            self.deck.set_buttons(self.layouts[self.page])
+            self.apply_small_window()
+        print('screensaver off')
+        return True
 
     def page_number(self, target):
         numbers = sorted(self.pages)
@@ -563,6 +679,7 @@ class Manager:
         return int(target)
 
     def goto(self, page):
+        self.wake()
         self.page = page
         self.deck.set_buttons(self.layouts[page])
         self.apply_small_window()
@@ -621,12 +738,11 @@ class Manager:
             steps.append((f"profile {button['profile']}", partial(self.open_profile, name)))
         elif button.get('type') == 'app':
             steps.append((f"open {button['app']}", partial(subprocess.Popen, ['open', button['app']])))
-            app_name = os.path.splitext(os.path.basename(button['app']))[0]
-            wanted = button.get('profile') or app_name
-            if wanted != 'none':
+            wanted = button.get('profile') or self.profile_for_app(button['app'])
+            if wanted and wanted != 'none':
                 target = None if wanted == 'default' else wanted
                 if target is None or os.path.exists(self.profile_path(target)):
-                    steps.append((f'profile {wanted}', partial(self.open_app_profile, app_name, target)))
+                    steps.append((f'profile {wanted}', partial(self.open_app_profile, button['app'], target)))
         elif button.get('type') == 'key':
             steps.append((f"send {button['keys']}", partial(send_keys, button['combos'])))
         if button.get('output'):
@@ -657,6 +773,7 @@ class Manager:
             action()
 
     def set_brightness(self, value):
+        self.wake(redraw=True)
         self.device['brightness'] = value
         self.deck.set_brightness(value)
 
@@ -686,23 +803,80 @@ class Manager:
             fp.write(PROFILE_TEMPLATE)
         return name
 
+    def profile_apps(self):
+        """{profile name: app path} for every profile that names the app that activates it."""
+        apps = {}
+        for name in self.profile_names()[1:]:
+            try:
+                app = (load_config(self.profile_path(name)) or {}).get('app')
+            except Exception:
+                continue
+            if app:
+                apps[name] = os.path.normpath(app)
+        return apps
+
+    def profile_for_app(self, path):
+        if not path:
+            return None
+        path = os.path.normpath(path)
+        return next((name for name, app in self.profile_apps().items() if app == path), None)
+
+    def set_profile_app(self, name, app):
+        if name == 'default':
+            return 'het default-profiel hoort niet bij een app'
+        path = self.file_for(name)
+        if app:
+            if not (app.endswith('.app') and os.path.isdir(app)):
+                return f'geen app: {app}'
+            other = self.profile_for_app(app)
+            if other and other != name:
+                return f'{os.path.basename(app)} activeert al profiel {other}'
+        with open(path) as fp:
+            text = set_top_line(fp.read(), 'app', app or None)
+        yaml.safe_load(text)
+        with open(path, 'w') as fp:
+            fp.write(text)
+        self.last_app = None  # re-check the frontmost app against the new link
+        return None
+
     def key_data(self, name, page, number):
         pages = (load_config(self.file_for(name)) or {}).get('pages') or {}
         return dict((pages.get(page) or {}).get(number) or {})
 
     def device_settings(self):
-        return {'clock_background': self.device.get('clock_background', '#000000'),
-                'screensaver': bool(self.device.get('screensaver', False)),
-                'keep_alive_interval': self.device.get('keep_alive_interval', 1.0)}
+        d = self.device
+        return {'background_image': d.get('background_image') or '',
+                'screensaver': screensaver_mode(d),
+                'screensaver_timeout': d.get('screensaver_timeout', 60),
+                'screensaver_brightness': d.get('screensaver_brightness', 10),
+                'screensaver_color': d.get('screensaver_color', '#000000'),
+                'screensaver_image': d.get('screensaver_image') or '',
+                'keep_alive_interval': d.get('keep_alive_interval', 1.0)}
 
     def set_device(self, data):
-        if not re.fullmatch(r'#[0-9a-fA-F]{6}', str(data['clock_background'])):
-            return 'achtergrond moet een hex-kleur zijn, bijv. #1a1a2e'
+        hexcolor = r'#[0-9a-fA-F]{6}'
+        for field in ('screensaver_color',):
+            if not re.fullmatch(hexcolor, str(data[field])):
+                return f'{field} moet een hex-kleur zijn, bijv. #1a1a2e'
+        if data['screensaver'] not in ('off', 'firmware', 'dim', 'color', 'image'):
+            return 'onbekende screensaver-modus'
         interval = float(data['keep_alive_interval'])
         if not 0.2 <= interval <= 10:
             return 'keep-alive interval moet tussen 0.2 en 10 seconden zijn'
-        values = {'clock_background': data['clock_background'], 'screensaver': bool(data['screensaver']),
-                  'keep_alive_interval': interval}
+        timeout = int(data['screensaver_timeout'])
+        if not 5 <= timeout <= 3600:
+            return 'screensaver-timeout moet tussen 5 en 3600 seconden zijn'
+        saver_brightness = int(data['screensaver_brightness'])
+        if not 0 <= saver_brightness <= 100:
+            return 'screensaver-helderheid moet tussen 0 en 100 zijn'
+        if data['screensaver'] == 'image' and not data['screensaver_image']:
+            return 'kies een afbeelding voor de screensaver'
+        for field in ('background_image', 'screensaver_image'):
+            if data[field] and not os.path.isfile(data[field]):
+                return f'{field}: bestand niet gevonden'
+        values = {'background_image': data['background_image'], 'screensaver': data['screensaver'], 'screensaver_timeout': timeout,
+                  'screensaver_brightness': saver_brightness, 'screensaver_color': data['screensaver_color'],
+                  'screensaver_image': data['screensaver_image'], 'keep_alive_interval': interval}
         with open(self.config_path) as fp:
             old = fp.read()
         with open(self.config_path, 'w') as fp:
@@ -761,12 +935,14 @@ class Manager:
         for name in self.profile_names():
             error = None
             try:
-                pages = (load_config(self.file_for(name)) or {}).get('pages') or {}
+                config = load_config(self.file_for(name)) or {}
             except Exception as e:
-                pages, error = {}, str(e)
+                config, error = {}, str(e)
+            pages = config.get('pages') or {}
             buttons = [{'page': int(p), 'number': int(n), 'type': (b or {}).get('type', 'text'), 'title': (b or {}).get('title')}
                        for p, keys in sorted(pages.items()) for n, b in sorted((keys or {}).items())]
             result.append({'name': name, 'buttons': buttons, 'error': error,
+                           'app': config.get('app') if name != 'default' else None,
                            'active': name == (self.profile or 'default')})
         return result
 
@@ -778,6 +954,7 @@ class Manager:
             'profile': self.profile or 'default',
             'page': self.page,
             'pages': sorted(self.pages),
+            'clock': [self.layouts[self.page][i]['icon'] for i in (13, 14)],
             'keys': {n: {'icon': self.icons.get(self.page, {}).get(n),
                          **{k: self.pages.get(self.page, {}).get(n, {}).get(k)
                             for k in ('type', 'title', 'app', 'keys', 'output', 'page')}}
@@ -799,6 +976,7 @@ async def main():
         raise SystemExit(1)
     # Keep references so the tasks aren't GC'd
     tasks = [asyncio.create_task(manager.keep_alive()),
+             asyncio.create_task(manager.watch_idle()),
              asyncio.create_task(manager.watch_config()),
              asyncio.create_task(manager.watch_app())]
     web_server.start(manager, asyncio.get_running_loop(), ICON_DIR, WEB_PORT)
@@ -806,6 +984,8 @@ async def main():
     print("Druk op een knop (Ctrl+C om te stoppen)")
     pressed_at = {}
     async for action in deck.read_packet():
+        if manager.wake(redraw=True):
+            continue  # the press that wakes the deck does nothing else
         if isinstance(action, KnobAction):
             if action.value != KNOB_RELEASE:
                 manager.run(manager.plan_knob(action.index, KNOB_EVENTS.get(action.value)))

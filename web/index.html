@@ -23,7 +23,21 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
 .key img { width: 100%; height: 100%; display: block; }
 .key.text { background: #1f2a44; color: var(--text); font-size: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 4px; text-align: center; word-break: break-word; }
 .key.sel { border-color: var(--accent); }.key .num { position: absolute; left: 4px; top: 2px; font-size: 11px; background: rgba(0, 0, 0, .6); padding: 0 4px; border-radius: 4px; }
-.clock { aspect-ratio: 1; background: #000; border-radius: 8px; }
+.deck { position: relative; max-width: 900px; margin: 0 auto; aspect-ratio: 1024 / 824; }
+.deck-img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+/* The picture is 1024x824; tiles are 126x127 px at x=138, y=116 with a pitch of 157x158. */
+.deck .keys { position: absolute; left: 13.477%; top: 14.078%; width: 73.633%; height: 53.762%;
+  grid-template-columns: repeat(5, 16.711%); grid-template-rows: repeat(3, 28.668%); gap: 0; column-gap: 4.111%; row-gap: 6.998%; }
+.deck .key { aspect-ratio: auto; width: 100%; height: 100%; border-radius: 11%; background: transparent; }
+.deck .key.text { background: transparent; font-size: clamp(11px, 2vw, 20px); }
+.deck .knob-btn { position: absolute; top: 85.5%; width: 10.2%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: transparent; border: 2px solid transparent; padding: 0; }
+.knob-btn:hover { border-color: var(--accent); background: rgba(255, 255, 255, .08); }
+.key.clockkey { aspect-ratio: auto; background: #000; }
+.deck .key.side { position: absolute; width: 6.4%; height: auto; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); top: 85.5%; background: transparent; }
+.deck .key .num { display: none; }
+.key.clockkey { grid-column: span 2; aspect-ratio: 2 / 1; display: flex; padding: 0; background: #000; }
+.key.clockkey img { width: 50%; height: 100%; object-fit: cover; }
+.key.clockkey .face { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 600 clamp(22px, 4.2vw, 46px) ui-monospace, Menlo, monospace; color: #fff; text-shadow: 0 1px 4px rgba(0, 0, 0, .6); pointer-events: none; letter-spacing: .04em; }
 .knobs { display: flex; flex-wrap: wrap; gap: 10px; }
 .knob { flex: 1; min-width: 180px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
 .knob .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
@@ -57,6 +71,13 @@ button.danger:hover { background: var(--err); color: #fff; }
 .side { border-right: 1px solid var(--line); padding: 14px; overflow: auto; }
 .content { min-width: 0; }
 .tree { display: flex; flex-direction: column; gap: 6px; }
+.profile-row { display: flex; gap: 6px; align-items: stretch; }
+.profile-row .profile-btn { flex: 1; min-width: 0; }
+.profile-icon { flex: none; width: 38px; padding: 3px; display: flex; align-items: center; justify-content: center; }
+.profile-icon img { width: 28px; height: 28px; }
+.profile-icon.empty { border-style: dashed; color: var(--muted); }
+.profile-icon.none { visibility: hidden; }
+.profile-app-preview { width: 32px; height: 32px; align-self: center; margin-top: 4px; }
 .profile-btn { display: block; width: 100%; text-align: left; padding: 8px 10px; }
 .profile-btn.active { color: var(--accent); }
 .profile-btn.error { color: var(--err); }
@@ -70,6 +91,7 @@ dialog form { width: min(640px, 90vw); }
 #keyForm .tpanel { margin-bottom: 14px; }
 #keyForm .tabs { margin-bottom: 16px; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+ #deviceForm h3 { font-size: 13px; margin: 16px 0 8px; color: var(--text); }
 .grid2 label { font-size: 13px; color: var(--muted); }
 .hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
 dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height: 1px; padding: 0; margin: 0; border: 0; pointer-events: none; }
@@ -86,6 +108,7 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
   <h1>Ulanzi D200X <span id="profile" style="font-weight: normal; color: var(--muted)"></span></h1>
   <label>Helderheid <input id="bright" type="range" min="0" max="100" style="width: 160px"> <span id="brightVal"></span></label>
   <label><input id="run" type="checkbox"> Echt uitvoeren (anders alleen preview)</label>
+  <button id="deviceBtn">Apparaat…</button>
   <button id="reload">Herlaad config</button>
 </header>
 <div class="shell">
@@ -94,28 +117,20 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
   <div id="tree" class="tree"></div>
 </aside>
 <div class="content">
-<div class="tabs main-tabs" id="mainTabs">
-  <button type="button" class="tab" data-view="grid">Grid</button>
-  <button type="button" class="tab" data-view="code">Code</button>
-</div>
 <main>
   <div class="view" data-view="grid">
     <section>
       <h2>Pagina's</h2>
       <div class="tabs" id="tabs"></div>
       <h2 id="keysTitle">Toetsen</h2>
-      <div class="keys" id="keys"></div>
-      <h2 style="margin-top: 18px">Draaiknoppen</h2>
-      <div class="knobs" id="knobs"></div>
-      <div class="detail" id="detail">Klik op een toets of draaiknop om hem te testen.</div>
-    </section>
-  </div>
-  <div class="view" data-view="code">
-    <section>
-      <h2 id="editorTitle">default (config.yaml)</h2>
-      <textarea id="yaml" spellcheck="false"></textarea>
-      <div class="bar"><button class="primary" id="save">Opslaan en toepassen</button><span id="saveMsg"></span></div>
+      <div class="deck" id="deck">
+        <img class="deck-img" src="/web/ulanzi_black_tiles_transparent.png" alt="">
+        <div class="keys" id="keys"></div>
+        <div id="sideKeys"></div>
+        <div id="knobs"></div>
+      </div>
       <div id="error"></div>
+      <div class="detail" id="detail"></div>
     </section>
   </div>
 </main>
@@ -169,6 +184,7 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
       <option value="/System/Applications">/System/Applications</option>
       <option value="/System/Applications/Utilities">/System/Applications/Utilities</option>
       <option value="~/Applications">~/Applications</option>
+      <option value="/System/Library/CoreServices">/System/Library/CoreServices (Finder)</option>
     </select>
     <input id="appFilter" type="text" placeholder="filter op naam" style="margin-top: 8px">
     <div id="appList" class="applist"></div>
@@ -221,6 +237,9 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
     <div class="grid2 shared">
       <label style="position: relative">Achtergrond <input id="kBg" type="text" placeholder="#1a1a2e"><input id="kBgPicker" type="color" class="hidden-picker"></label>
       <label style="position: relative">Tekstkleur <input id="kColor" type="text" placeholder="#ffffff"><input id="kColorPicker" type="color" class="hidden-picker"></label>
+      <label id="kClockImgWrap" style="grid-column: 1 / -1">Klok-venster afbeelding (over de dubbele toets; Achtergrond en Transparantie gelden dan ook voor het klok-venster)
+        <div class="pick"><select id="kClockImg"></select><button type="button" data-pick="kClockImg">Nieuw…</button></div></label>
+      <label>Transparantie (%) <input id="kTransp" type="number" min="0" max="100" placeholder="0"></label>
       <label>Lettergrootte <input id="kFont" type="number" min="8" max="200"></label>
       <div><button type="button" id="kLpBtn">Activeer longpress</button></div>
       <div id="holdFields" class="grid2" style="display: none; grid-column: 1 / -1">
@@ -242,6 +261,59 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
       </button>
       <span style="flex: 1"></span>
       <button type="button" id="kCancel">Annuleren</button>
+      <button type="submit" class="primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="deviceDlg">
+  <form id="deviceForm">
+    <h2>Apparaat-instellingen</h2>
+    <h3>Achtergrond</h3>
+    <div class="grid2">
+      <label style="grid-column: 1 / -1">Afbeelding over het hele scherm (zichtbaar via de transparantie van een toets)
+        <div class="pick"><select id="dBgImg"></select><button type="button" data-pick="dBgImg">Nieuw…</button></div></label>
+    </div>
+    <h3>Screensaver</h3>
+    <div class="grid2">
+      <label style="grid-column: 1 / -1">Modus
+        <select id="dSaver">
+          <option value="off">Uit (deck blijft wakker)</option>
+          <option value="firmware">Firmware-screensaver (na ~30s, zonder keep-alive)</option>
+          <option value="dim">Dimmen</option>
+          <option value="color">Effen kleur</option>
+          <option value="image">Afbeelding over alle toetsen</option>
+        </select></label>
+      <label class="saver-sw">Na (seconden inactief) <input id="dTimeout" type="number" min="5" max="3600"></label>
+      <label class="saver-sw">Helderheid tijdens screensaver <input id="dSaverBright" type="number" min="0" max="100"></label>
+      <label class="saver-color" style="position: relative">Kleur <input id="dSaverColor" type="text" placeholder="#000000"><input id="dSaverColorPicker" type="color" class="hidden-picker"></label>
+      <label class="saver-image">Afbeelding
+        <div class="pick"><select id="dSaverImg"></select><button type="button" data-pick="dSaverImg">Nieuw…</button></div></label>
+    </div>
+    <h3>Overig</h3>
+    <div class="grid2">
+      <label>Keep-alive interval (s) <input id="dInterval" type="number" min="0.2" max="10" step="0.1"></label>
+    </div>
+    <div class="hint">Wordt opgeslagen onder device: in config.yaml. De screensaver gaat weg met een druk op een toets of knop; die druk doet verder niets. Helderheid staat bovenaan de pagina.</div>
+    <div id="dErr" class="err"></div>
+    <div class="bar" style="justify-content: flex-end">
+      <button type="button" id="dCancel">Annuleren</button>
+      <button type="submit" class="primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="profDlg">
+  <form id="profForm">
+    <h2 id="pHeader">Profiel</h2>
+    <label>App die dit profiel activeert
+      <div class="pick"><img id="pIcon" class="profile-app-preview" alt=""><input id="pApp" type="text" placeholder="geen app" readonly><button type="button" id="pAppPick">Kies…</button></div></label>
+    <div class="hint">Het profiel wordt actief zodra deze app op de Mac vooraan komt.</div>
+    <div id="pErr" class="err"></div>
+    <div class="bar">
+      <button type="button" id="pRemove" class="danger" title="App loskoppelen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+      <span style="flex: 1"></span>
+      <button type="button" id="pCancel">Annuleren</button>
       <button type="submit" class="primary">Opslaan</button>
     </div>
   </form>
@@ -394,6 +466,9 @@ function fillKeyForm(raw) {
   $('kBg').value = asText(raw.background);
   $('kColor').value = asText(raw.color);
   $('kFont').value = asText(raw.font_size);
+  $('kTransp').value = asText(raw.transparency);
+  $('kClockImgWrap').style.display = keyTarget.number === 14 ? '' : 'none';
+  if (keyTarget.number === 14) guarded(() => loadBackgrounds('kClockImg', asText(raw.background_image)));
   const hold = raw.hold || {};
   $('kHoldType').value = hold.type || 'none';
   $('kHoldValue').value = asText(hold.page ?? hold.profile ?? hold.keys ?? hold.app);
@@ -420,6 +495,8 @@ function readKeyForm() {
   if (v('kBg')) data.background = v('kBg');
   if (v('kColor')) data.color = v('kColor');
   if (v('kFont')) data.font_size = Number(v('kFont'));
+  if (v('kTransp')) data.transparency = Number(v('kTransp'));
+  if (keyTarget.number === 14 && v('kClockImg')) data.background_image = v('kClockImg');
   const holdType = $('kHoldType').value;
   if (longpressOn() && holdType !== 'none' && v('kHoldValue')) {
     const value = v('kHoldValue');
@@ -460,6 +537,7 @@ async function openKeyDialog(number) {
 for (const tab of document.querySelectorAll('#kTabs .tab')) tab.onclick = () => showKeyTab(tab.dataset.type);
 
 let appsCache = [];
+let appPickTarget = 'kApp';  // input that receives the chosen app path
 
 async function loadApps() {
   const data = await api('/api/apps?dir=' + encodeURIComponent($('appRoot').value));
@@ -476,7 +554,8 @@ function renderApps() {
     button.textContent = app.name;
     button.title = app.path;
     button.onclick = () => {
-      $('kApp').value = app.path;
+      $(appPickTarget).value = app.path;
+      $(appPickTarget).dispatchEvent(new Event('input'));
       $('appDlg').close();
     };
     box.append(button);
@@ -484,6 +563,7 @@ function renderApps() {
 }
 
 $('kAppPick').onclick = () => {
+  appPickTarget = 'kApp';
   $('appDlg').showModal();
   guarded(loadApps);
 };
@@ -492,6 +572,7 @@ $('appFilter').oninput = renderApps;
 $('appCancel').onclick = () => $('appDlg').close();
 
 let browsed = null;
+let bgSelect = null;  // select id when the image picker is choosing a background, else null (icon)
 
 async function loadIcons(current) {
   const data = await api('/api/icons');
@@ -524,14 +605,21 @@ async function browse(dir) {
     const button = document.createElement('button');
     button.textContent = file.name;
     button.onclick = () => guarded(async () => {
-      const name = prompt('Opslaan als icoon (naam zonder .png):', file.name.replace(/\.[^.]+$/, ''));
+      const name = prompt(`Opslaan als ${bgSelect ? 'achtergrond' : 'icoon'} (naam zonder .png):`, file.name.replace(/\.[^.]+$/, ''));
       if (!name) return;
+      const errBox = bgSelect === 'kClockImg' || !bgSelect ? $('kErr') : $('dErr');
       try {
-        const result = await api('/api/icon', { source: file.path, name });
-        $('imgDlg').close();
-        await loadIcons(result.icon);
+        if (bgSelect) {
+          const result = await api('/api/background', { source: file.path, name });
+          $('imgDlg').close();
+          await loadBackgrounds(bgSelect, result.background);
+        } else {
+          const result = await api('/api/icon', { source: file.path, name });
+          $('imgDlg').close();
+          await loadIcons(result.icon);
+        }
       } catch (err) {
-        $('kErr').textContent = err.message;
+        errBox.textContent = err.message;
         $('imgDlg').close();
       }
     });
@@ -540,6 +628,7 @@ async function browse(dir) {
 }
 
 $('kIconPick').onclick = () => {
+  bgSelect = null;
   $('imgDlg').showModal();
   guarded(() => browse(browsed ? browsed.dir : '~'));
 };
@@ -716,40 +805,57 @@ function renderKeys() {
   const keys = viewedKeys();
   for (let n = 1; n <= 13; n++) box.append(keyButton(n, keys[n] || {}));
   const first = keys[14] || {};
-  if (first.icon || first.title) {
-    box.append(keyButton(14, first));
-  } else {
-    const clock = document.createElement('div');
-    clock.className = 'clock';
-    clock.title = 'klok';
-    box.append(clock);
+  const tiles = (isActiveView() && state.clock) || [];
+  const clockKey = keyButton(14, first);
+  clockKey.classList.remove('text');
+  clockKey.classList.add('clockkey');
+  clockKey.title = first.icon || first.title ? first.title || 'toets 14' : 'klok-venster (instellingen)';
+  [...clockKey.childNodes].filter((n) => !(n.classList && n.classList.contains('num'))).forEach((n) => n.remove());
+  clockKey.prepend(...tiles.map((name) => {
+    const img = document.createElement('img');
+    img.src = '/icon/' + encodeURIComponent(name);
+    img.alt = '';
+    return img;
+  }));
+  if (!first.icon && !first.title) {
+    const face = document.createElement('span');
+    face.className = 'face';
+    clockKey.append(face);
+    tickClock();
   }
-  const clock = document.createElement('div');
-  clock.className = 'clock';
-  clock.title = 'klok';
-  box.append(clock);
-  for (const n of [16, 17]) box.append(keyButton(n, keys[n] || {}));
+  box.append(clockKey);
+  const side = $('sideKeys');
+  side.textContent = '';
+  for (const [n, left] of [[16, 19.3], [17, 34.9]]) {
+    const button = keyButton(n, keys[n] || {});
+    button.classList.add('side');
+    button.style.left = left + '%';
+    side.append(button);
+  }
 }
+
+function tickClock() {
+  const text = new Date().toLocaleTimeString('nl-NL', { hour12: false });
+  document.querySelectorAll('.clockkey .face').forEach((el) => { el.textContent = text; });
+}
+setInterval(tickClock, 1000);
+
+// Centers of the three knobs in the deck picture, as a percentage of its width.
+const KNOB_X = [51, 67.6, 84.6];
 
 function renderKnobs() {
   const box = $('knobs');
   box.textContent = '';
-  for (const knob of state.knobs) {
-    const card = document.createElement('div');
-    card.className = 'knob';
-    const name = document.createElement('div');
-    name.textContent = knobLabel(knob);
-    card.append(name);
-    const hint = document.createElement('div');
-    hint.className = 'hint';
-    hint.textContent = `links: ${knob.left || '-'}  |  druk: ${knob.press || '-'}  |  rechts: ${knob.right || '-'}`;
-    card.append(hint);
-    const edit = document.createElement('button');
-    edit.textContent = 'Bewerk';
-    edit.onclick = () => guarded(() => openKnobDialog(knob));
-    card.append(edit);
-    box.append(card);
-  }
+  const knobs = [...state.knobs].sort((a, b) => a.index - b.index);
+  knobs.forEach((knob, i) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'knob-btn';
+    button.style.left = KNOB_X[i] + '%';
+    button.title = `${knobLabel(knob)}\nlinks: ${knob.left || '-'}  |  druk: ${knob.press || '-'}  |  rechts: ${knob.right || '-'}`;
+    button.onclick = () => guarded(() => openKnobDialog(knob));
+    box.append(button);
+  });
 }
 
 function renderTabs() {
@@ -799,7 +905,25 @@ function renderTree() {
     button.title = profile.error || '';
     button.textContent = profile.name + (profile.active ? '  (actief)' : '');
     button.onclick = () => guarded(() => openInEditor(profile.name));
-    box.append(button);
+    const icon = document.createElement('button');
+    icon.type = 'button';
+    icon.className = 'profile-icon' + (profile.name === 'default' ? ' none' : profile.app ? '' : ' empty');
+    if (profile.name !== 'default') {
+      icon.title = profile.app ? `Geactiveerd door ${profile.app}` : 'Geen app: klik om er een te kiezen';
+      if (profile.app) {
+        const img = document.createElement('img');
+        img.src = '/appicon?path=' + encodeURIComponent(profile.app);
+        img.alt = '';
+        icon.append(img);
+      } else {
+        icon.textContent = '+';
+      }
+      icon.onclick = () => openProfileDialog(profile);
+    }
+    const row = document.createElement('div');
+    row.className = 'profile-row';
+    row.append(button, icon);
+    box.append(row);
   }
   const add = document.createElement('button');
   add.className = 'profile-btn add';
@@ -823,7 +947,7 @@ $('newForm').onsubmit = (e) => {
       $('newDlg').close();
       await load(true);
       await openInEditor(result.name);
-      $('saveMsg').textContent = `Profiel ${result.name} aangemaakt (profiles/${result.name}.yaml)`;
+      log(`Profiel ${result.name} aangemaakt (profiles/${result.name}.yaml)`);
     } catch (err) {
       $('newErr').textContent = err.message;
     }
@@ -847,13 +971,8 @@ function render(keepText) {
 }
 
 async function openInEditor(name) {
-  const data = await api('/api/file?name=' + encodeURIComponent(name));
   if (name !== viewName) diagramPage = 1;
   viewName = name;
-  const editable = name === activeName();
-  $('yaml').value = data.text;
-  $('editorTitle').textContent = name === 'default' ? 'default (config.yaml)' : `${name} (profiles/${name}.yaml)`;
-  $('saveMsg').textContent = editable ? '' : 'Niet actief: opslaan wijzigt het bestand, maar wordt pas toegepast als de app actief is.';
   $('error').textContent = '';
   renderTree();
   renderViewed();
@@ -864,16 +983,123 @@ async function load(keepText) {
   render(keepText);
 }
 
-$('save').onclick = () => guarded(async () => {
-  const result = await api('/api/save', { text: $('yaml').value, name: viewName || activeName() });
-  if (result.error) {
-    $('error').textContent = 'Niet opgeslagen, de vorige config blijft actief:\n' + result.error;
-    $('saveMsg').textContent = '';
-    await load(true);
-    return;
+attachColorPicker('dSaverColor', 'dSaverColorPicker', '#000000');
+
+async function loadBackgrounds(id, current) {
+  const data = await api('/api/backgrounds');
+  const select = $(id);
+  select.textContent = '';
+  const options = [['', 'geen'], ...data.backgrounds.map((i) => [i, i])];
+  if (current && !options.some(([value]) => value === current)) options.push([current, current]);
+  for (const [value, label] of options) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    select.append(option);
   }
-  location.reload();
+  select.value = current || '';
+}
+
+for (const button of document.querySelectorAll('[data-pick]')) {
+  button.onclick = () => {
+    bgSelect = button.dataset.pick;
+    $('imgDlg').showModal();
+    guarded(() => browse(browsed ? browsed.dir : '~'));
+  };
+}
+
+function showSaverFields() {
+  const mode = $('dSaver').value;
+  const show = (cls, on) => document.querySelectorAll('.' + cls).forEach((el) => { el.style.display = on ? '' : 'none'; });
+  show('saver-sw', ['dim', 'color', 'image'].includes(mode));
+  show('saver-color', mode === 'color');
+  show('saver-image', mode === 'image');
+}
+$('dSaver').onchange = showSaverFields;
+
+$('deviceBtn').onclick = () => guarded(async () => {
+  const d = await api('/api/device');
+  await loadBackgrounds('dBgImg', d.background_image);
+  $('dSaver').value = d.screensaver;
+  $('dTimeout').value = d.screensaver_timeout;
+  $('dSaverBright').value = d.screensaver_brightness;
+  $('dSaverColor').value = d.screensaver_color;
+  await loadBackgrounds('dSaverImg', d.screensaver_image);
+  $('dInterval').value = d.keep_alive_interval;
+  showSaverFields();
+  $('dErr').textContent = '';
+  $('deviceDlg').showModal();
 });
+$('dCancel').onclick = () => $('deviceDlg').close();
+$('deviceForm').onsubmit = (e) => {
+  e.preventDefault();
+  guarded(async () => {
+    const result = await api('/api/device', {
+      background_image: $('dBgImg').value,
+      screensaver: $('dSaver').value,
+      screensaver_timeout: Number($('dTimeout').value),
+      screensaver_brightness: Number($('dSaverBright').value),
+      screensaver_color: $('dSaverColor').value.trim(),
+      screensaver_image: $('dSaverImg').value,
+      keep_alive_interval: Number($('dInterval').value),
+    });
+    if (result.error) {
+      $('dErr').textContent = result.error;
+      return;
+    }
+    $('deviceDlg').close();
+    await load(false);
+  });
+};
+
+let profileTarget = null;
+
+function showProfileApp() {
+  const app = $('pApp').value;
+  $('pIcon').style.visibility = app ? 'visible' : 'hidden';
+  if (app) $('pIcon').src = '/appicon?path=' + encodeURIComponent(app);
+}
+
+function openProfileDialog(profile) {
+  profileTarget = profile.name;
+  $('pHeader').textContent = `Profiel ${profile.name}`;
+  $('pApp').value = profile.app || '';
+  $('pErr').textContent = '';
+  showProfileApp();
+  $('profDlg').showModal();
+}
+
+$('pApp').oninput = showProfileApp;
+$('pAppPick').onclick = () => {
+  appPickTarget = 'pApp';
+  $('appDlg').showModal();
+  guarded(loadApps);
+};
+$('pCancel').onclick = () => $('profDlg').close();
+$('profForm').onsubmit = (e) => {
+  e.preventDefault();
+  guarded(async () => {
+    const result = await api('/api/profile/app', { name: profileTarget, app: $('pApp').value });
+    if (result.error) {
+      $('pErr').textContent = result.error;
+      return;
+    }
+    $('profDlg').close();
+    await load(true);
+  });
+};
+$('pRemove').onclick = () => {
+  if (!confirm(`De app loskoppelen van profiel ${profileTarget}? Het profiel zelf blijft bestaan.`)) return;
+  guarded(async () => {
+    const result = await api('/api/profile/app', { name: profileTarget, app: '' });
+    if (result.error) {
+      $('pErr').textContent = result.error;
+      return;
+    }
+    $('profDlg').close();
+    await load(true);
+  });
+};
 
 $('reload').onclick = () => guarded(async () => {
   await api('/api/reload', {});
@@ -1013,13 +1239,6 @@ function renderLibrary() {
   }
 }
 
-function showView(name) {
-  for (const view of document.querySelectorAll('.view')) view.style.display = view.dataset.view === name ? '' : 'none';
-  for (const tab of document.querySelectorAll('#mainTabs .tab')) tab.classList.toggle('active', tab.dataset.view === name);
-}
-
-for (const tab of document.querySelectorAll('#mainTabs .tab')) tab.onclick = () => showView(tab.dataset.view);
-showView('grid');
 
 guarded(async () => {
   libraryData = await api('/api/library');
