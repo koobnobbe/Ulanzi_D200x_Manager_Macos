@@ -67,7 +67,6 @@ library:
   bin: Zum Entfernen hierher ziehen
   new: + Neue Bibliothek
   new_prompt: "Name der neuen Bibliothek:"
-  item: "{title}  ({type})"
   item_tooltip: Auf eine Taste oder in den Papierkorb ziehen
 
 key_dialog:

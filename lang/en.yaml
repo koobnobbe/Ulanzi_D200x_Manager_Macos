@@ -69,7 +69,6 @@ library:
   bin: Drag here to remove
   new: + New library
   new_prompt: "Name of the new library:"
-  item: "{title}  ({type})"
   item_tooltip: Drag onto a key or onto the bin
 
 key_dialog:

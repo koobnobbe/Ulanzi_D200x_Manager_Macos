@@ -89,6 +89,8 @@ textarea { width: 100%; min-height: 560px; box-sizing: border-box; background: #
 .lib-section.over { outline: 2px dashed var(--accent); border-radius: 8px; }
 .lib-item { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; margin-bottom: 4px; cursor: grab; }
 .lib-icon { width: 32px; height: 32px; flex: none; object-fit: contain; }
+.lib-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lib-type { flex: none; width: 14px; height: 14px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .key.drop { border-color: var(--accent); }
 .bin { border: 2px dashed var(--line); border-radius: 8px; padding: 14px 8px; margin-bottom: 14px; text-align: center; font-size: 12px; color: var(--muted); }
 .bin.over { border-color: var(--err); color: var(--err); }
@@ -96,6 +98,14 @@ button.danger { color: var(--err); border-color: var(--err); display: inline-fle
 button.danger:hover { background: var(--err); color: #fff; }
 .lib-new { width: 100%; margin-bottom: 14px; color: var(--muted); border-style: dashed; }
 @media (max-width: 900px) { .shell { grid-template-columns: 1fr; } }
+/* On a wide screen the page itself doesn't scroll: each column scrolls on its own, so the deck in the middle stays in
+   view while a long list of profiles or library keys scrolls. */
+@media (min-width: 901px) {
+  body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  header { flex: none; }
+  .shell { flex: 1; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+  .side, .content, .lib { min-height: 0; overflow: auto; }
+}
 .side { border-right: 1px solid var(--line); padding: 14px; overflow: auto; display: flex; flex-direction: column; }
 .doc-link { margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); text-decoration: none; position: sticky; bottom: 0; background: var(--bg); }
 .doc-link:hover { color: var(--text); border-color: var(--accent); }
@@ -1946,6 +1956,31 @@ function libSetOpen(name, open) {
   }
 }
 
+// Small symbols for the kind of key in the library panel, instead of "(type)" text.
+const TYPE_ICONS = {
+  text: '<path d="M4 7V4h16v3"/><path d="M12 4v16"/><path d="M9 20h6"/>',
+  key: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+  app: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  page: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 15h6"/>',
+  profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  homeassistant: '<path d="M3 11 12 3l9 8"/><path d="M5 9.5V21h14V9.5"/><circle cx="12" cy="14" r="2.5"/>',
+  plugin: '<path d="M9 2v6M15 2v6"/><path d="M6 8h12v4a6 6 0 0 1-12 0z"/><path d="M12 18v4"/>',
+};
+const BUILTIN_TYPES = { text: 'tab_text', key: 'tab_key', app: 'tab_app', page: 'tab_page', profile: 'tab_profile' };
+
+function typeIcon(type) {
+  const tp = pluginType(type);
+  const shape = BUILTIN_TYPES[type] ? TYPE_ICONS[type] : (tp && TYPE_ICONS[tp.plugin.id]) || TYPE_ICONS.plugin;
+  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  icon.setAttribute('viewBox', '0 0 24 24');
+  icon.setAttribute('class', 'lib-type');
+  icon.innerHTML = shape;
+  const label = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+  label.textContent = BUILTIN_TYPES[type] ? t('key_dialog.' + BUILTIN_TYPES[type]) : tp ? tp.label : type;
+  icon.prepend(label);
+  return icon;
+}
+
 function renderLibrary() {
   const box = $('library');
   box.textContent = '';
@@ -1995,7 +2030,10 @@ function renderLibrary() {
         img.src = iconSrc;
         button.append(img);
       }
-      button.append(document.createTextNode(' ' + t('library.item', { title: item.title, type: item.data.type || 'text' })));
+      const name = document.createElement('span');
+      name.className = 'lib-name';
+      name.textContent = item.title;
+      button.append(name, typeIcon(item.data.type || 'text'));
       button.title = t('library.item_tooltip');
       button.draggable = true;
       button.addEventListener('dragstart', (e) => {

@@ -69,7 +69,6 @@ library:
   bin: Sleep hierheen om te verwijderen
   new: + Nieuwe bibliotheek
   new_prompt: "Naam van de nieuwe bibliotheek:"
-  item: "{title}  ({type})"
   item_tooltip: Sleep naar een toets of naar de prullenbak
 
 key_dialog:

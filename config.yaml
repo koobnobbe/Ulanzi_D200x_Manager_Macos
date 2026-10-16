@@ -69,7 +69,7 @@ pages:
     2: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
     4:  {title: "2-4", output: "2-4"}
     5: {title: F1, type: key, keys: f1}
-    6: {type: ha.state, title: Airco Temp, entity: sensor.werkkamer_airconditioner_werkkamer_temperature}
+    6: {type: ha.toggle, title: Slaapkamer, entity: light.slaapkamer}
     8: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
     9:  {title: "2-9", output: "2-9"}
     10: {title: Helder -, type: key, keys: brightnessdown}

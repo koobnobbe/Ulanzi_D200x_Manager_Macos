@@ -67,7 +67,6 @@ library:
   bin: Glissez ici pour supprimer
   new: + Nouvelle bibliothèque
   new_prompt: "Nom de la nouvelle bibliothèque :"
-  item: "{title}  ({type})"
   item_tooltip: Glissez sur une touche ou sur la corbeille
 
 key_dialog:
