@@ -93,7 +93,7 @@ key_dialog:
     letters: Letters
     digits: Cijfers
     other: Overig
-  app: App (pad .app)
+  app: App (pad .app) of link
   app_profile: Profiel bij deze app
   app_profile_auto: automatisch (gekoppeld profiel)
   app_profile_none: geen profiel

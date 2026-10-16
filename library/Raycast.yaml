@@ -1,0 +1,30 @@
+# Library section "Raycast": keys for Raycast. Drag an entry onto a key in the web interface.
+# The keys open Raycast deeplinks (raycast://extensions/<author>/<extension>/<command>) with `open`, so a
+# command needs no hotkey of its own. "Raycast" sends the global hotkey (cmd+space here; change it if yours differs).
+# The key icons (Raycast-red tile with the title below) are in Raycast.zip; dragging a key onto the deck copies its icon to icons/.
+buttons:
+  - {type: app, app: /Applications/Raycast.app, title: Raycast, font_size: 30}
+  - {type: key, title: Raycast, keys: cmd+space, icon: icons/raycast-search.png}
+  # Search and tools
+  - {type: app, title: Klembord, app: 'raycast://extensions/raycast/clipboard-history/clipboard-history', icon: icons/raycast-clipboard.png}
+  - {type: app, title: Emoji, app: 'raycast://extensions/raycast/emoji-symbols/search-emoji-symbols', icon: icons/raycast-emoji.png}
+  - {type: app, title: AI Chat, app: 'raycast://extensions/raycast/raycast-ai/ai-chat', icon: icons/raycast-ai-chat.png}
+  - {type: app, title: Notities, app: 'raycast://extensions/raycast/raycast-notes/raycast-notes', icon: icons/raycast-notes.png}
+  - {type: app, title: Snippets, app: 'raycast://extensions/raycast/snippets/search-snippets', icon: icons/raycast-snippets.png}
+  - {type: app, title: Bestanden, app: 'raycast://extensions/raycast/file-search/search-files', icon: icons/raycast-files.png}
+  - {type: app, title: Menu, app: 'raycast://extensions/raycast/navigation/search-menu-items', icon: icons/raycast-menu-items.png}
+  - {type: app, title: Agenda, app: 'raycast://extensions/raycast/calendar/my-schedule', icon: icons/raycast-schedule.png}
+  - {type: app, title: Kleur, app: 'raycast://extensions/raycast/color-picker/pick-color', icon: icons/raycast-pick-color.png}
+  # Window management (the window in front)
+  - {type: app, title: Links, app: 'raycast://extensions/raycast/window-management/left-half', icon: icons/raycast-left-half.png}
+  - {type: app, title: Rechts, app: 'raycast://extensions/raycast/window-management/right-half', icon: icons/raycast-right-half.png}
+  - {type: app, title: Boven, app: 'raycast://extensions/raycast/window-management/top-half', icon: icons/raycast-top-half.png}
+  - {type: app, title: Onder, app: 'raycast://extensions/raycast/window-management/bottom-half', icon: icons/raycast-bottom-half.png}
+  - {type: app, title: Maximaal, app: 'raycast://extensions/raycast/window-management/maximize', icon: icons/raycast-maximize.png}
+  - {type: app, title: Midden, app: 'raycast://extensions/raycast/window-management/center', icon: icons/raycast-center.png}
+  - {type: app, title: Vol scherm, app: 'raycast://extensions/raycast/window-management/toggle-fullscreen', icon: icons/raycast-fullscreen.png}
+  - {type: app, title: Scherm, app: 'raycast://extensions/raycast/window-management/next-display', icon: icons/raycast-next-display.png}
+  # System
+  - {type: app, title: Vergrendel, app: 'raycast://extensions/raycast/system/lock-screen', icon: icons/raycast-lock.png}
+  - {type: app, title: Licht/donker, app: 'raycast://extensions/raycast/system/toggle-system-appearance', icon: icons/raycast-appearance.png}
+  - {type: app, title: Confetti, app: 'raycast://extensions/raycast/raycast/confetti', icon: icons/raycast-confetti.png}

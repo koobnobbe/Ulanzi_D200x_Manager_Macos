@@ -1,0 +1,14 @@
+# Websites for the D200X: a key that opens a web page and shows the site's icon. Texts are in lang/<language>.yaml.
+name: Websites
+version: 0.1.0
+module: plugin.py
+class: Website
+
+settings: []
+
+key_types:
+  web.open:
+    kind: key
+    fields:
+      - {key: url, type: text, required: true, placeholder: "https://example.com"}
+      - {key: browser, type: choice, options: [default, safari, chrome, firefox, arc, edge, brave], default: default}

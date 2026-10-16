@@ -361,8 +361,8 @@ def button_problem(button):
     """What is wrong with a key definition, or None. Also parses "keys" into button['combos']."""
     kind = button.get('type', 'text')
     if kind == 'app':
-        app = button.get('app')
-        if not app or not os.path.isdir(app):
+        app = button.get('app')   # an .app, or a link that `open` hands to its app, e.g. raycast://...
+        if not app or not (os.path.isdir(app) or re.match(r'[a-z][a-z0-9+.-]*://', app)):
             return t('config.app_not_found', app=app)
     elif kind == 'key':
         try:

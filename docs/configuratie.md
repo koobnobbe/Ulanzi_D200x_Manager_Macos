@@ -69,7 +69,7 @@ ui:
 | `type` | — | `text` (standaard), `key`, `app`, `page` of `profile` |
 | `title` | alle | tekst op de toets |
 | `keys` | `key` | combinatie zoals `cmd+c`, of een lijst `[cmd+a, cmd+c]` |
-| `app` | `app` | pad naar een `.app` |
+| `app` | `app` | pad naar een `.app`, of een link die macOS opent, zoals `raycast://…` |
 | `profile` | `app`, `profile` | profielnaam, `default`, of bij een app ook `none` |
 | `page` | `page` | `home`, `next`, `previous` of een nummer |
 | `icon` | alle | pad naar een afbeelding, bijvoorbeeld `icons/copy.png` |

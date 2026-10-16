@@ -93,7 +93,7 @@ key_dialog:
     letters: Letters
     digits: Digits
     other: Other
-  app: App (path to .app)
+  app: App (path to .app) or link
   app_profile: Profile for this app
   app_profile_auto: automatic (linked profile)
   app_profile_none: no profile

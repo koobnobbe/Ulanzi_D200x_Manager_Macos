@@ -1,0 +1,22 @@
+# Texts of the Websites plugin (en). Keys as in plugin.yaml; keep the {names}.
+description: A key that opens a website, in your default browser or one you choose. The key shows the site's own icon.
+types:
+  web.open: Website
+fields:
+  url: Web address
+  browser: Browser
+options:
+  browser:
+    default: Default browser
+    safari: Safari
+    chrome: Google Chrome
+    firefox: Firefox
+    arc: Arc
+    edge: Microsoft Edge
+    brave: Brave
+status:
+  test_ok: Works. Nothing to set up; add a key of type Website.
+render:
+  no_url: Website
+errors:
+  bad_url: 'Not a web address: {url}'

@@ -1,0 +1,22 @@
+# Texts of the Websites plugin (fr). Keys as in plugin.yaml; keep the {names}.
+description: Une touche qui ouvre un site web, dans ton navigateur par défaut ou celui de ton choix. La touche affiche l'icône du site.
+types:
+  web.open: Site web
+fields:
+  url: Adresse web
+  browser: Navigateur
+options:
+  browser:
+    default: Navigateur par défaut
+    safari: Safari
+    chrome: Google Chrome
+    firefox: Firefox
+    arc: Arc
+    edge: Microsoft Edge
+    brave: Brave
+status:
+  test_ok: Ça marche. Rien à configurer ; crée une touche de type Site web.
+render:
+  no_url: Site web
+errors:
+  bad_url: "Ce n'est pas une adresse web : {url}"

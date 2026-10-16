@@ -1,0 +1,22 @@
+# Texts of the Websites plugin (de). Keys as in plugin.yaml; keep the {names}.
+description: Eine Taste, die eine Website öffnet, im Standardbrowser oder in einem Browser deiner Wahl. Die Taste zeigt das Symbol der Website.
+types:
+  web.open: Website
+fields:
+  url: Webadresse
+  browser: Browser
+options:
+  browser:
+    default: Standardbrowser
+    safari: Safari
+    chrome: Google Chrome
+    firefox: Firefox
+    arc: Arc
+    edge: Microsoft Edge
+    brave: Brave
+status:
+  test_ok: Funktioniert. Nichts einzurichten; lege eine Taste vom Typ Website an.
+render:
+  no_url: Website
+errors:
+  bad_url: 'Keine Webadresse: {url}'

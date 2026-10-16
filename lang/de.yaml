@@ -91,7 +91,7 @@ key_dialog:
     letters: Buchstaben
     digits: Ziffern
     other: Sonstige
-  app: App (Pfad zur .app)
+  app: App (Pfad zur .app) oder Link
   app_profile: Profil für diese App
   app_profile_auto: automatisch (verknüpftes Profil)
   app_profile_none: kein Profil

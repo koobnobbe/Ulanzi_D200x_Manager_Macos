@@ -16,6 +16,7 @@
 - [Plugins](plugins.md)
 - [Home Assistant](home-assistant.md)
 - [Claude-gebruik](claude-usage.md)
+- [Websites](websites.md)
 
 ## Naslag
 

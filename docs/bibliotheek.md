@@ -18,12 +18,15 @@ De bibliotheek staat rechts in de webinterface. Hij bevat kant-en-klare toetsen 
 | Bibliotheek | Inhoud |
 |---|---|
 | **BusyCal** | Toetsen voor BusyCal: Vandaag, Morgen, Gisteren, Deze week, Volgende week, Dag-, Week- en Maandweergave, nieuwe afspraak of taak, zoeken en meer. |
+| **Raycast** | Toetsen voor Raycast: klembord, emoji, AI Chat, notities, snippets, bestanden zoeken, vensters links/rechts/maximaal, scherm vergrendelen, licht/donker en meer. |
 | **Applications** | Een paar apps om te openen. |
 | **functionkeys** | F1 tot en met F12. |
 | **sound** | Volume, mute, afspelen, volgende en vorige, helderheid van het scherm. |
 | **template** | Toetsen die je zelf hebt bewaard. Bovenaan het bestand staat een overzicht van alle velden. |
 
 De BusyCal-toetsen gebruiken de sneltoetsen van BusyCal. Sommige sturen een reeks: **Morgen** gaat naar de dagweergave (`cmd+1`), naar vandaag (`cmd+t`) en één dag verder (`cmd+right`).
+
+De Raycast-toetsen openen een Raycast-link, zoals `raycast://extensions/raycast/clipboard-history/clipboard-history`. Daarvoor hoef je in Raycast geen sneltoetsen in te stellen. Alleen de toets **Raycast** stuurt de sneltoets van Raycast zelf (`cmd+space`); gebruik je een andere, pas die dan aan.
 
 ## Eigen iconen in een zip
 

@@ -1,0 +1,22 @@
+# Texts of the Websites plugin (es). Keys as in plugin.yaml; keep the {names}.
+description: Una tecla que abre un sitio web, en tu navegador predeterminado o en uno que elijas. La tecla muestra el icono del sitio.
+types:
+  web.open: Sitio web
+fields:
+  url: Dirección web
+  browser: Navegador
+options:
+  browser:
+    default: Navegador predeterminado
+    safari: Safari
+    chrome: Google Chrome
+    firefox: Firefox
+    arc: Arc
+    edge: Microsoft Edge
+    brave: Brave
+status:
+  test_ok: Funciona. No hay nada que configurar; crea una tecla de tipo Sitio web.
+render:
+  no_url: Sitio web
+errors:
+  bad_url: 'No es una dirección web: {url}'

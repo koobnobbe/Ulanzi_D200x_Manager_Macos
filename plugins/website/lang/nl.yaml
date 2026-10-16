@@ -1,0 +1,22 @@
+# Texts of the Websites plugin (nl). Keys as in plugin.yaml; keep the {names}.
+description: Een toets die een website opent, in je standaardbrowser of een browser naar keuze. De toets toont het icoon van de site.
+types:
+  web.open: Website
+fields:
+  url: Webadres
+  browser: Browser
+options:
+  browser:
+    default: Standaardbrowser
+    safari: Safari
+    chrome: Google Chrome
+    firefox: Firefox
+    arc: Arc
+    edge: Microsoft Edge
+    brave: Brave
+status:
+  test_ok: Werkt. Niets in te stellen; maak een toets van het type Website.
+render:
+  no_url: Website
+errors:
+  bad_url: 'Geen webadres: {url}'

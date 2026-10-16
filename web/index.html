@@ -278,7 +278,7 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
     </div>
     <div class="tpanel" data-type="app">
       <label><span data-t="key_dialog.app"></span>
-        <div class="pick"><input id="kApp" type="text" placeholder="/Applications/..."><button type="button" id="kAppPick" data-t="common.choose"></button></div></label>
+        <div class="pick"><input id="kApp" type="text" placeholder="/Applications/...  |  raycast://..."><button type="button" id="kAppPick" data-t="common.choose"></button></div></label>
       <label><span data-t="key_dialog.app_profile"></span>
         <select id="kAppProfile"></select></label>
       <div class="hint" data-t="key_dialog.hint_app"></div>
@@ -1468,6 +1468,7 @@ function pluginFields(tp, prefix) {
       if (field.default !== undefined) input.placeholder = field.default;
     } else {
       input.type = 'text';
+      if (field.placeholder) input.placeholder = field.placeholder;
     }
     nodes.push(label);
   }

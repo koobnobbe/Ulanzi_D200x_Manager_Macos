@@ -48,21 +48,25 @@ button_defaults:
 pages:
   1:
     1: {type: key, title: Copy, keys: cmd+c, icon: icons/macos-copy.png}
+    12: {type: key, title: Raycast, keys: cmd+space, icon: icons/raycast-search.png}
+    11: {type: page, title: Home, page: home, icon: icons/deck-home.png}
+    6: {type: ha.toggle, title: Werkkamer, entity: light.werkkamer}
+    8: {type: key, title: Area, keys: ctrl+p, icon: icons/shottr-area.png}
+    3: {type: key, title: App switch, keys: cmd+tab, icon: icons/macos-app-switch.png}
+    5: {type: app, title: Finder, app: /System/Library/CoreServices/Finder.app, transparency: 90}
+    13: {type: key, title: Spotlight, keys: cmd+space, icon: icons/macos-spotlight.png}
+    2: {type: key, title: Paste, keys: cmd+v, icon: icons/macos-paste.png}
     10: {type: claude.usage, title: Week (7d), window: seven_day}
-    6: {type: key, title: App switch, keys: cmd+tab, icon: icons/macos-app-switch.png}
-    2: {type: app, title: Finder, app: /System/Library/CoreServices/Finder.app, transparency: 90}
-    3: {type: key, title: Paste, keys: cmd+v, icon: icons/macos-paste.png}
     4: {type: app, title: Bitwarden, app: /Applications/Bitwarden.app, profile: BitWarden, font_size: 30}
-    5: {type: key, title: Spotlight, keys: cmd+space, icon: icons/macos-spotlight.png}
     7: {type: key, title: Copy pass, keys: cmd+p, icon: icons/bitwarden-copy-pass.png}
-    8: {type: key, title: Area, keys: ctrl+p, icon: icons/shottr-area.png, background: '#1b1b2d', transparency: 0}
     9: {type: claude.usage, title: Sessie (5u), window: five_hour}
-    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
     16: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
     14: {type: profile, profile: default, transparency: 90}
     17: {type: page, title: Next, page: next, icon: icons/deck-next.png}
   2:
     1: {type: ha.toggle, title: werkkkamer, entity: light.werkkamer}
+    3: {type: web.open, title: CNN, url: 'https://www.cnn.com', browser: default}
+    2: {type: web.open, title: Koob Nobbe Consultancy, url: 'https://www.koobnobbe.com', browser: default, icon: icons/knc_logo.png}
     11: {type: page, title: Home, page: home, icon: icons/deck-home.png}
     7: {type: claude.usage, title: Week (7d), window: seven_day}
     6: {type: claude.usage, title: Sessie (5u), window: five_hour}
@@ -96,7 +100,7 @@ pages:
 knobs:
   K1: {index: 0x11, type: key, left: "volumedown", right: "volumeup", press: "mute"}
   K2: {index: 0x12, type: key, left: "brightnessdown", right: "brightnessup"}
-  K3: {index: 0x13, type: device_brightness, step: 10}
+  K3: {index: 19, type: device_brightness, step: 10}
 
 ui:
   language: "nl"

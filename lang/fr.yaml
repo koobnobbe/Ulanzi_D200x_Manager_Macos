@@ -91,7 +91,7 @@ key_dialog:
     letters: Lettres
     digits: Chiffres
     other: Autres
-  app: App (chemin .app)
+  app: App (chemin .app) ou lien
   app_profile: Profil pour cette app
   app_profile_auto: automatique (profil lié)
   app_profile_none: aucun profil
