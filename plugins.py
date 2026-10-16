@@ -162,6 +162,9 @@ def check_fields(kind, entry):
         elif field.get('type') == 'number':
             if not isinstance(value, (int, float)) or not field.get('min', value) <= value <= field.get('max', value):
                 return t('plugins_check.number_range', field=label, min=field.get('min', ''), max=field.get('max', ''))
+        elif field.get('type') == 'choice':
+            if value not in (field.get('options') or []):
+                return t('plugins_check.not_an_option', field=label, value=value, options=', '.join(map(str, field.get('options') or [])))
     if host and pid in host.running:
         return host.running[pid].validate(kind, entry)
     return None
@@ -317,10 +320,14 @@ class Host:
                 status = plugin.status()
             else:
                 status = {'state': 'starting', 'message': ''}
+            def field_info(f):
+                info = {**f, 'label': t(f"plugin.{pid}.{f.get('label', 'fields.' + f['key'])}")}
+                if f.get('type') == 'choice':
+                    info['options'] = [{'value': o, 'label': t(f"plugin.{pid}.options.{f['key']}.{o}")} for o in f.get('options') or []]
+                return info
             types = [{'type': name, 'kind': spec.get('kind', 'key'),
                       'label': t(f"plugin.{pid}.{spec.get('label', 'types.' + name)}"),
-                      'fields': [{**f, 'label': t(f"plugin.{pid}.{f.get('label', 'fields.' + f['key'])}")}
-                                 for f in spec.get('fields') or []]}
+                      'fields': [field_info(f) for f in spec.get('fields') or []]}
                      for name, spec in (manifest.get('key_types') or {}).items()]
             result.append({'id': pid, 'name': manifest.get('name', pid), 'version': manifest.get('version', ''),
                            'description': t(f'plugin.{pid}.description'), 'enabled': bool(values.get('enabled')),
@@ -343,6 +350,14 @@ class Host:
                 continue
             if field.get('type') == 'bool':
                 value = bool(value)
+            elif field.get('type') == 'number':
+                try:
+                    value = float(value)
+                except (TypeError, ValueError):
+                    raise ValueError(t('plugins_check.number_range', field=key, min=field.get('min', ''), max=field.get('max', '')))
+                if not field.get('min', value) <= value <= field.get('max', value):
+                    raise ValueError(t('plugins_check.number_range', field=key, min=field.get('min', ''), max=field.get('max', '')))
+                value = int(value) if value == int(value) else value
             merged[key] = value
         return merged
 

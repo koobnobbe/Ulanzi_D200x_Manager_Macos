@@ -4,7 +4,7 @@ Een plugin is lokale code in de map `plugins/` die nieuwe soorten toetsen en dra
 
 > Plugins zijn iets anders dan **bibliotheken**. Een bibliotheek is een lijst kant-en-klare toetsen in een YAML-bestand; zie [Bibliotheken](bibliotheek.md). Een plugin is code.
 
-Meegeleverd: [Home Assistant](home-assistant.md).
+Meegeleverd: [Home Assistant](home-assistant.md) en [Claude-gebruik](claude-usage.md).
 
 ## Het Plugins-venster
 

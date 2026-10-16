@@ -1,0 +1,16 @@
+# Claude usage on the deck: the session (5 hour) and weekly limits of your Claude plan, as in Claude Code's
+# "Account & usage" panel. Texts are in lang/<language>.yaml.
+name: Claude usage
+version: 0.1.0
+module: plugin.py
+class: ClaudeUsage
+
+# Per machine, in plugins.local.yaml. The login itself is Claude Code's, read from the macOS Keychain.
+settings:
+  - {key: interval, type: number, min: 60, max: 3600, default: 300}
+
+key_types:
+  claude.usage:
+    kind: key
+    fields:
+      - {key: window, type: choice, options: [five_hour, seven_day, seven_day_sonnet, seven_day_opus], default: five_hour, required: true}

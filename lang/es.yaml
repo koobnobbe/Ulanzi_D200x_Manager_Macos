@@ -302,6 +302,7 @@ plugins_check:
   not_an_entity: "{field} no es un id de entidad: {value}"
   wrong_domain: "{value} no es uno de: {domains}"
   number_range: "{field} debe estar entre {min} y {max}"
+  not_an_option: "{field} debe ser uno de: {options} (no {value})"
   "off": "{name} está desactivado"
   unknown_plugin: "plugin desconocido: {id}"
   not_running: "{name} no está activo"

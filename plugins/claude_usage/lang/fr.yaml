@@ -1,0 +1,28 @@
+# Texts of the Claude usage plugin (fr). Keys as in plugin.yaml; keep the {names}.
+description: Affiche la part utilisée des limites de session (5 heures) et hebdomadaire de votre forfait Claude, comme le panneau d'utilisation de Claude Code. Utilise la connexion de Claude Code sur ce
+  Mac.
+settings:
+  interval: Actualiser toutes les (secondes)
+types:
+  claude.usage: Utilisation de Claude
+fields:
+  window: Limite
+options:
+  window:
+    five_hour: Session (5 h)
+    seven_day: Semaine (7 j)
+    seven_day_sonnet: Sonnet (7 j)
+    seven_day_opus: Opus (7 j)
+status:
+  updated: Mis à jour à {time}.
+  test_ok: 'Ça marche : session {session} %, semaine {week} %.'
+render:
+  resets_in: Réinitialisation dans {time}
+  no_limit: pas de limite
+errors:
+  no_login: Aucune connexion Claude Code trouvée sur ce Mac. Connectez-vous d'abord à Claude Code.
+  expired: La connexion Claude Code a expiré. Utilisez Claude Code une fois ; il la renouvelle.
+  rejected: Anthropic n'accepte pas la connexion Claude Code. Reconnectez-vous à Claude Code.
+  rate_limited: Trop de requêtes ; nouvel essai dans {minutes} min.
+  http: Anthropic a répondu HTTP {status}.
+  unreachable: Impossible de joindre api.anthropic.com.

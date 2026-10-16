@@ -231,7 +231,7 @@ class HomeAssistant(Plugin):
         img = big.resize((size, size), Image.LANCZOS)
         draw = ImageDraw.Draw(img)
         if kind == 'ha.state':
-            shown = self._value(state) if available else '—'
+            shown = self._value(state) if available else '-'   # the deck's font has no long dash
             font_size = 64
             while font_size > 22 and self.ctx.font(font_size).getbbox(shown)[2] > size - 24:
                 font_size -= 2

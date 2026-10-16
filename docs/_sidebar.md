@@ -15,6 +15,7 @@
 - [Bibliotheken](bibliotheek.md)
 - [Plugins](plugins.md)
 - [Home Assistant](home-assistant.md)
+- [Claude-gebruik](claude-usage.md)
 
 ## Naslag
 

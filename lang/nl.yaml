@@ -304,6 +304,7 @@ plugins_check:
   not_an_entity: "{field} is geen entity-id: {value}"
   wrong_domain: "{value} is niet een van: {domains}"
   number_range: "{field} moet tussen {min} en {max} liggen"
+  not_an_option: "{field} moet een van deze zijn: {options} (niet {value})"
   "off": "{name} staat uit"
   unknown_plugin: "onbekende plugin: {id}"
   not_running: "{name} draait niet"

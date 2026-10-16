@@ -1,0 +1,27 @@
+# Texts of the Claude usage plugin (es). Keys as in plugin.yaml; keep the {names}.
+description: Muestra cuánto has usado de los límites de sesión (5 horas) y semanal de tu plan de Claude, como en el panel de uso de Claude Code. Usa el inicio de sesión de Claude Code en este Mac.
+settings:
+  interval: Actualizar cada (segundos)
+types:
+  claude.usage: Uso de Claude
+fields:
+  window: Límite
+options:
+  window:
+    five_hour: Sesión (5 h)
+    seven_day: Semana (7 d)
+    seven_day_sonnet: Sonnet (7 d)
+    seven_day_opus: Opus (7 d)
+status:
+  updated: Actualizado a las {time}.
+  test_ok: 'Funciona: sesión {session} %, semana {week} %.'
+render:
+  resets_in: Se reinicia en {time}
+  no_limit: sin límite
+errors:
+  no_login: No se encontró un inicio de sesión de Claude Code en este Mac. Inicia sesión primero en Claude Code.
+  expired: El inicio de sesión de Claude Code ha caducado. Usa Claude Code una vez; lo renueva.
+  rejected: Anthropic no acepta el inicio de sesión de Claude Code. Vuelve a iniciar sesión en Claude Code.
+  rate_limited: Demasiadas solicitudes; se reintenta en {minutes} min.
+  http: Anthropic respondió con HTTP {status}.
+  unreachable: No se puede conectar con api.anthropic.com.
