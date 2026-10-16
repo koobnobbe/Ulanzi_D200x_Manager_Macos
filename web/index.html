@@ -653,6 +653,11 @@ function fillKeyForm(raw) {
   buildAppProfileOptions(raw.profile || '');
   setLongpress(Boolean(raw.hold));
   for (const tp of pluginTypes('key')) setPluginFields(tp, 'kp', raw.type === tp.type ? raw : {});
+  // types of a plugin that is off are not offered, unless this key already has one
+  for (const tab of document.querySelectorAll('#kTabs .plugin-tab')) {
+    const tp = pluginType(tab.dataset.type);
+    tab.style.display = tp && !tp.plugin.enabled && tab.dataset.type !== raw.type ? 'none' : '';
+  }
   showKeyTab(raw.type || 'text');
 }
 
@@ -887,6 +892,10 @@ async function openKnobDialog(knob) {
   const raw = data.knob;
   knobTarget = { profile: viewName, name: knob.name, index: raw.index ?? knob.index };
   $('knobHeader').textContent = t('knob_dialog.header', { knob: knobLabel(knob), profile: viewName });
+  for (const option of document.querySelectorAll('#knobType .plugin-option')) {
+    const tp = pluginType(option.value);
+    option.hidden = option.disabled = Boolean(tp && !tp.plugin.enabled && option.value !== raw.type);
+  }
   $('knobType').value = raw.type || 'text';
   $('knobLeft').value = asText(raw.left);
   $('knobRight').value = asText(raw.right);
