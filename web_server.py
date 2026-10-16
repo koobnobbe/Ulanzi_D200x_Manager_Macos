@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import concurrent.futures
 import http.server
@@ -356,6 +357,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.server.loop.call_soon_threadsafe(run)
         return future.result(timeout=15)
 
+    def call_async(self, coroutine, timeout=30):
+        """Run a coroutine on the manager's event loop and wait for its result (plugins live there)."""
+        return asyncio.run_coroutine_threadsafe(coroutine, self.server.loop).result(timeout=timeout)
+
     def send(self, status, body, content_type):
         data = body.encode() if isinstance(body, str) else body
         self.send_response(status)
@@ -390,6 +395,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.send(200, fp.read(), kind)
         elif path == '/api/ui':
             self.send_json(self.call(manager.ui_settings))
+        elif path == '/api/plugins':
+            self.send_json({'plugins': self.call(self.server.host.describe)})
         elif path == '/api/lang':
             self.send_json(i18n.texts())
         elif path == '/library/icon':
@@ -519,6 +526,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return {'error': self.call(manager.set_device, body)}
         if path == '/api/ui':
             return {'error': self.call(manager.set_ui, body)}
+        if path == '/api/plugins/enabled':
+            self.call_async(self.server.host.set_enabled(body['id'], bool(body['enabled'])))
+            return {}
+        if path == '/api/plugins/settings':
+            self.call_async(self.server.host.save_settings(body['id'], body.get('settings') or {}))
+            return {}
+        if path == '/api/plugins/call':
+            return {'result': self.call_async(self.server.host.call(body['id'], body['action'], body.get('data') or {}))}
         if path == '/api/background':
             return {'background': make_background(body['source'], body.get('name'))}
         if path == '/api/icon':
@@ -587,12 +602,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return {'steps': [description for description, _ in steps]}
 
 
-def start(manager, loop, icon_dir, port):
+def start(manager, loop, icon_dir, port, host=None):
     try:
         server = http.server.ThreadingHTTPServer(('127.0.0.1', port), Handler)
     except OSError as e:
         print(f'web interface not started: {e}')
         return
-    server.manager, server.loop, server.icon_dir = manager, loop, icon_dir
+    server.manager, server.loop, server.icon_dir, server.host = manager, loop, icon_dir, host
     threading.Thread(target=server.serve_forever, daemon=True).start()
     print(f'web interface: http://127.0.0.1:{port}')

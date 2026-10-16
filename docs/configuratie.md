@@ -10,8 +10,10 @@ Bevat een bestand een fout, dan blijft de vorige configuratie actief. De foutmel
 |---|---|
 | `config.yaml` | Het profiel **default**, de apparaat-instellingen en de standaardwaarden voor toetsen. |
 | `profiles/*.yaml` | Eén bestand per profiel. Zie [Profielen](profielen.md). |
-| `library/*.yaml` | De bibliotheken. Zie [Bibliotheek en plugins](bibliotheek.md). |
+| `library/*.yaml` | De bibliotheken. Zie [Bibliotheken](bibliotheek.md). |
 | `library/hidden.json` | Welke bibliotheken verborgen zijn. |
+| `plugins/` | Plugins, zoals Home Assistant. Zie [Plugins](plugins.md). |
+| `plugins.local.yaml` | Instellingen en geheimen van plugins, per machine en niet in git. |
 | `icons/` | Iconen voor toetsen, 192×192 png. |
 | `backgrounds/` | Achtergronden voor profielen, het klok-venster en de screensaver. |
 | `docs/` | Deze documentatie. |

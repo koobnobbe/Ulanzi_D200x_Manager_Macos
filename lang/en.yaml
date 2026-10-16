@@ -28,6 +28,7 @@ header:
   brightness: Brightness
   screen: Screen config…
   device: Device…
+  libraries: Libraries…
   plugins: Plugins…
   reload: Reload config
 
@@ -116,6 +117,9 @@ key_dialog:
   hold_type: Hold type
   hold_value: Hold value
   remove_confirm: Remove this key?
+  plugin_off: "This plugin is off. Turn it on under Plugins…"
+  entity_hint: "Type to search by name; the list comes from the plugin."
+  entity_placeholder: "Search by name…"
 
 knob_dialog:
   header: "{knob} · {profile}"
@@ -166,14 +170,32 @@ profile_dialog:
   unlink: Unlink app
   unlink_confirm: Unlink the app from profile {name}? The profile itself is kept.
 
-plugins_dialog:
-  title: Plugins
+libraries_dialog:
+  title: Libraries
   hint: Only checked libraries are shown in the library panel.
   count: "{count} keys"
   import: Import…
   import_failed: "{file} not imported: {error}"
   import_hint: Choose the .yaml file, together with the .zip of the same name if the library has its own icons.
   zip_without_yaml: "{file}: also choose the .yaml file with the same name"
+
+plugins_dialog:
+  title: "Plugins"
+  hint: "Plugins are local code in plugins/ that add key types. Their settings are stored per machine in plugins.local.yaml, which is not in git."
+  "on": "On"
+  save: "Save"
+  saved: "Saved."
+  test: "Test connection"
+  testing: "Testing…"
+  secret_set: "saved; leave empty to keep it"
+  none: "No plugins found in plugins/."
+  status:
+    connected: "connected"
+    connecting: "connecting…"
+    error: "error"
+    "off": "off"
+    starting: "starting…"
+    running: "running"
 
 screen_dialog:
   title: Screen config
@@ -276,3 +298,13 @@ library_check:
   needs_buttons: a library file starts with "buttons:" followed by a list of keys
   top_field: unknown top-level field {fields} (only "buttons" is allowed)
   buttons_list: '"buttons" must be a list: each key on a line starting with "  - "'
+
+# Checks of keys and knobs of plugin types.
+plugins_check:
+  field_needed: "{type} needs \"{field}\""
+  not_an_entity: "{field} is not an entity id: {value}"
+  wrong_domain: "{value} is not one of: {domains}"
+  number_range: "{field} must be between {min} and {max}"
+  "off": "{name} is off"
+  unknown_plugin: "unknown plugin: {id}"
+  not_running: "{name} is not running"

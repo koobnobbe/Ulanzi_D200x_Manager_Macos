@@ -51,20 +51,29 @@ def set_language(code):
     _language = code if valid and os.path.exists(os.path.join(LANG_DIR, f'{code}.yaml')) else DEFAULT
 
 
+PLUGIN_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'plugins')
+
+
 def _files():
-    return [os.path.join(LANG_DIR, f'{name}.yaml') for name in dict.fromkeys([DEFAULT, _language])]
+    """(path, key prefix) of every language file to merge: the app's, then each plugin's under plugin.<id>."""
+    codes = list(dict.fromkeys([DEFAULT, _language]))
+    files = [(os.path.join(LANG_DIR, f'{code}.yaml'), '') for code in codes]
+    if os.path.isdir(PLUGIN_DIR):
+        for plugin in sorted(os.listdir(PLUGIN_DIR)):
+            files += [(os.path.join(PLUGIN_DIR, plugin, 'lang', f'{code}.yaml'), f'plugin.{plugin}.') for code in codes]
+    return files
 
 
 def texts():
     """All texts as {dotted.key: text}. Re-read when a language file changes, so edits show without a restart."""
     global _texts, _mtimes
-    files = [f for f in _files() if os.path.exists(f)]
-    mtimes = [(f, os.path.getmtime(f)) for f in files]
+    files = [(f, prefix) for f, prefix in _files() if os.path.exists(f)]
+    mtimes = [(f, os.path.getmtime(f)) for f, _ in files]
     if mtimes != _mtimes:
         merged = {}
-        for path in files:
+        for path, prefix in files:
             with open(path, encoding='utf-8') as fp:
-                merged.update(_flatten(yaml.safe_load(fp)))
+                merged.update(_flatten(yaml.safe_load(fp), prefix))
         _texts, _mtimes = merged, mtimes
     return _texts
 

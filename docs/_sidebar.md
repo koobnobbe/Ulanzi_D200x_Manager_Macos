@@ -12,7 +12,9 @@
 - [Profielen](profielen.md)
 - [Achtergronden en klok](achtergronden.md)
 - [Apparaat en screensaver](apparaat.md)
-- [Bibliotheek en plugins](bibliotheek.md)
+- [Bibliotheken](bibliotheek.md)
+- [Plugins](plugins.md)
+- [Home Assistant](home-assistant.md)
 
 ## Naslag
 

@@ -1,0 +1,28 @@
+# Texts of the Home Assistant plugin (fr). Keys as in plugin.yaml; keep the {names}.
+description: Allumer et éteindre lampes et interrupteurs, afficher des états en direct et varier les lampes avec une molette.
+settings:
+  url: Adresse de Home Assistant
+  token: Jeton d'accès longue durée
+  verify_ssl: Vérifier le certificat TLS
+types:
+  ha.toggle: 'Home Assistant : lampe ou interrupteur'
+  ha.state: 'Home Assistant : afficher un état'
+  ha.dimmer: 'Home Assistant : variateur (lampe)'
+fields:
+  entity: Entité
+  step: Pas (%)
+status:
+  connected: Connecté à Home Assistant {version}, {count} entités.
+  test_ok: La connexion fonctionne (Home Assistant {version}).
+errors:
+  no_url: Indiquez l'adresse de Home Assistant.
+  bad_url: L'adresse doit commencer par http:// ou https://.
+  no_token: Indiquez un jeton d'accès.
+  not_ha: Cette adresse ne répond pas comme Home Assistant.
+  auth_invalid: Home Assistant n'accepte pas ce jeton.
+  tls: Le certificat TLS n'est pas reconnu ; désactivez « Vérifier le certificat TLS » pour un certificat auto-signé.
+  handshake: Home Assistant a refusé la connexion (HTTP {status}).
+  unreachable: Impossible de joindre {url}.
+  timeout: Home Assistant ne répond pas.
+  offline: Pas connecté à Home Assistant.
+  closed: La connexion a été fermée.

@@ -26,6 +26,7 @@ header:
   brightness: Brillo
   screen: Config. de pantalla…
   device: Dispositivo…
+  libraries: Bibliotecas…
   plugins: Plugins…
   reload: Recargar config
 
@@ -114,6 +115,9 @@ key_dialog:
   hold_type: Tipo de pulsación larga (hold)
   hold_value: Valor de pulsación larga
   remove_confirm: ¿Eliminar esta tecla?
+  plugin_off: "Este plugin está desactivado. Actívalo en Plugins…"
+  entity_hint: "Escribe para buscar por nombre; la lista viene del plugin."
+  entity_placeholder: "Buscar por nombre…"
 
 knob_dialog:
   header: "{knob} · {profile}"
@@ -164,14 +168,32 @@ profile_dialog:
   unlink: Desvincular app
   unlink_confirm: ¿Desvincular la app del perfil {name}? El perfil se conserva.
 
-plugins_dialog:
-  title: Plugins
+libraries_dialog:
+  title: Bibliotecas
   hint: Solo las bibliotecas marcadas aparecen en el panel de biblioteca.
   count: "{count} teclas"
   import: Importar…
   import_failed: "{file} no importado: {error}"
   import_hint: Elige el archivo .yaml, junto con el .zip del mismo nombre si la biblioteca tiene iconos propios.
   zip_without_yaml: "{file}: elige también el archivo .yaml con el mismo nombre"
+
+plugins_dialog:
+  title: "Plugins"
+  hint: "Los plugins son código local en plugins/ que añade tipos de teclas. Sus ajustes se guardan por equipo en plugins.local.yaml, que no está en git."
+  "on": "Activado"
+  save: "Guardar"
+  saved: "Guardado."
+  test: "Probar la conexión"
+  testing: "Probando…"
+  secret_set: "guardado; déjalo vacío para mantenerlo"
+  none: "No hay plugins en plugins/."
+  status:
+    connected: "conectado"
+    connecting: "conectando…"
+    error: "error"
+    "off": "desactivado"
+    starting: "iniciando…"
+    running: "activo"
 
 screen_dialog:
   title: Config. de pantalla
@@ -274,3 +296,13 @@ library_check:
   needs_buttons: un archivo de biblioteca empieza con "buttons:" seguido de una lista de teclas
   top_field: campo de nivel superior desconocido {fields} (solo se permite "buttons")
   buttons_list: '"buttons" debe ser una lista: cada tecla en una línea que empiece por "  - "'
+
+# Checks of keys and knobs of plugin types.
+plugins_check:
+  field_needed: "{type} necesita \"{field}\""
+  not_an_entity: "{field} no es un id de entidad: {value}"
+  wrong_domain: "{value} no es uno de: {domains}"
+  number_range: "{field} debe estar entre {min} y {max}"
+  "off": "{name} está desactivado"
+  unknown_plugin: "plugin desconocido: {id}"
+  not_running: "{name} no está activo"

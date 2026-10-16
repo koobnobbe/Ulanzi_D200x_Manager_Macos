@@ -1,0 +1,66 @@
+# Library section "HA Lights": a toggle key for every light in Home Assistant (made from Home Assistant on 2026-10-16).
+# Needs the Home Assistant plugin (Plugins…). A key shows the light live: yellow or its own color when on, with
+# its brightness. Lights added to Home Assistant later are not in this list; add them with the key dialog.
+buttons:
+  # Lamps
+  - {type: ha.toggle, title: Bar, entity: light.bar}
+  - {type: ha.toggle, title: color light 1 slaapkame, entity: light.color_light_1_slaapkame}
+  - {type: ha.toggle, title: Eettafel, entity: light.eettafel}
+  - {type: ha.toggle, title: Extended color light 1, entity: light.extended_color_light_1}
+  - {type: ha.toggle, title: Extended color light 2, entity: light.extended_color_light_2}
+  - {type: ha.toggle, title: Extended color light 2 nessa, entity: light.extended_color_light_2_nessa}
+  - {type: ha.toggle, title: Extended color light 3 nessa, entity: light.extended_color_light_3_nessa}
+  - {type: ha.toggle, title: Hue color candle snoer, entity: light.hue_color_candle_snoer}
+  - {type: ha.toggle, title: Hue color candle stang, entity: light.hue_color_candle_stang}
+  - {type: ha.toggle, title: Hue color spot deurzijde, entity: light.hue_color_spot_deurzijde}
+  - {type: ha.toggle, title: Hue color spot Midden, entity: light.hue_color_spot_midden}
+  - {type: ha.toggle, title: Hue color spot raamzijde, entity: light.hue_color_spot_raamzijde}
+  - {type: ha.toggle, title: Lamp zolder, entity: light.lamp_zolder}
+  - {type: ha.toggle, title: Lamp zolder 2, entity: light.lamp_zolder_2}
+  - {type: ha.toggle, title: Slaapkamer, entity: light.slaapkamer}
+  - {type: ha.toggle, title: Slaapkamer Nessa, entity: light.slaapkamer_nessa}
+  - {type: ha.toggle, title: Stoplicht, entity: light.stoplicht}
+  - {type: ha.toggle, title: Werkkamer, entity: light.werkkamer}
+  - {type: ha.toggle, title: Zolder, entity: light.zolder}
+  # Single bulbs of a group
+  - {type: ha.toggle, title: Eettafel bulb 1, entity: light.eettafel_bulb_1}
+  - {type: ha.toggle, title: Eettafel bulb 2, entity: light.eettafel_bulb_2}
+  - {type: ha.toggle, title: Eettafel bulb 3, entity: light.eettafel_bulb_3}
+  - {type: ha.toggle, title: Eettafel bulb 4, entity: light.eettafel_bulb_4}
+  - {type: ha.toggle, title: Eettafel bulb 5, entity: light.eettafel_bulb_5}
+  - {type: ha.toggle, title: Eettafel bulb 6, entity: light.eettafel_bulb_6}
+  - {type: ha.toggle, title: Stoplicht  rood, entity: light.stoplicht_rood}
+  - {type: ha.toggle, title: Stoplicht groen, entity: light.stoplicht_groen}
+  - {type: ha.toggle, title: Stoplicht oranje, entity: light.stoplicht_oranje}
+  # Device LEDs, indicators and screens
+  - {type: ha.toggle, title: AP-Garage LED, entity: light.ap_werkkamer_led}
+  - {type: ha.toggle, title: AP-Huiskamer LED, entity: light.ap_huiskamer_led}
+  - {type: ha.toggle, title: AP-Serre LED, entity: light.ap_woonkamer_6_led}
+  - {type: ha.toggle, title: AP-ServerRuimte LED, entity: light.ap_meterkast_led}
+  - {type: ha.toggle, title: AP-Werkkamer LED, entity: light.ap_werkkamer_led_2}
+  - {type: ha.toggle, title: awtrix lichtkrant Indicator 1, entity: light.werkkamer_awtrix_lichtkrant_indicator_1}
+  - {type: ha.toggle, title: awtrix lichtkrant Indicator 2, entity: light.werkkamer_awtrix_lichtkrant_indicator_2}
+  - {type: ha.toggle, title: awtrix lichtkrant Indicator 3, entity: light.werkkamer_awtrix_lichtkrant_indicator_3}
+  - {type: ha.toggle, title: awtrix lichtkrant Matrix, entity: light.werkkamer_awtrix_lichtkrant_matrix}
+  - {type: ha.toggle, title: awtrix_0600e0 Indicator 1, entity: light.awtrix_0600e0_indicator_1}
+  - {type: ha.toggle, title: awtrix_0600e0 Indicator 2, entity: light.awtrix_0600e0_indicator_2}
+  - {type: ha.toggle, title: awtrix_0600e0 Indicator 3, entity: light.awtrix_0600e0_indicator_3}
+  - {type: ha.toggle, title: awtrix_0600e0 Matrix, entity: light.awtrix_0600e0_matrix}
+  - {type: ha.toggle, title: BambuLab_A1Mini Chamber light, entity: light.a1mini_0309da551703189_chamber_light}
+  - {type: ha.toggle, title: Bambulab_P1S Chamber light, entity: light.bambulab_p1s_chamber_light}
+  - {type: ha.toggle, title: ESP Block Lamp LED On⁄Off, entity: light.esp_block_lamp_led_on_off}
+  - {type: ha.toggle, title: ESP Waveshare Touch Display Backlight, entity: light.esp_waveshare_touch_display_backlight}
+  - {type: ha.toggle, title: ESP32 BOX S3 Screen, entity: light.esp32_box_s3_screen}
+  - {type: ha.toggle, title: home assistant on-off Dnd, entity: light.smart_switch_20011664282490251h3248e1e916fc7d_dnd}
+  - {type: ha.toggle, title: Lamp envelop Dnd, entity: light.smart_switch_20011652286714251h3248e1e91700a5_dnd}
+  - {type: ha.toggle, title: meter meterkast (2) Dnd, entity: light.smart_plug_2204260200622651070248e1e9903cec_dnd}
+  - {type: ha.toggle, title: meter vloer kamer (5) Dnd, entity: light.smart_plug_2204269506407151070248e1e990495b_dnd}
+  - {type: ha.toggle, title: Meter Wasmachine (1) Dnd, entity: light.smart_plug_2204269455016351070248e1e9905336_dnd}
+  - {type: ha.toggle, title: meter werkkamer (3) Dnd, entity: light.smart_plug_2204261605557051070248e1e9905483_dnd}
+  - {type: ha.toggle, title: SC01-Desk-Monitor Scherm helderheid, entity: light.werkamer_sc01_desk_monitor_scherm_helderheid}
+  - {type: ha.toggle, title: SW5-Flex2.5 LED, entity: light.sw5_flex2_5_led}
+  - {type: ha.toggle, title: SW5-FlexMini LED, entity: light.sw5_flexmini_led}
+  - {type: ha.toggle, title: SW8-Huiskamer LED, entity: light.sw8_huiskamer_led}
+  - {type: ha.toggle, title: UDM-SE LED, entity: light.udm_se_led}
+  - {type: ha.toggle, title: Vloerverwarming Serre Dnd, entity: light.smart_switch_20011653422687251h3248e1e916fcee_dnd}
+  - {type: ha.toggle, title: Werkkamer Dnd, entity: light.smart_switch_20011621998541251h3248e1e916fd01_dnd}

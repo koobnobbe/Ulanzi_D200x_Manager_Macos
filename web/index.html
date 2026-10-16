@@ -22,6 +22,28 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
 .bg-field .pick { margin-top: 6px; }
 .bg-field .swatch { flex: none; width: 34px; margin-top: 4px; padding: 0; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
 .bg-remove { margin-top: 8px; color: var(--muted); }
+.plugins-box { width: min(640px, 90vw); }
+.plugin-card { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-top: 12px; }
+.plugin-head { display: flex; align-items: center; gap: 10px; }
+.plugin-head input { display: inline; width: auto; margin: 0; }
+.plugin-head .name { font-weight: 600; }
+.plugin-head .version { color: var(--muted); font-size: 12px; }
+.plugin-status { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.plugin-status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.plugin-status .dot.connected, .plugin-status .dot.running { background: #34c759; }
+.plugin-status .dot.connecting, .plugin-status .dot.starting { background: #ffcc00; }
+.plugin-status .dot.error { background: var(--err); }
+.plugin-msg { font-size: 12px; color: var(--muted); margin-top: 6px; white-space: pre-wrap; }
+.plugin-msg.bad { color: var(--err); }
+.plugin-settings label { display: block; margin-top: 10px; font-size: 13px; color: var(--muted); }
+.plugin-settings label.check { display: flex; align-items: center; gap: 8px; }
+.plugin-settings label.check input { width: auto; margin: 0; }
+.combo { position: relative; }
+.combo-list { display: none; position: absolute; z-index: 10; left: 0; right: 0; top: 100%; margin-top: 2px; max-height: 240px; overflow: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 8px 20px rgba(0, 0, 0, .35); }
+.combo-list.open { display: block; }
+.combo-item { padding: 6px 10px; cursor: pointer; color: var(--text); }
+.combo-item:hover, .combo-item.active { background: var(--accent); color: #fff; }
 .page-cfg { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; }
 .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .tab.add { color: var(--muted); border-style: dashed; }
@@ -121,6 +143,7 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
   <label><span data-t="header.brightness"></span> <input id="bright" type="range" min="0" max="100" style="width: 160px"> <span id="brightVal"></span></label>
   <button id="screenBtn" data-t="header.screen"></button>
   <button id="deviceBtn" data-t="header.device"></button>
+  <button id="librariesBtn" data-t="header.libraries"></button>
   <button id="pluginsBtn" data-t="header.plugins"></button>
   <button id="reload" data-t="header.reload"></button>
 </header>
@@ -174,11 +197,14 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
         <option value="key" data-t="knob_dialog.type_key"></option>
         <option value="device_brightness" data-t="knob_dialog.type_brightness"></option>
       </select></label>
-    <label><span data-t="knob_dialog.left"></span> <input id="knobLeft" type="text"></label>
-    <label><span data-t="knob_dialog.right"></span> <input id="knobRight" type="text"></label>
-    <label><span data-t="knob_dialog.press"></span> <input id="knobPress" type="text"></label>
-    <label><span data-t="knob_dialog.step"></span> <input id="knobStep" type="number" min="1" max="100"></label>
-    <div class="hint" data-t="knob_dialog.hint"></div>
+    <div id="knobBuiltin">
+      <label><span data-t="knob_dialog.left"></span> <input id="knobLeft" type="text"></label>
+      <label><span data-t="knob_dialog.right"></span> <input id="knobRight" type="text"></label>
+      <label><span data-t="knob_dialog.press"></span> <input id="knobPress" type="text"></label>
+      <label><span data-t="knob_dialog.step"></span> <input id="knobStep" type="number" min="1" max="100"></label>
+      <div class="hint" data-t="knob_dialog.hint"></div>
+    </div>
+    <div id="knobPluginFields"></div>
     <div id="knobErr" class="err"></div>
     <div class="bar">
       <span style="flex: 1"></span>
@@ -253,6 +279,7 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
         <select id="kProfile"></select></label>
       <div class="hint" data-t="key_dialog.hint_profile"></div>
     </div>
+    <div id="kPluginPanels"></div>
     <div class="grid2 shared">
       <label style="position: relative"><span data-t="key_dialog.background"></span> <input id="kBg" type="text" placeholder="#1a1a2e"><input id="kBgPicker" type="color" class="hidden-picker"></label>
       <label style="position: relative"><span data-t="key_dialog.color"></span> <input id="kColor" type="text" placeholder="#ffffff"><input id="kColorPicker" type="color" class="hidden-picker"></label>
@@ -345,19 +372,27 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
     </div>
   </form>
 </dialog>
-<dialog id="pluginsDlg">
+<dialog id="librariesDlg">
   <div style="min-width: 360px">
+    <h2 data-t="libraries_dialog.title"></h2>
+    <div class="hint" style="margin-top: 0" data-t="libraries_dialog.hint"></div>
+    <div id="libraryList" class="plugin-list"></div>
+    <div class="hint" data-t="libraries_dialog.import_hint"></div>
+    <div id="libraryErr" class="err"></div>
+    <div class="bar">
+      <button type="button" id="libraryImport" data-t="libraries_dialog.import"></button>
+      <input id="libraryFile" type="file" accept=".yaml,.yml,.zip" multiple hidden>
+      <span style="flex: 1"></span>
+      <button type="button" id="librariesClose" data-t="common.close"></button>
+    </div>
+  </div>
+</dialog>
+<dialog id="pluginsDlg">
+  <div class="plugins-box">
     <h2 data-t="plugins_dialog.title"></h2>
     <div class="hint" style="margin-top: 0" data-t="plugins_dialog.hint"></div>
-    <div id="pluginList" class="plugin-list"></div>
-    <div class="hint" data-t="plugins_dialog.import_hint"></div>
-    <div id="pluginErr" class="err"></div>
-    <div class="bar">
-      <button type="button" id="pluginImport" data-t="plugins_dialog.import"></button>
-      <input id="pluginFile" type="file" accept=".yaml,.yml,.zip" multiple hidden>
-      <span style="flex: 1"></span>
-      <button type="button" id="pluginsClose" data-t="common.close"></button>
-    </div>
+    <div id="pluginCards"></div>
+    <div class="bar"><span style="flex: 1"></span><button type="button" id="pluginsClose" data-t="common.close"></button></div>
   </div>
 </dialog>
 <dialog id="screenDlg">
@@ -603,6 +638,7 @@ function fillKeyForm(raw) {
   $('kHoldValue').value = asText(hold.page ?? hold.profile ?? hold.keys ?? hold.app);
   buildAppProfileOptions(raw.profile || '');
   setLongpress(Boolean(raw.hold));
+  for (const tp of pluginTypes('key')) setPluginFields(tp, 'kp', raw.type === tp.type ? raw : {});
   showKeyTab(raw.type || 'text');
 }
 
@@ -620,6 +656,8 @@ function readKeyForm() {
   if (type === 'app' && $('kAppProfile').value) data.profile = $('kAppProfile').value;
   if (type === 'page' && v('kTarget')) data.page = /^\d+$/.test(v('kTarget')) ? Number(v('kTarget')) : v('kTarget');
   if (type === 'profile' && $('kProfile').value) data.profile = $('kProfile').value;
+  const tp = pluginType(type);
+  if (tp) readPluginFields(tp, 'kp', data);
   if (v('kIcon')) data.icon = v('kIcon');
   if (v('kBg')) data.background = v('kBg');
   if (v('kColor')) data.color = v('kColor');
@@ -840,6 +878,7 @@ async function openKnobDialog(knob) {
   $('knobRight').value = asText(raw.right);
   $('knobPress').value = asText(raw.press);
   $('knobStep').value = raw.step ?? 10;
+  showKnobFields(raw);
   $('knobErr').textContent = '';
   $('knobDlg').showModal();
 }
@@ -849,7 +888,10 @@ $('knobForm').onsubmit = (e) => {
   guarded(async () => {
     const type = $('knobType').value;
     const data = { index: knobTarget.index, type };
-    if (type === 'device_brightness') {
+    const tp = pluginType(type);
+    if (tp) {
+      readPluginFields(tp, 'kn', data);
+    } else if (type === 'device_brightness') {
       data.step = Number($('knobStep').value) || 10;
     } else {
       for (const [field, id] of [['left', 'knobLeft'], ['right', 'knobRight'], ['press', 'knobPress']]) {
@@ -987,7 +1029,8 @@ function renderKnobs() {
     button.type = 'button';
     button.className = 'knob-btn';
     button.style.left = KNOB_X[i] + '%';
-    button.title = t('grid.knob_tooltip', { knob: knobLabel(knob), left: knob.left || '-', press: knob.press || '-', right: knob.right || '-' });
+    button.title = pluginType(knob.type) ? `${knobLabel(knob)}\n${pluginType(knob.type).label}: ${knob.entity || '-'}`
+      : t('grid.knob_tooltip', { knob: knobLabel(knob), left: knob.left || '-', press: knob.press || '-', right: knob.right || '-' });
     button.onclick = () => guarded(() => openKnobDialog(knob));
     box.append(button);
   });
@@ -1248,6 +1291,380 @@ function readBackgroundField(prefix) {
   };
 }
 
+// --- plugins: their key and knob types in the dialogs, and the Plugins dialog
+let pluginData = [];
+
+async function loadPlugins() {
+  pluginData = (await api('/api/plugins')).plugins;
+}
+
+function pluginTypes(kind) {
+  return pluginData.flatMap((p) => p.key_types.filter((tp) => tp.kind === kind).map((tp) => ({ ...tp, plugin: p })));
+}
+
+function pluginType(type) {
+  return [...pluginTypes('key'), ...pluginTypes('knob')].find((tp) => tp.type === type);
+}
+
+function fieldId(prefix, type, key) {
+  return `${prefix}-${type}-${key}`.replace(/[^\w-]/g, '_');
+}
+
+function hint(text) {
+  const el = document.createElement('div');
+  el.className = 'hint';
+  el.textContent = text;
+  return el;
+}
+
+// Entities per plugin and domain filter, fetched once per page load (the picker searches in this list).
+const entityCache = {};
+
+async function entities(tp, field) {
+  const key = tp.plugin.id + '|' + (field.domains || []).join(',');
+  if (!entityCache[key]) {
+    entityCache[key] = api('/api/plugins/call', { id: tp.plugin.id, action: 'entities', data: { domains: field.domains || [] } })
+      .then((result) => result.result)
+      .catch((err) => {
+        delete entityCache[key];   // offline or off: try again next time
+        throw err;
+      });
+  }
+  return entityCache[key];
+}
+
+// A searchable picker that shows only the friendly name; the entity id is kept in input.dataset.value.
+function entityPicker(tp, field, input) {
+  const wrap = document.createElement('div');
+  wrap.className = 'combo';
+  const list = document.createElement('div');
+  list.className = 'combo-list';
+  wrap.append(input, list);
+  let shown = [];
+  let active = -1;
+
+  const choose = (entity) => {
+    input.dataset.value = entity.entity_id;
+    input.value = entity.name;
+    input.title = entity.entity_id;
+    list.classList.remove('open');
+  };
+  const highlight = (index) => {
+    active = index;
+    [...list.children].forEach((el, i) => el.classList.toggle('active', i === index));
+    if (list.children[index]) list.children[index].scrollIntoView({ block: 'nearest' });
+  };
+  const show = async () => {
+    let all;
+    try {
+      all = await entities(tp, field);
+    } catch (err) {
+      list.classList.remove('open');
+      return;
+    }
+    const query = input.value.trim().toLowerCase();
+    // Search by name (and id, for those who know it); a selected name that is still in the box shows the whole list.
+    const searching = query && input.value !== input.dataset.shown;
+    shown = all.filter((e) => !searching || e.name.toLowerCase().includes(query) || e.entity_id.includes(query)).slice(0, 80);
+    list.textContent = '';
+    for (const entity of shown) {
+      const item = document.createElement('div');
+      item.className = 'combo-item';
+      item.textContent = entity.name;
+      item.title = entity.entity_id;
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();   // keep the focus in the box until the choice is made
+        choose(entity);
+        input.dataset.shown = input.value;
+      });
+      list.append(item);
+    }
+    list.classList.toggle('open', shown.length > 0);
+    highlight(shown.findIndex((e) => e.entity_id === input.dataset.value));
+  };
+  input.addEventListener('focus', () => {
+    input.dataset.shown = input.value;
+    show();
+  });
+  input.addEventListener('input', () => {
+    delete input.dataset.value;   // typing starts a new search
+    show();
+  });
+  input.addEventListener('blur', () => {
+    list.classList.remove('open');
+    // A typed entity id (or an exact name) still counts when nothing was picked from the list.
+    if (!input.dataset.value) {
+      const typed = input.value.trim();
+      entities(tp, field).then((all) => {
+        const match = all.find((e) => e.entity_id === typed || e.name.toLowerCase() === typed.toLowerCase());
+        if (match) choose(match);
+        else if (/^[a-z_]+\.[a-z0-9_]+$/.test(typed)) input.dataset.value = typed;
+      }).catch(() => {
+        if (/^[a-z_]+\.[a-z0-9_]+$/.test(typed)) input.dataset.value = typed;
+      });
+    }
+  });
+  input.addEventListener('keydown', (e) => {
+    if (!list.classList.contains('open')) return;
+    if (e.key === 'ArrowDown') highlight(Math.min(active + 1, shown.length - 1));
+    else if (e.key === 'ArrowUp') highlight(Math.max(active - 1, 0));
+    else if (e.key === 'Enter' && shown[active]) choose(shown[active]);
+    else if (e.key === 'Escape') list.classList.remove('open');
+    else return;
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  return wrap;
+}
+
+function pluginFields(tp, prefix) {
+  const nodes = [];
+  for (const field of tp.fields) {
+    const label = document.createElement('label');
+    const span = document.createElement('span');
+    span.textContent = field.label;
+    const input = document.createElement('input');
+    input.id = fieldId(prefix, tp.type, field.key);
+    input.autocomplete = 'off';
+    if (field.type === 'entity') {
+      input.type = 'text';
+      input.placeholder = t('key_dialog.entity_placeholder');
+      label.append(span, ' ', entityPicker(tp, field, input));
+      nodes.push(label);
+      continue;
+    }
+    label.append(span, ' ', input);
+    if (field.type === 'number') {
+      input.type = 'number';
+      if (field.min !== undefined) input.min = field.min;
+      if (field.max !== undefined) input.max = field.max;
+      if (field.default !== undefined) input.placeholder = field.default;
+    } else {
+      input.type = 'text';
+    }
+    nodes.push(label);
+  }
+  if (tp.fields.some((f) => f.type === 'entity')) nodes.push(hint(t('key_dialog.entity_hint')));
+  if (!tp.plugin.enabled) nodes.push(hint(t('key_dialog.plugin_off')));
+  return nodes;
+}
+
+function setPluginFields(tp, prefix, raw) {
+  for (const field of tp.fields) {
+    const input = $(fieldId(prefix, tp.type, field.key));
+    const value = asText(raw[field.key]);
+    input.value = value;
+    if (field.type !== 'entity') continue;
+    input.title = value;
+    if (value) input.dataset.value = value;
+    else delete input.dataset.value;
+    // show the friendly name instead of the id once the list is there
+    if (value) entities(tp, field).then((all) => {
+      const match = all.find((e) => e.entity_id === value);
+      if (match && input.dataset.value === value) input.value = match.name;
+    }).catch(() => {});
+  }
+}
+
+function readPluginFields(tp, prefix, data) {
+  for (const field of tp.fields) {
+    const input = $(fieldId(prefix, tp.type, field.key));
+    const value = field.type === 'entity' ? (input.dataset.value || '') : input.value.trim();
+    if (value) data[field.key] = field.type === 'number' ? Number(value) : value;
+  }
+}
+
+function buildPluginKeyTabs() {
+  document.querySelectorAll('#kTabs .plugin-tab').forEach((el) => el.remove());
+  $('kPluginPanels').textContent = '';
+  for (const tp of pluginTypes('key')) {
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'tab plugin-tab';
+    tab.dataset.type = tp.type;
+    tab.textContent = tp.label;
+    tab.onclick = () => showKeyTab(tp.type);
+    $('kTabs').append(tab);
+    const panel = document.createElement('div');
+    panel.className = 'tpanel';
+    panel.dataset.type = tp.type;
+    panel.append(...pluginFields(tp, 'kp'));
+    $('kPluginPanels').append(panel);
+  }
+}
+
+function buildKnobTypes() {
+  document.querySelectorAll('#knobType .plugin-option').forEach((el) => el.remove());
+  for (const tp of pluginTypes('knob')) {
+    const option = document.createElement('option');
+    option.className = 'plugin-option';
+    option.value = tp.type;
+    option.textContent = tp.label;
+    $('knobType').append(option);
+  }
+}
+
+function showKnobFields(raw = {}) {
+  const tp = pluginType($('knobType').value);
+  $('knobBuiltin').style.display = tp ? 'none' : '';
+  $('knobPluginFields').textContent = '';
+  if (tp) {
+    $('knobPluginFields').append(...pluginFields(tp, 'kn'));
+    setPluginFields(tp, 'kn', raw);
+  }
+}
+$('knobType').addEventListener('change', () => showKnobFields());
+
+function renderPluginCards() {
+  const box = $('pluginCards');
+  box.textContent = '';
+  if (!pluginData.length) {
+    box.append(hint(t('plugins_dialog.none')));
+    return;
+  }
+  for (const plugin of pluginData) {
+    const card = document.createElement('div');
+    card.className = 'plugin-card';
+    card.dataset.id = plugin.id;
+    const head = document.createElement('div');
+    head.className = 'plugin-head';
+    const enabled = document.createElement('input');
+    enabled.type = 'checkbox';
+    enabled.checked = plugin.enabled;
+    enabled.title = t('plugins_dialog.on');
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = plugin.name;
+    const version = document.createElement('span');
+    version.className = 'version';
+    version.textContent = plugin.version;
+    const status = document.createElement('span');
+    status.className = 'plugin-status';
+    head.append(enabled, name, version, status);
+    const message = document.createElement('div');
+    message.className = 'plugin-msg';
+    const form = document.createElement('div');
+    form.className = 'plugin-settings';
+    const inputs = {};
+    for (const field of plugin.settings) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.autocomplete = 'off';
+      if (field.type === 'bool') {
+        label.className = 'check';
+        input.type = 'checkbox';
+        input.checked = Boolean(field.value);
+        label.append(input, field.label);
+      } else {
+        input.type = field.type === 'secret' ? 'password' : 'text';
+        if (field.type === 'secret') input.placeholder = field.is_set ? t('plugins_dialog.secret_set') : '';
+        else {
+          input.value = field.value ?? '';
+          input.placeholder = field.placeholder || '';
+        }
+        label.append(field.label, input);
+      }
+      inputs[field.key] = { field, input };
+      form.append(label);
+    }
+    const values = () => Object.fromEntries(Object.entries(inputs).map(([key, { field, input }]) =>
+      [key, field.type === 'bool' ? input.checked : input.value.trim()]));
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    const test = document.createElement('button');
+    test.type = 'button';
+    test.textContent = t('plugins_dialog.test');
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.className = 'primary';
+    save.textContent = t('plugins_dialog.save');
+    const spacer = document.createElement('span');
+    spacer.style.flex = '1';
+    bar.append(spacer, test, save);
+    const say = (text, bad = false) => {
+      message.textContent = text;
+      message.classList.toggle('bad', bad);
+    };
+    enabled.onchange = () => guarded(async () => {
+      try {
+        await api('/api/plugins/enabled', { id: plugin.id, enabled: enabled.checked });
+      } catch (err) {
+        say(err.message, true);
+      }
+      await afterPluginChange();
+    });
+    test.onclick = () => guarded(async () => {
+      say(t('plugins_dialog.testing'));
+      try {
+        const result = await api('/api/plugins/call', { id: plugin.id, action: 'test', data: values() });
+        say(result.result.message);
+      } catch (err) {
+        say(err.message, true);
+      }
+    });
+    save.onclick = () => guarded(async () => {
+      try {
+        await api('/api/plugins/settings', { id: plugin.id, settings: values() });
+        say(t('plugins_dialog.saved'));
+      } catch (err) {
+        say(err.message, true);
+        return;
+      }
+      await afterPluginChange();
+    });
+    card.append(head, hint(plugin.description), form, message, bar);
+    box.append(card);
+  }
+  showPluginStatus();
+}
+
+function showPluginStatus() {
+  for (const plugin of pluginData) {
+    const card = document.querySelector(`.plugin-card[data-id="${plugin.id}"]`);
+    if (!card) continue;
+    const status = card.querySelector('.plugin-status');
+    status.textContent = '';
+    const dot = document.createElement('span');
+    dot.className = 'dot ' + plugin.status.state;
+    status.append(dot, t('plugins_dialog.status.' + plugin.status.state));
+    status.title = plugin.status.message || '';
+    const message = card.querySelector('.plugin-msg');
+    if (!message.dataset.own) {
+      message.textContent = plugin.status.message || '';
+      message.classList.toggle('bad', plugin.status.state === 'error');
+    }
+  }
+}
+
+async function afterPluginChange() {
+  await loadPlugins();
+  showPluginStatus();
+  buildPluginKeyTabs();
+  buildKnobTypes();
+  await load(true);
+}
+
+let pluginPoll = null;
+$('pluginsBtn').onclick = () => guarded(async () => {
+  await loadPlugins();
+  renderPluginCards();
+  $('pluginsDlg').showModal();
+  // keep the status up to date while the dialog is open (connecting -> connected)
+  pluginPoll = setInterval(() => guarded(async () => {
+    await loadPlugins();
+    showPluginStatus();
+  }), 1500);
+});
+$('pluginsClose').onclick = () => $('pluginsDlg').close();
+$('pluginsDlg').addEventListener('close', () => clearInterval(pluginPoll));
+
+// Keys of plugins can change by themselves (a light turned on elsewhere): refresh the grid now and then.
+setInterval(() => {
+  if (document.visibilityState !== 'visible' || document.querySelector('dialog[open]') || !state || !isActiveView()) return;
+  if (!Object.values(state.keys).some((k) => k.type && k.type.includes('.'))) return;
+  guarded(() => load(true));
+}, 3000);
+
 let pageTarget = null;
 
 async function openPageDialog() {
@@ -1362,8 +1779,8 @@ $('pRemove').onclick = () => {
   });
 };
 
-function renderPlugins() {
-  const box = $('pluginList');
+function renderLibraries() {
+  const box = $('libraryList');
   box.textContent = '';
   for (const section of libraryData.sections) {
     const label = document.createElement('label');
@@ -1377,13 +1794,13 @@ function renderPlugins() {
     });
     const count = document.createElement('span');
     count.className = 'count';
-    count.textContent = t('plugins_dialog.count', { count: section.items.length });
+    count.textContent = t('libraries_dialog.count', { count: section.items.length });
     label.append(check, document.createTextNode(section.section), count);
     box.append(label);
   }
 }
 
-$('pluginImport').onclick = () => $('pluginFile').click();
+$('libraryImport').onclick = () => $('libraryFile').click();
 async function base64(file) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   let binary = '';
@@ -1391,39 +1808,39 @@ async function base64(file) {
   return btoa(binary);
 }
 
-$('pluginFile').onchange = () => guarded(async () => {
-  const files = [...$('pluginFile').files];
-  $('pluginFile').value = '';
+$('libraryFile').onchange = () => guarded(async () => {
+  const files = [...$('libraryFile').files];
+  $('libraryFile').value = '';
   if (!files.length) return;
-  $('pluginErr').textContent = '';
+  $('libraryErr').textContent = '';
   // Each .yaml is imported together with the .zip of the same name, if one was chosen.
   const stem = (file) => file.name.replace(/\.[^.]+$/, '');
   const yamls = files.filter((f) => /\.ya?ml$/i.test(f.name));
   const zips = files.filter((f) => /\.zip$/i.test(f.name));
   const errors = zips.filter((z) => !yamls.some((y) => stem(y) === stem(z)))
-    .map((z) => t('plugins_dialog.zip_without_yaml', { file: z.name }));
+    .map((z) => t('libraries_dialog.zip_without_yaml', { file: z.name }));
   for (const file of yamls) {
     const zip = zips.find((z) => stem(z) === stem(file));
     try {
       const result = await api('/api/library/import', { filename: file.name, text: await file.text(), zip: zip ? await base64(zip) : null });
       log(t('log.library_imported', { name: result.section }));
     } catch (err) {
-      errors.push(t('plugins_dialog.import_failed', { file: file.name, error: err.message }));
+      errors.push(t('libraries_dialog.import_failed', { file: file.name, error: err.message }));
     }
   }
-  $('pluginErr').textContent = errors.join('\n');
+  $('libraryErr').textContent = errors.join('\n');
   libraryData = await api('/api/library');
-  renderPlugins();
+  renderLibraries();
   renderLibrary();
 });
 
-$('pluginsBtn').onclick = () => guarded(async () => {
+$('librariesBtn').onclick = () => guarded(async () => {
   libraryData = await api('/api/library');
-  $('pluginErr').textContent = '';
-  renderPlugins();
-  $('pluginsDlg').showModal();
+  $('libraryErr').textContent = '';
+  renderLibraries();
+  $('librariesDlg').showModal();
 });
-$('pluginsClose').onclick = () => $('pluginsDlg').close();
+$('librariesClose').onclick = () => $('librariesDlg').close();
 
 $('screenBtn').onclick = () => guarded(async () => {
   const ui = await api('/api/ui');
@@ -1600,6 +2017,13 @@ guarded(async () => {
   }
   applyTexts();
   buildKeyPicker();
+  try {
+    await loadPlugins();
+    buildPluginKeyTabs();
+    buildKnobTypes();
+  } catch (e) {
+    log('plugins: ' + e.message);
+  }
   libraryData = await api('/api/library');
   renderLibrary();
   state = await api('/api/state');

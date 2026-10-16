@@ -11,7 +11,7 @@ De D200X Manager stuurt een **Ulanzi D200X** stream controller aan vanaf een Mac
 - **Profielen per app**: een profiel wordt vanzelf actief zodra de bijbehorende app vooraan komt. Zie [Profielen](profielen.md).
 - **Achtergronden** per profiel, transparante toetsen en een eigen klok-venster. Zie [Achtergronden en klok](achtergronden.md).
 - **Screensaver** die dimt of een kleur of afbeelding toont. Zie [Apparaat en screensaver](apparaat.md).
-- **Bibliotheek** met kant-en-klare toetsen die je op het deck sleept, bijvoorbeeld voor BusyCal. Zie [Bibliotheek en plugins](bibliotheek.md).
+- **Bibliotheek** met kant-en-klare toetsen die je op het deck sleept, bijvoorbeeld voor BusyCal. Zie [Bibliotheken](bibliotheek.md).
 
 ## Het deck in het kort
 

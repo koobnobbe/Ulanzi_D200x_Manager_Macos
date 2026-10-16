@@ -3,3 +3,7 @@ __pycache__/
 .build/
 .cache/
 .env
+
+# Plugin settings and secrets, per machine
+plugins.local.yaml
+plugins.local.yaml.tmp

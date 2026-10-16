@@ -1,0 +1,28 @@
+# Texts of the Home Assistant plugin (de). Keys as in plugin.yaml; keep the {names}.
+description: Lampen und Schalter schalten, Zustände live anzeigen und Lampen mit einem Drehknopf dimmen.
+settings:
+  url: Adresse von Home Assistant
+  token: Langlebiges Zugriffstoken
+  verify_ssl: TLS-Zertifikat prüfen
+types:
+  ha.toggle: 'Home Assistant: Lampe oder Schalter'
+  ha.state: 'Home Assistant: Zustand anzeigen'
+  ha.dimmer: 'Home Assistant: Dimmer (Lampe)'
+fields:
+  entity: Entität
+  step: Schritt (%)
+status:
+  connected: Verbunden mit Home Assistant {version}, {count} Entitäten.
+  test_ok: Verbindung funktioniert (Home Assistant {version}).
+errors:
+  no_url: Bitte die Adresse von Home Assistant eintragen.
+  bad_url: Die Adresse muss mit http:// oder https:// beginnen.
+  no_token: Bitte ein Zugriffstoken eintragen.
+  not_ha: Diese Adresse antwortet nicht wie Home Assistant.
+  auth_invalid: Home Assistant akzeptiert dieses Token nicht.
+  tls: Das TLS-Zertifikat wird nicht vertraut; bei einem eigenen Zertifikat "TLS-Zertifikat prüfen" ausschalten.
+  handshake: Home Assistant hat die Verbindung abgelehnt (HTTP {status}).
+  unreachable: '{url} ist nicht erreichbar.'
+  timeout: Home Assistant antwortet nicht.
+  offline: Nicht mit Home Assistant verbunden.
+  closed: Die Verbindung wurde getrennt.

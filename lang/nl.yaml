@@ -28,6 +28,7 @@ header:
   brightness: Helderheid
   screen: Scherm config…
   device: Apparaat…
+  libraries: Bibliotheken…
   plugins: Plugins…
   reload: Herlaad config
 
@@ -116,6 +117,9 @@ key_dialog:
   hold_type: Vasthouden (hold) type
   hold_value: Vasthouden waarde
   remove_confirm: Deze toets verwijderen?
+  plugin_off: "Deze plugin staat uit. Zet hem aan onder Plugins…"
+  entity_hint: "Typ om op naam te zoeken; de lijst komt van de plugin."
+  entity_placeholder: "Zoek op naam…"
 
 knob_dialog:
   header: "{knob} · {profile}"
@@ -166,14 +170,32 @@ profile_dialog:
   unlink: App loskoppelen
   unlink_confirm: De app loskoppelen van profiel {name}? Het profiel zelf blijft bestaan.
 
-plugins_dialog:
-  title: Plugins
+libraries_dialog:
+  title: Bibliotheken
   hint: Alleen aangevinkte bibliotheken staan in het bibliotheekpaneel.
   count: "{count} toetsen"
   import: Importeren…
   import_failed: "{file} niet geïmporteerd: {error}"
   import_hint: Kies het .yaml-bestand, en tegelijk de .zip met dezelfde naam als de bibliotheek eigen iconen heeft.
   zip_without_yaml: "{file}: kies ook het .yaml-bestand met dezelfde naam"
+
+plugins_dialog:
+  title: "Plugins"
+  hint: "Plugins zijn lokale code in plugins/ die toetstypes toevoegen. Hun instellingen staan per machine in plugins.local.yaml, dat niet in git staat."
+  "on": "Aan"
+  save: "Opslaan"
+  saved: "Opgeslagen."
+  test: "Verbinding testen"
+  testing: "Bezig met testen…"
+  secret_set: "opgeslagen; laat leeg om te houden"
+  none: "Geen plugins gevonden in plugins/."
+  status:
+    connected: "verbonden"
+    connecting: "verbinden…"
+    error: "fout"
+    "off": "uit"
+    starting: "starten…"
+    running: "actief"
 
 screen_dialog:
   title: Scherm config
@@ -276,3 +298,13 @@ library_check:
   needs_buttons: een library-bestand heeft bovenaan "buttons:" met daaronder een lijst toetsen
   top_field: onbekend veld bovenaan {fields} (alleen "buttons" is toegestaan)
   buttons_list: '"buttons" moet een lijst zijn: elke toets op een regel die begint met "  - "'
+
+# Checks of keys and knobs of plugin types.
+plugins_check:
+  field_needed: "{type} heeft \"{field}\" nodig"
+  not_an_entity: "{field} is geen entity-id: {value}"
+  wrong_domain: "{value} is niet een van: {domains}"
+  number_range: "{field} moet tussen {min} en {max} liggen"
+  "off": "{name} staat uit"
+  unknown_plugin: "onbekende plugin: {id}"
+  not_running: "{name} draait niet"

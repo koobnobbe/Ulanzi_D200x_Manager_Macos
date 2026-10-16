@@ -1,4 +1,4 @@
-# Bibliotheek en plugins
+# Bibliotheken
 
 De bibliotheek staat rechts in de webinterface. Hij bevat kant-en-klare toetsen die je op het deck sleept. Elke groep in de bibliotheek is een bestand in de map `library/`.
 
@@ -33,9 +33,9 @@ Gebruiken toetsen in een bibliotheek een eigen icoon-bestand (zoals `icon: icons
 - Sleep je een toets uit de bibliotheek op het deck, dan wordt het icoon uit de zip naar `icons/` gekopieerd. Staat er in `icons/` al een bestand met die naam, dan blijft dat staan.
 - Wil je een bibliotheek delen, geef dan het yaml-bestand en de zip samen door.
 
-## Plugins
+## Bibliotheken aan en uit
 
-Klik in de bovenbalk op **Plugins…** voor een lijst van alle bibliotheken.
+Klik in de bovenbalk op **Bibliotheken…** voor een lijst van alle bibliotheken. (Code die nieuwe soorten toetsen toevoegt, zoals Home Assistant, staat onder [Plugins](plugins.md).)
 
 - **Vinkje aan**: de bibliotheek staat in het paneel.
 - **Vinkje uit**: de bibliotheek is verborgen. Het bestand blijft bestaan, en toetsen die al op het deck staan blijven werken.
@@ -44,7 +44,7 @@ Welke bibliotheken verborgen zijn, staat in `library/hidden.json`.
 
 ### Een bibliotheek importeren
 
-Klik in het Plugins-venster op **Importeren…** en kies een `.yaml`-bestand. Heeft de bibliotheek eigen iconen, kies dan tegelijk de `.zip` met dezelfde naam. Het bestand wordt eerst gecontroleerd. Alleen een geldig bestand wordt naar `library/` gekopieerd; anders zie je in het venster wat er mis is, bijvoorbeeld:
+Klik in het venster Bibliotheken op **Importeren…** en kies een `.yaml`-bestand. Heeft de bibliotheek eigen iconen, kies dan tegelijk de `.zip` met dezelfde naam. Het bestand wordt eerst gecontroleerd. Alleen een geldig bestand wordt naar `library/` gekopieerd; anders zie je in het venster wat er mis is, bijvoorbeeld:
 
 ```
 toets 3 (Morgen): onbekende toetscombinatie: cmd+ü

@@ -1,6 +1,7 @@
 import asyncio
 import binascii
 import ctypes
+import inspect
 import hashlib
 import io
 import json
@@ -16,6 +17,7 @@ import hid
 import yaml
 from strmdck.device import ButtonAction
 from strmdck.devices.ulanzi_d200 import UlanziD200Device
+import plugins
 import web_server
 from appicon import app_icon as load_app_icon
 import i18n
@@ -190,6 +192,10 @@ def parse_knob(name, knob):
             knob['combos'] = {e: parse_keys(knob[e]) for e in KNOB_EVENTS.values() if knob.get(e)}
         except ValueError as e:
             raise ValueError(t('config.knob', name=name, error=e))
+    elif plugins.plugin_kind(kind) == 'knob':
+        problem = plugins.check_fields(kind, knob)
+        if problem:
+            raise ValueError(t('config.knob', name=name, error=problem))
     elif kind not in ('text', 'device_brightness'):
         raise ValueError(t('config.knob', name=name, error=t('config.unknown_type', type=kind)))
     return knob
@@ -365,6 +371,10 @@ def button_problem(button):
             return str(e)
         if not button['combos']:
             return t('config.keys_needed')
+    elif plugins.plugin_kind(kind) == 'key':
+        problem = plugins.check_fields(kind, button)
+        if problem:
+            return problem
     elif kind not in ('text', 'page', 'profile'):
         return t('config.unknown_type', type=kind)
     if button.get('background_image') and not os.path.isfile(button['background_image']):
@@ -392,7 +402,7 @@ def check_key_entry(entry, where, icons=()):
 
     if not isinstance(entry, dict):
         fail(t('library_check.not_a_key'))
-    unknown = sorted(set(entry) - KEY_FIELDS)
+    unknown = sorted(set(entry) - KEY_FIELDS - plugins.field_names())
     if unknown:
         fail(t('library_check.unknown_field', fields=', '.join(unknown)))
     kind = entry.get('type', 'text')
@@ -456,6 +466,9 @@ def render_button(number, button, wallpaper=None):
         icon = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), button['icon'])).convert('RGBA')
         img = Image.new('RGBA', (SIZE, SIZE), color=fill)
         img.alpha_composite(icon.resize((SIZE, SIZE), Image.LANCZOS))
+    elif plugins.plugin_kind(kind) == 'key':
+        img = Image.new('RGBA', (SIZE, SIZE), color=fill)
+        img.alpha_composite(plugins.render(kind, button, SIZE, load_font).convert('RGBA').resize((SIZE, SIZE)))
     elif kind == 'app' and (app_icon := load_app_icon(button['app'])):
         img = Image.new('RGBA', (SIZE, SIZE), color=fill)
         # Leave room at the bottom for an optional title.
@@ -721,6 +734,10 @@ class Manager:
         self.saver_layout = None
         self.saver_active = False
         self.last_input = time.monotonic()
+        self.wallpapers = {}
+        self.watching = {}       # (plugin id, watched id) -> {(page, number)} of keys that show it
+        self.stale = set()       # (page, number) of plugin keys to redraw
+        self.flush_handle = None
 
     def profile_path(self, name):
         return os.path.join(os.path.dirname(os.path.abspath(self.config_path)), 'profiles', f'{name}.yaml')
@@ -801,6 +818,8 @@ class Manager:
 
         self.last_error = None
         self.device, self.pages, self.knobs, self.icons, self.layouts = device, pages, knobs, icons, layouts
+        self.wallpapers = wallpapers
+        self.watch_plugin_keys()
         self.saver_layout, self.saver_active, self.last_input = saver_layout, False, time.monotonic()
         if self.page not in pages:
             self.page = 1
@@ -814,6 +833,52 @@ class Manager:
         self.deck.set_buttons(self.layouts[self.page])
         self.apply_small_window()
         return True
+
+    def watch_plugin_keys(self):
+        """Index which plugin keys show which watched ids, so a change redraws only those keys."""
+        self.watching = {}
+        for page, keys in self.pages.items():
+            for number, button in keys.items():
+                kind = button.get('type', 'text')
+                found = plugins.key_types().get(kind)
+                if not found or number not in self.icons.get(page, {}):
+                    continue
+                for watched in plugins.watches(kind, button) | {None}:
+                    self.watching.setdefault((found[0], watched), set()).add((page, number))
+
+    def refresh_plugin_keys(self, plugin_id, ids=None):
+        """Called by a plugin (on the event loop): redraw its keys that show any of these ids, or all of them."""
+        if ids is None:
+            self.watch_plugin_keys()   # the plugin (re)started: what it watches may have changed
+            keys = set().union(*(v for (pid, _), v in self.watching.items() if pid == plugin_id), set())
+        else:
+            keys = set().union(*(self.watching.get((plugin_id, i), set()) for i in ids), set())
+        if not keys:
+            return
+        self.stale |= keys
+        if self.flush_handle is None:
+            # Gather changes for a moment, so a burst of updates becomes one transfer to the deck.
+            self.flush_handle = asyncio.get_running_loop().call_later(0.1, self.flush_plugin_keys)
+
+    def flush_plugin_keys(self):
+        self.flush_handle = None
+        stale, self.stale = self.stale, set()
+        changed = {}
+        for page, number in stale:
+            button = self.pages.get(page, {}).get(number)
+            if not button or number not in self.icons.get(page, {}):
+                continue
+            try:
+                name = render_button(number, button, self.wallpapers.get(page))
+            except Exception as e:
+                print(f'redraw of key {number} failed: {e}')
+                continue
+            self.icons[page][number] = name
+            self.layouts[page][number - 1] = {'icon': name}
+            if page == self.page:
+                changed[number - 1] = {'icon': name}
+        if changed and not self.saver_active:
+            self.deck.set_buttons(changed, update_only=True)
 
     def apply_small_window(self):
         # The small window draws the clock over the slots next to key 13. Hide it when key 14 has an icon there.
@@ -969,6 +1034,8 @@ class Manager:
                     steps.append((f'profile {wanted}', partial(self.open_app_profile, button['app'], target)))
         elif button.get('type') == 'key':
             steps.append((f"send {button['keys']}", partial(send_keys, button['combos'])))
+        elif plugins.plugin_kind(button.get('type')) == 'key':
+            steps += plugins.actions(button['type'], button, 'press')
         if button.get('output'):
             steps.append((f"print {button['output']}", partial(print, button['output'])))
         return steps
@@ -978,6 +1045,8 @@ class Manager:
         if knob is None or event not in KNOB_EVENTS.values():
             text = f'unknown knob 0x{index:02x} event {event}'
             return [(text, partial(print, text))]
+        if plugins.plugin_kind(knob.get('type')) == 'knob':
+            return plugins.actions(knob['type'], knob, event)
         if knob.get('type') == 'device_brightness':
             if event == 'press':
                 return []
@@ -994,7 +1063,9 @@ class Manager:
     @staticmethod
     def run(steps):
         for _, action in steps:
-            action()
+            result = action()
+            if inspect.isawaitable(result):   # plugin actions, e.g. a call to Home Assistant
+                asyncio.ensure_future(result)
 
     def set_brightness(self, value):
         self.wake(redraw=True)
@@ -1299,8 +1370,7 @@ class Manager:
                          **{k: self.pages.get(self.page, {}).get(n, {}).get(k)
                             for k in ('type', 'title', 'app', 'keys', 'output', 'page')}}
                      for n in sorted(KEY_NUMBERS)},
-            'knobs': [{k: knob.get(k) for k in ('name', 'index', 'type', 'left', 'right', 'press')}
-                      for knob in self.knobs.values()],
+            'knobs': [{k: v for k, v in knob.items() if k != 'combos'} for knob in self.knobs.values()],
         }
 
 
@@ -1312,14 +1382,16 @@ async def main():
         raise SystemExit("No Ulanzi D200 found")
 
     manager = Manager(deck, config_path)
+    host = plugins.Host(manager.refresh_plugin_keys, SIZE, load_font)
     if not manager.load():
         raise SystemExit(1)
+    await host.start_all()
     # Keep references so the tasks aren't GC'd
     tasks = [asyncio.create_task(manager.keep_alive()),
              asyncio.create_task(manager.watch_idle()),
              asyncio.create_task(manager.watch_config()),
              asyncio.create_task(manager.watch_app())]
-    web_server.start(manager, asyncio.get_running_loop(), ICON_DIR, WEB_PORT)
+    web_server.start(manager, asyncio.get_running_loop(), ICON_DIR, WEB_PORT, host)
 
     print("Druk op een knop (Ctrl+C om te stoppen)")
     pressed_at = {}

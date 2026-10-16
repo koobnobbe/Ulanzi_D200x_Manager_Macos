@@ -26,6 +26,7 @@ header:
   brightness: Helligkeit
   screen: Bildschirm-Config…
   device: Gerät…
+  libraries: Bibliotheken…
   plugins: Plugins…
   reload: Config neu laden
 
@@ -114,6 +115,9 @@ key_dialog:
   hold_type: Typ bei langem Drücken (hold)
   hold_value: Wert bei langem Drücken
   remove_confirm: Diese Taste entfernen?
+  plugin_off: "Dieses Plugin ist aus. Unter Plugins… einschalten."
+  entity_hint: "Tippen, um nach Namen zu suchen; die Liste kommt vom Plugin."
+  entity_placeholder: "Nach Name suchen…"
 
 knob_dialog:
   header: "{knob} · {profile}"
@@ -164,14 +168,32 @@ profile_dialog:
   unlink: App trennen
   unlink_confirm: App von Profil {name} trennen? Das Profil selbst bleibt erhalten.
 
-plugins_dialog:
-  title: Plugins
+libraries_dialog:
+  title: Bibliotheken
   hint: Nur angehakte Bibliotheken erscheinen im Bibliotheksbereich.
   count: "{count} Tasten"
   import: Importieren…
   import_failed: "{file} nicht importiert: {error}"
   import_hint: Die .yaml-Datei wählen, zusammen mit der .zip gleichen Namens, wenn die Bibliothek eigene Symbole hat.
   zip_without_yaml: "{file}: auch die .yaml-Datei mit demselben Namen wählen"
+
+plugins_dialog:
+  title: "Plugins"
+  hint: "Plugins sind lokaler Code in plugins/, der Tastentypen hinzufügt. Ihre Einstellungen stehen pro Rechner in plugins.local.yaml, das nicht in git ist."
+  "on": "An"
+  save: "Speichern"
+  saved: "Gespeichert."
+  test: "Verbindung testen"
+  testing: "Wird getestet…"
+  secret_set: "gespeichert; leer lassen, um es zu behalten"
+  none: "Keine Plugins in plugins/ gefunden."
+  status:
+    connected: "verbunden"
+    connecting: "verbinde…"
+    error: "Fehler"
+    "off": "aus"
+    starting: "startet…"
+    running: "läuft"
 
 screen_dialog:
   title: Bildschirm-Config
@@ -274,3 +296,13 @@ library_check:
   needs_buttons: eine Bibliotheksdatei beginnt mit "buttons:" und einer Liste von Tasten
   top_field: unbekanntes Feld auf oberster Ebene {fields} (nur "buttons" ist erlaubt)
   buttons_list: '"buttons" muss eine Liste sein: jede Taste auf einer Zeile, die mit "  - " beginnt'
+
+# Checks of keys and knobs of plugin types.
+plugins_check:
+  field_needed: "{type} benötigt \"{field}\""
+  not_an_entity: "{field} ist keine Entitäts-ID: {value}"
+  wrong_domain: "{value} ist keins von: {domains}"
+  number_range: "{field} muss zwischen {min} und {max} liegen"
+  "off": "{name} ist aus"
+  unknown_plugin: "unbekanntes Plugin: {id}"
+  not_running: "{name} läuft nicht"

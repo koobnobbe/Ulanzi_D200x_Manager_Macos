@@ -1,0 +1,28 @@
+# Texts of the Home Assistant plugin (en). Keys as in plugin.yaml; keep the {names}.
+description: Toggle lights and switches, show live states and dim lights with a knob.
+settings:
+  url: Home Assistant address
+  token: Long-lived access token
+  verify_ssl: Verify TLS certificate
+types:
+  ha.toggle: 'Home Assistant: light or switch'
+  ha.state: 'Home Assistant: show a state'
+  ha.dimmer: 'Home Assistant: dimmer (light)'
+fields:
+  entity: Entity
+  step: Step (%)
+status:
+  connected: Connected to Home Assistant {version}, {count} entities.
+  test_ok: Connection works (Home Assistant {version}).
+errors:
+  no_url: Fill in the address of Home Assistant.
+  bad_url: The address must start with http:// or https://.
+  no_token: Fill in an access token.
+  not_ha: This address does not answer like Home Assistant.
+  auth_invalid: Home Assistant does not accept this token.
+  tls: The TLS certificate is not trusted; turn off "Verify TLS certificate" for a self-signed certificate.
+  handshake: Home Assistant refused the connection (HTTP {status}).
+  unreachable: Cannot reach {url}.
+  timeout: Home Assistant does not answer.
+  offline: Not connected to Home Assistant.
+  closed: The connection was closed.

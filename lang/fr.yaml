@@ -26,6 +26,7 @@ header:
   brightness: Luminosité
   screen: Config écran…
   device: Appareil…
+  libraries: Bibliothèques…
   plugins: Plugins…
   reload: Recharger la config
 
@@ -114,6 +115,9 @@ key_dialog:
   hold_type: Type d'appui long (hold)
   hold_value: Valeur d'appui long
   remove_confirm: Supprimer cette touche ?
+  plugin_off: "Ce plugin est désactivé. Activez-le dans Plugins…"
+  entity_hint: "Tapez pour rechercher par nom ; la liste vient du plugin."
+  entity_placeholder: "Rechercher par nom…"
 
 knob_dialog:
   header: "{knob} · {profile}"
@@ -164,14 +168,32 @@ profile_dialog:
   unlink: Dissocier l'app
   unlink_confirm: Dissocier l'app du profil {name} ? Le profil lui-même est conservé.
 
-plugins_dialog:
-  title: Plugins
+libraries_dialog:
+  title: Bibliothèques
   hint: Seules les bibliothèques cochées apparaissent dans le panneau de bibliothèque.
   count: "{count} touches"
   import: Importer…
   import_failed: "{file} non importé : {error}"
   import_hint: Choisissez le fichier .yaml, avec le .zip du même nom si la bibliothèque a ses propres icônes.
   zip_without_yaml: "{file} : choisissez aussi le fichier .yaml du même nom"
+
+plugins_dialog:
+  title: "Plugins"
+  hint: "Les plugins sont du code local dans plugins/ qui ajoute des types de touches. Leurs réglages sont enregistrés par machine dans plugins.local.yaml, qui n'est pas dans git."
+  "on": "Activé"
+  save: "Enregistrer"
+  saved: "Enregistré."
+  test: "Tester la connexion"
+  testing: "Test en cours…"
+  secret_set: "enregistré ; laissez vide pour le garder"
+  none: "Aucun plugin trouvé dans plugins/."
+  status:
+    connected: "connecté"
+    connecting: "connexion…"
+    error: "erreur"
+    "off": "désactivé"
+    starting: "démarrage…"
+    running: "actif"
 
 screen_dialog:
   title: Config écran
@@ -274,3 +296,13 @@ library_check:
   needs_buttons: un fichier de bibliothèque commence par "buttons:" suivi d'une liste de touches
   top_field: champ de premier niveau inconnu {fields} (seul "buttons" est autorisé)
   buttons_list: '"buttons" doit être une liste : chaque touche sur une ligne qui commence par "  - "'
+
+# Checks of keys and knobs of plugin types.
+plugins_check:
+  field_needed: "{type} nécessite « {field} »"
+  not_an_entity: "{field} n'est pas un identifiant d'entité : {value}"
+  wrong_domain: "{value} n'est pas l'un de : {domains}"
+  number_range: "{field} doit être entre {min} et {max}"
+  "off": "{name} est désactivé"
+  unknown_plugin: "plugin inconnu : {id}"
+  not_running: "{name} n'est pas actif"

@@ -1,0 +1,28 @@
+# Texts of the Home Assistant plugin (nl). Keys as in plugin.yaml; keep the {names}.
+description: Lampen en schakelaars aan/uit zetten, live standen tonen en lampen dimmen met een draaiknop.
+settings:
+  url: Adres van Home Assistant
+  token: Long-lived access token
+  verify_ssl: TLS-certificaat controleren
+types:
+  ha.toggle: 'Home Assistant: lamp of schakelaar'
+  ha.state: 'Home Assistant: stand tonen'
+  ha.dimmer: 'Home Assistant: dimmer (lamp)'
+fields:
+  entity: Entity
+  step: Stap (%)
+status:
+  connected: Verbonden met Home Assistant {version}, {count} entities.
+  test_ok: Verbinding werkt (Home Assistant {version}).
+errors:
+  no_url: Vul het adres van Home Assistant in.
+  bad_url: Het adres moet beginnen met http:// of https://.
+  no_token: Vul een access token in.
+  not_ha: Dit adres antwoordt niet als Home Assistant.
+  auth_invalid: Home Assistant accepteert dit token niet.
+  tls: Het TLS-certificaat wordt niet vertrouwd; zet "TLS-certificaat controleren" uit bij een eigen certificaat.
+  handshake: Home Assistant weigert de verbinding (HTTP {status}).
+  unreachable: '{url} is niet bereikbaar.'
+  timeout: Home Assistant antwoordt niet.
+  offline: Niet verbonden met Home Assistant.
+  closed: De verbinding is verbroken.

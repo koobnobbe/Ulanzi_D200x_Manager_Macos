@@ -1,0 +1,28 @@
+# Texts of the Home Assistant plugin (es). Keys as in plugin.yaml; keep the {names}.
+description: Encender y apagar luces e interruptores, mostrar estados en vivo y regular luces con un mando.
+settings:
+  url: Dirección de Home Assistant
+  token: Token de acceso de larga duración
+  verify_ssl: Comprobar el certificado TLS
+types:
+  ha.toggle: 'Home Assistant: luz o interruptor'
+  ha.state: 'Home Assistant: mostrar un estado'
+  ha.dimmer: 'Home Assistant: regulador (luz)'
+fields:
+  entity: Entidad
+  step: Paso (%)
+status:
+  connected: Conectado a Home Assistant {version}, {count} entidades.
+  test_ok: La conexión funciona (Home Assistant {version}).
+errors:
+  no_url: Indica la dirección de Home Assistant.
+  bad_url: La dirección debe empezar por http:// o https://.
+  no_token: Indica un token de acceso.
+  not_ha: Esta dirección no responde como Home Assistant.
+  auth_invalid: Home Assistant no acepta este token.
+  tls: El certificado TLS no es de confianza; desactiva "Comprobar el certificado TLS" para un certificado propio.
+  handshake: Home Assistant rechazó la conexión (HTTP {status}).
+  unreachable: No se puede conectar con {url}.
+  timeout: Home Assistant no responde.
+  offline: Sin conexión con Home Assistant.
+  closed: Se cerró la conexión.
