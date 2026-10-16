@@ -307,3 +307,15 @@ plugins_check:
   "off": "{name} está desactivado"
   unknown_plugin: "plugin desconocido: {id}"
   not_running: "{name} no está activo"
+
+# Menu of D200X Manager.app (tools/macos-app)
+mac_app:
+  running: "Manager en marcha"
+  stopped: "Manager detenido (se reinicia solo)"
+  open: "Abrir interfaz web"
+  restart: "Reiniciar manager"
+  log: "Mostrar registro"
+  folder: "Mostrar carpeta del proyecto"
+  login: "Abrir al iniciar sesión"
+  quit: "Salir de D200X Manager"
+  login_failed: "No se pudo cambiar «Abrir al iniciar sesión»"

@@ -309,3 +309,15 @@ plugins_check:
   "off": "{name} is off"
   unknown_plugin: "unknown plugin: {id}"
   not_running: "{name} is not running"
+
+# Menu of D200X Manager.app (tools/macos-app)
+mac_app:
+  running: "Manager running"
+  stopped: "Manager stopped (restarts by itself)"
+  open: "Open web interface"
+  restart: "Restart manager"
+  log: "Show log"
+  folder: "Show project folder"
+  login: "Open at login"
+  quit: "Quit D200X Manager"
+  login_failed: "Could not change \"Open at login\""

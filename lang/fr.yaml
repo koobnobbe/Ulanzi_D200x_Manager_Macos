@@ -307,3 +307,15 @@ plugins_check:
   "off": "{name} est désactivé"
   unknown_plugin: "plugin inconnu : {id}"
   not_running: "{name} n'est pas actif"
+
+# Menu of D200X Manager.app (tools/macos-app)
+mac_app:
+  running: "Manager en marche"
+  stopped: "Manager arrêté (redémarre tout seul)"
+  open: "Ouvrir l'interface web"
+  restart: "Redémarrer le manager"
+  log: "Afficher le journal"
+  folder: "Afficher le dossier du projet"
+  login: "Ouvrir à l'ouverture de session"
+  quit: "Quitter D200X Manager"
+  login_failed: "Impossible de modifier « Ouvrir à l'ouverture de session »"

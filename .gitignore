@@ -10,3 +10,6 @@ plugins.local.yaml.tmp
 
 # macOS Finder files
 .DS_Store
+
+# Built app (tools/macos-app/build.sh)
+dist/

@@ -309,3 +309,15 @@ plugins_check:
   "off": "{name} staat uit"
   unknown_plugin: "onbekende plugin: {id}"
   not_running: "{name} draait niet"
+
+# Menu of D200X Manager.app (tools/macos-app)
+mac_app:
+  running: "Manager draait"
+  stopped: "Manager gestopt (start vanzelf opnieuw)"
+  open: "Webinterface openen"
+  restart: "Manager herstarten"
+  log: "Log tonen"
+  folder: "Projectmap tonen"
+  login: "Starten bij inloggen"
+  quit: "D200X Manager stoppen"
+  login_failed: "\"Starten bij inloggen\" kon niet worden aangepast"

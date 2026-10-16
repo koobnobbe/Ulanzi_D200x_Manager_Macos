@@ -61,3 +61,20 @@ Sluit Ulanzi Studio af voordat je de manager start. Beide programma's willen het
 - Wijzigingen in `config.yaml` en de profielen worden vanzelf opnieuw ingelezen.
 - Na een update van de code (`.py`-bestanden) moet je de manager herstarten.
 - Na een update van de webinterface ververs je de pagina met **Cmd+Shift+R**.
+
+## Als app in Programma's
+
+`tools/macos-app/build.sh --install` bouwt **D200X Manager.app** en zet die in `/Applications`. Daarvoor zijn de command line tools van Xcode nodig (`xcode-select --install`).
+
+De app staat als icoon in de menubalk, niet in het Dock. Hij start de manager met de code en de `.venv` uit deze projectmap; wijzigingen in de code of in `config.yaml` werken dus gewoon. Het menu:
+
+- **Webinterface openen** (ook als je de app nog een keer opent);
+- **Manager herstarten**, **Log tonen** (`~/Library/Logs/D200X Manager.log`) en **Projectmap tonen**;
+- **Starten bij inloggen**;
+- **D200X Manager stoppen**.
+
+Stopt de manager, bijvoorbeeld omdat het deck niet is aangesloten, dan start de app hem na 10 seconden opnieuw.
+
+Toetsen die sneltoetsen sturen hebben **Toegankelijkheid** nodig: geef die aan **D200X Manager** in Systeeminstellingen → Privacy en beveiliging. Na een nieuwe build vraagt macOS daar soms opnieuw om. Start de manager niet tegelijk ook in de terminal: dan willen ze allebei het deck gebruiken.
+
+Verplaats je de projectmap, bouw de app dan opnieuw.
