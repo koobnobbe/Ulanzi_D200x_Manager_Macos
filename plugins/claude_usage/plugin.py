@@ -1,24 +1,23 @@
 """Claude usage on the deck: how much of the session (5 hour) and weekly limits of your Claude plan is used.
 
-It reads the same numbers Claude Code shows in its "Account & usage" panel, from GET /api/oauth/usage on
-api.anthropic.com, with the login Claude Code keeps in the macOS Keychain ("Claude Code-credentials").
-It never refreshes or changes that login: when the token has expired it waits until Claude Code has renewed it.
+Claude Code hands its status line the same numbers it shows in its "Account & usage" panel. statusline.py, set
+as Claude Code's status line, saves them in .cache/claude_usage.json; this plugin reads that file. No network,
+no login and no rate limits: the numbers are as fresh as the last message in any Claude Code session.
 """
 import asyncio
 import json
 import os
-import subprocess
+import shlex
 import time
 from datetime import datetime, timezone
 
-import aiohttp
 from PIL import Image, ImageDraw
 
-from plugins import Plugin
+from plugins import PROJECT_DIR, Plugin
 
-USAGE_URL = 'https://api.anthropic.com/api/oauth/usage'
-KEYCHAIN_SERVICE = 'Claude Code-credentials'
-CREDENTIALS_FILE = os.path.expanduser('~/.claude/.credentials.json')   # used by Claude Code where there is no Keychain
+DATA_FILE = os.path.join(PROJECT_DIR, '.cache', 'claude_usage.json')
+STATUSLINE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statusline.py')
+CLAUDE_SETTINGS = os.path.expanduser('~/.claude/settings.json')
 BAR = (47, 111, 224)          # the blue of Claude Code's usage bars
 BAR_HIGH = (240, 160, 50)     # from 75%
 BAR_FULL = (235, 87, 87)      # from 90%
@@ -26,41 +25,19 @@ TRACK = (70, 70, 84)
 WARN = (255, 105, 97)
 
 
-class LoginError(Exception):
-    pass
-
-
-def read_login():
-    """Claude Code's OAuth access token and when it expires (epoch seconds). Raises LoginError."""
-    raw = None
+def epoch(value):
+    """resets_at as epoch seconds; Claude Code gives a number, the usage API an ISO time."""
+    if isinstance(value, (int, float)):
+        return value / 1000 if value > 1e12 else value
     try:
-        result = subprocess.run(['security', 'find-generic-password', '-s', KEYCHAIN_SERVICE, '-w'],
-                                capture_output=True, text=True, timeout=20)
-        if result.returncode == 0:
-            raw = result.stdout.strip()
-    except (OSError, subprocess.TimeoutExpired):
-        pass
-    if raw is None and os.path.isfile(CREDENTIALS_FILE):
-        with open(CREDENTIALS_FILE) as fp:
-            raw = fp.read()
-    if not raw:
-        raise LoginError('no_login')
-    try:
-        login = json.loads(raw).get('claudeAiOauth') or {}
+        return datetime.fromisoformat(str(value).replace('Z', '+00:00')).timestamp()
     except ValueError:
-        raise LoginError('no_login')
-    if not login.get('accessToken'):
-        raise LoginError('no_login')
-    return login['accessToken'], (login.get('expiresAt') or 0) / 1000
+        return None
 
 
-def resets_in(text):
-    """'14m', '3h 20m' or '3d' until an ISO time, like Claude Code shows it."""
-    try:
-        at = datetime.fromisoformat(text.replace('Z', '+00:00'))
-    except (AttributeError, ValueError):
-        return ''
-    minutes = max(0, int((at - datetime.now(timezone.utc)).total_seconds() // 60))
+def resets_in(at):
+    """'14m', '3h 20m' or '3d' until epoch seconds, like Claude Code shows it."""
+    minutes = max(0, int((at - time.time()) // 60))
     if minutes < 60:
         return f'{minutes}m'
     if minutes < 24 * 60:
@@ -68,109 +45,129 @@ def resets_in(text):
     return f'{minutes // (24 * 60)}d'
 
 
+def statusline_command():
+    return f'/usr/bin/python3 {shlex.quote(STATUSLINE)}'
+
+
+def install_statusline():
+    """Set statusline.py as Claude Code's status line. Returns 'installed', 'present' or 'other' (left alone)."""
+    try:
+        with open(CLAUDE_SETTINGS, encoding='utf-8') as fp:
+            settings = json.load(fp)
+    except FileNotFoundError:
+        settings = {}
+    current = (settings.get('statusLine') or {}).get('command', '')
+    if STATUSLINE in current:
+        return 'present'
+    if current:
+        return 'other'
+    settings['statusLine'] = {'type': 'command', 'command': statusline_command(), 'padding': 0}
+    os.makedirs(os.path.dirname(CLAUDE_SETTINGS), exist_ok=True)
+    with open(CLAUDE_SETTINGS + '.tmp', 'w', encoding='utf-8') as fp:
+        json.dump(settings, fp, indent=2, ensure_ascii=False)
+        fp.write('\n')
+    os.replace(CLAUDE_SETTINGS + '.tmp', CLAUDE_SETTINGS)
+    return 'installed'
+
+
 class ClaudeUsage(Plugin):
     def __init__(self, ctx):
         super().__init__(ctx)
-        self.usage = {}
+        self.limits = {}
+        self.saved_at = 0
+        self.mtime = None
         self.state, self.message = 'connecting', ''
-        self.fetched_at = 0
-        self.wait_until = 0         # after a 429: don't ask again before this time
-        self.tasks = []
-
-    def _interval(self):
-        try:
-            return max(60, float(self.ctx.settings.get('interval', 300)))
-        except (TypeError, ValueError):
-            return 300
+        self.task = None
 
     async def start(self):
-        self.tasks = [asyncio.create_task(self._poll()), asyncio.create_task(self._tick())]
+        self.load()
+        self.task = asyncio.create_task(self._watch())
 
     async def stop(self):
-        for task in self.tasks:
-            task.cancel()
-        for task in self.tasks:
+        if self.task:
+            self.task.cancel()
             try:
-                await task
+                await self.task
             except (asyncio.CancelledError, Exception):
                 pass
 
-    async def _poll(self):
+    async def _watch(self):
+        # the file changes after every Claude Code message; "resets in 14m" changes every minute
+        minute = time.time() // 60
         while True:
-            await self.fetch()
-            await asyncio.sleep(self._interval())
+            await asyncio.sleep(2)
+            changed = self.load()
+            if changed or time.time() // 60 != minute:
+                minute = time.time() // 60
+                self.ctx.refresh()
 
-    async def _tick(self):
-        # "resets in 14m" changes every minute, also between two fetches
-        while True:
-            await asyncio.sleep(60)
-            self.ctx.refresh()
-
-    async def fetch(self):
-        if time.time() < self.wait_until:
-            return
+    def load(self):
+        """Read the data file when it changed. Returns True when the keys need redrawing."""
         try:
-            token, expires = await asyncio.to_thread(read_login)
-            if expires and expires < time.time():
-                raise LoginError('expired')
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
-                async with session.get(USAGE_URL, headers={'Authorization': f'Bearer {token}', 'anthropic-beta': 'oauth-2025-04-20',
-                                                           'Content-Type': 'application/json', 'User-Agent': 'd200x-manager'}) as response:
-                    if response.status == 401:
-                        raise LoginError('rejected')
-                    if response.status == 429:
-                        wait = int(response.headers.get('retry-after') or 300)
-                        self.wait_until = time.time() + min(max(wait, 60), 3600)
-                        raise RuntimeError(self.ctx.t('errors.rate_limited', minutes=max(1, wait // 60)))
-                    if response.status != 200:
-                        raise RuntimeError(self.ctx.t('errors.http', status=response.status))
-                    self.usage = await response.json()
-        except LoginError as e:
-            self.state, self.message = 'error', self.ctx.t(f'errors.{e}')
-        except asyncio.CancelledError:
-            raise
-        except (aiohttp.ClientError, asyncio.TimeoutError):
-            self.state, self.message = 'error', self.ctx.t('errors.unreachable')
-        except Exception as e:
-            self.state, self.message = 'error', str(e) or type(e).__name__
-        else:
-            self.fetched_at = time.time()
-            self.state = 'connected'
-            self.message = self.ctx.t('status.updated', time=datetime.now().strftime('%H:%M'))
-        self.ctx.refresh()
+            mtime = os.path.getmtime(DATA_FILE)
+        except OSError:
+            mtime = None
+        if mtime == self.mtime:
+            return False
+        self.mtime = mtime
+        if mtime is None:
+            self.limits = {}
+            self.state, self.message = 'error', self.ctx.t('errors.no_data')
+            return True
+        try:
+            with open(DATA_FILE, encoding='utf-8') as fp:
+                data = json.load(fp)
+            self.limits = data.get('rate_limits') or {}
+            self.saved_at = data.get('saved_at') or mtime
+        except (OSError, ValueError):
+            return False    # half written; the next look gets it
+        self.state = 'connected'
+        self.message = self.ctx.t('status.updated', time=datetime.fromtimestamp(self.saved_at).strftime('%H:%M'))
+        return True
+
+    def window(self, name):
+        """(percent or None, reset time or None) of a limit; a limit whose reset has passed is back at 0%."""
+        limit = self.limits.get(name) or {}
+        percent = limit.get('used_percentage', limit.get('utilization'))
+        at = epoch(limit.get('resets_at')) if limit.get('resets_at') else None
+        if at and at <= time.time():
+            return 0, None
+        return percent, at
 
     # --- the plugin interface
     def status(self):
         return {'state': self.state, 'message': self.message}
 
     def actions(self, kind, entry, event):
-        # a press fetches right away, but not more often than every 30 seconds
-        if time.time() - self.fetched_at < 30:
-            return []
-        return [('Claude usage: refresh', self.fetch)]
+        return [('Claude usage: refresh', self._refresh_now)]
+
+    def _refresh_now(self):
+        self.mtime = None
+        self.load()
+        self.ctx.refresh()
 
     async def call(self, action, data):
         if action == 'test':
-            await self.fetch()
+            result = await asyncio.to_thread(install_statusline)
+            if result == 'other':
+                raise ValueError(self.ctx.t('errors.other_statusline', command=statusline_command()))
+            self._refresh_now()
             if self.state != 'connected':
-                raise ValueError(self.message)
-            five = (self.usage.get('five_hour') or {}).get('utilization')
-            week = (self.usage.get('seven_day') or {}).get('utilization')
-            return {'ok': True, 'message': self.ctx.t('status.test_ok', session=round(five or 0), week=round(week or 0))}
-        if action == 'refresh':
-            await self.fetch()
-            return {'ok': self.state == 'connected', 'message': self.message}
+                raise ValueError(self.ctx.t('status.installed' if result == 'installed' else 'errors.no_data'))
+            five, _ = self.window('five_hour')
+            week, _ = self.window('seven_day')
+            return {'ok': True, 'message': self.ctx.t('status.test_ok', session=round(five or 0), week=round(week or 0),
+                                                      time=datetime.fromtimestamp(self.saved_at).strftime('%H:%M'))}
         raise ValueError(f'unknown action {action}')
 
     def render(self, kind, entry):
         size = self.ctx.size
-        window = entry.get('window', 'five_hour')
-        limit = self.usage.get(window) or {}
-        percent = limit.get('utilization')
+        name = entry.get('window', 'five_hour')
+        percent, at = self.window(name)
         color = entry.get('color') or '#ffffff'
         img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
-        title = str(entry.get('title') or self.ctx.t(f'options.window.{window}'))
+        title = str(entry.get('title') or self.ctx.t(f'options.window.{name}'))
         # leave room for the error badge in the top right corner
         self._fit(draw, title, (size / 2 - (10 if self.state == 'error' else 0), 28), 26, size - (64 if self.state == 'error' else 20), color)
         shown = f'{round(percent)}%' if percent is not None else '-'   # the deck's font has no long dash
@@ -182,8 +179,7 @@ class ClaudeUsage(Plugin):
             fill = BAR_FULL if percent >= 90 else BAR_HIGH if percent >= 75 else BAR
             width = max(14, (x1 - x0) * min(percent, 100) / 100)
             draw.rounded_rectangle([x0, y0, x0 + width, y1], radius=7, fill=fill)
-        when = resets_in(limit.get('resets_at')) if limit.get('resets_at') else ''
-        footer = self.ctx.t('render.resets_in', time=when) if when else (self.ctx.t('render.no_limit') if self.usage and percent is None else '')
+        footer = self.ctx.t('render.resets_in', time=resets_in(at)) if at else ''
         if footer:
             self._fit(draw, footer, (size / 2, 164), 22, size - 20, '#a8a8b8')
         if self.state == 'error':

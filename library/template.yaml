@@ -21,3 +21,4 @@
 # Example entry (delete the leading "#" to use it):
 #   - {title: "Copy", type: key, keys: "cmd+c", background: "#1a1a2e", color: "#ffffff", font_size: 60}
 buttons:
+  - {type: claude.usage, title: sessie (5u), window: five_hour}

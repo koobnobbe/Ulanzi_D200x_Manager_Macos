@@ -3,3 +3,5 @@
 buttons:
   - {type: claude.usage, title: Sessie (5u), window: five_hour}
   - {type: claude.usage, title: Week (7d), window: seven_day}
+  - {type: claude.usage, title: week, window: seven_day}
+  - {type: claude.usage, title: sessie (5u), window: five_hour}

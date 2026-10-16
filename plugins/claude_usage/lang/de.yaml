@@ -1,7 +1,5 @@
 # Texts of the Claude usage plugin (de). Keys as in plugin.yaml; keep the {names}.
-description: Zeigt, wie viel vom Sitzungs- (5 Stunden) und Wochenlimit deines Claude-Abos verbraucht ist, wie im Nutzungsbereich von Claude Code. Nutzt die Anmeldung von Claude Code auf diesem Mac.
-settings:
-  interval: Aktualisieren alle (Sekunden)
+description: Zeigt, wie viel vom Sitzungs- (5 Stunden) und Wochenlimit deines Claude-Abos verbraucht ist, wie im Nutzungsbereich von Claude Code. Die Zahlen kommen aus der Statuszeile von Claude Code; „Verbindung testen“ richtet sie ein.
 types:
   claude.usage: Claude-Nutzung
 fields:
@@ -10,18 +8,12 @@ options:
   window:
     five_hour: Sitzung (5 Std.)
     seven_day: Woche (7 T.)
-    seven_day_sonnet: Sonnet (7 T.)
-    seven_day_opus: Opus (7 T.)
 status:
-  updated: Aktualisiert um {time}.
-  test_ok: 'Funktioniert: Sitzung {session} %, Woche {week} %.'
+  updated: Letzte Zahlen von Claude Code um {time}.
+  installed: Statuszeile in Claude Code eingerichtet. Schick Claude Code eine Nachricht; dann erscheinen die Zahlen.
+  test_ok: 'Funktioniert: Sitzung {session} %, Woche {week} % (von Claude Code um {time}).'
 render:
   resets_in: Zurückgesetzt in {time}
-  no_limit: kein Limit
 errors:
-  no_login: Keine Anmeldung von Claude Code auf diesem Mac gefunden. Zuerst bei Claude Code anmelden.
-  expired: Die Anmeldung von Claude Code ist abgelaufen. Claude Code kurz benutzen; das erneuert die Anmeldung.
-  rejected: Anthropic akzeptiert die Anmeldung von Claude Code nicht. Bei Claude Code neu anmelden.
-  rate_limited: Zu viele Anfragen; neuer Versuch in {minutes} Min.
-  http: Anthropic antwortete mit HTTP {status}.
-  unreachable: api.anthropic.com ist nicht erreichbar.
+  no_data: 'Noch keine Zahlen von Claude Code. Sie kommen von Claude Code im Terminal (nicht von der VS-Code-Erweiterung): starte claude in einem Terminal und schick eine Nachricht.'
+  other_statusline: 'Claude Code hat schon eine andere Statuszeile. Setze statusLine in ~/.claude/settings.json auf: {command}'

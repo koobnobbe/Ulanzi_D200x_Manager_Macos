@@ -92,8 +92,10 @@ textarea { width: 100%; min-height: 560px; box-sizing: border-box; background: #
 .lib-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lib-type { flex: none; width: 14px; height: 14px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .key.drop { border-color: var(--accent); }
-.bin { border: 2px dashed var(--line); border-radius: 8px; padding: 14px 8px; margin-bottom: 14px; text-align: center; font-size: 12px; color: var(--muted); }
-.bin.over { border-color: var(--err); color: var(--err); }
+.bin { display: flex; align-items: center; justify-content: center; border: 2px dashed var(--line); border-radius: 8px; padding: 10px 8px; margin-bottom: 14px; color: var(--muted); transition: color .15s, border-color .15s, background .15s; }
+.bin.over { border-color: var(--err); color: var(--err); background: color-mix(in srgb, var(--err) 12%, transparent); }
+.bin.over svg { transform: scale(1.15); }
+.bin svg { transition: transform .15s; }
 button.danger { color: var(--err); border-color: var(--err); display: inline-flex; align-items: center; }
 button.danger:hover { background: var(--err); color: #fff; }
 .lib-new { width: 100%; margin-bottom: 14px; color: var(--muted); border-style: dashed; }
@@ -192,7 +194,9 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
 </section>
 </div>
 <aside class="lib">
-  <div id="bin" class="bin" data-t="library.bin"></div>
+  <div id="bin" class="bin" data-t-title="library.bin" role="img">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v6M14 11v6"/></svg>
+  </div>
   <button type="button" id="libNew" class="lib-new" data-t="library.new"></button>
   <h2 data-t="library.title"></h2>
   <div id="library"></div>

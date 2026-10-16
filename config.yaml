@@ -48,7 +48,7 @@ button_defaults:
 pages:
   1:
     1: {type: key, title: Copy, keys: cmd+c, icon: icons/macos-copy.png}
-    10: {type: app, app: /Applications/BusyCal.app, title: BusyCal, font_size: 30}
+    10: {type: claude.usage, title: Week (7d), window: seven_day}
     6: {type: key, title: App switch, keys: cmd+tab, icon: icons/macos-app-switch.png}
     2: {type: app, title: Finder, app: /System/Library/CoreServices/Finder.app, transparency: 90}
     3: {type: key, title: Paste, keys: cmd+v, icon: icons/macos-paste.png}
@@ -56,31 +56,22 @@ pages:
     5: {type: key, title: Spotlight, keys: cmd+space, icon: icons/macos-spotlight.png}
     7: {type: key, title: Copy pass, keys: cmd+p, icon: icons/bitwarden-copy-pass.png}
     8: {type: key, title: Area, keys: ctrl+p, icon: icons/shottr-area.png, background: '#1b1b2d', transparency: 0}
-    9: {type: app, title: Mail, app: /System/Applications/Mail.app, profile: Mail, font_size: 30}
-    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
+    9: {type: claude.usage, title: Sessie (5u), window: five_hour}
     12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
-    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
-    16: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png, hold: {type: page, page: Home}}
+    16: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
     14: {type: profile, profile: default, transparency: 90}
-    17: {type: page, title: Next, page: next}
+    17: {type: page, title: Next, page: next, icon: icons/deck-next.png}
   2:
     1: {type: ha.toggle, title: werkkkamer, entity: light.werkkamer}
-    3: {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
-    2: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
-    4:  {title: "2-4", output: "2-4"}
-    5: {title: F1, type: key, keys: f1}
-    6: {type: ha.toggle, title: Slaapkamer, entity: light.slaapkamer}
-    8: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
-    9:  {title: "2-9", output: "2-9"}
-    10: {title: Helder -, type: key, keys: brightnessdown}
-    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
-    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
-    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
-    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    11: {type: page, title: Home, page: home, icon: icons/deck-home.png}
+    7: {type: claude.usage, title: Week (7d), window: seven_day}
+    6: {type: claude.usage, title: Sessie (5u), window: five_hour}
+    16: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
     14: {type: profile, profile: default}
-    17: {type: page, page: next}
+    17: {type: page, title: Next, page: next, icon: icons/deck-next.png}
   3:
     1:  {title: "3-1", output: "3-1"}
+    11: {type: page, title: Home, page: home, icon: icons/deck-home.png}
     2:  {title: "3-2", output: "3-2"}
     3:  {title: "3-3", output: "3-3" }
     4:  {title: "3-4", output: "3-4"}
@@ -90,12 +81,9 @@ pages:
     8:  {title: "3-8", output: "3-8"}
     9: {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
     10: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
-    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
-    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
-    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
-    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    16: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
     14: {type: profile, profile: default}
-    17: {type: page, page: next}
+    17: {type: page, title: Next, page: next, icon: icons/deck-next.png}
 # Rotary knobs, left to right.
 #   index: the knob's id in the USB events (only 0x11 for K1 is confirmed)
 #   type:  "text" (default): left/right/press are printed

@@ -1,7 +1,5 @@
 # Texts of the Claude usage plugin (en). Keys as in plugin.yaml; keep the {names}.
-description: Shows how much of your Claude plan's session (5 hour) and weekly limits you have used, as in Claude Code's usage panel. Uses the login of Claude Code on this Mac.
-settings:
-  interval: Refresh every (seconds)
+description: Shows how much of your Claude plan's session (5 hour) and weekly limits you have used, as in Claude Code's usage panel. The numbers come from Claude Code's status line; "Test connection" sets it up.
 types:
   claude.usage: Claude usage
 fields:
@@ -10,18 +8,12 @@ options:
   window:
     five_hour: Session (5h)
     seven_day: Weekly (7d)
-    seven_day_sonnet: Sonnet (7d)
-    seven_day_opus: Opus (7d)
 status:
-  updated: Updated at {time}.
-  test_ok: 'Works: session {session}%, week {week}%.'
+  updated: Last numbers from Claude Code at {time}.
+  installed: Status line set up in Claude Code. Send Claude Code a message; then the numbers appear.
+  test_ok: 'Works: session {session}%, week {week}% (from Claude Code at {time}).'
 render:
   resets_in: Resets in {time}
-  no_limit: no limit
 errors:
-  no_login: No Claude Code login found on this Mac. Sign in to Claude Code first.
-  expired: The Claude Code login has expired. Use Claude Code once; it renews the login.
-  rejected: Anthropic does not accept the Claude Code login. Sign in to Claude Code again.
-  rate_limited: Too many requests; trying again in {minutes} min.
-  http: Anthropic answered with HTTP {status}.
-  unreachable: Cannot reach api.anthropic.com.
+  no_data: 'No numbers from Claude Code yet. They come from Claude Code in the terminal (not the VS Code extension): run claude in a terminal and send a message.'
+  other_statusline: 'Claude Code already has another status line. Set statusLine in ~/.claude/settings.json to: {command}'
