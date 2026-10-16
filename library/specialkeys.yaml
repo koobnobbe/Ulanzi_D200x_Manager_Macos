@@ -1,0 +1,19 @@
+# Library section "specialkeys": navigation and editing keys. Each entry is a key definition you can drag onto
+# a key in the web interface. "Backspace" is the Mac's delete key (⌫), "Fwd delete" deletes to the right (⌦).
+# The key icons (keycaps) are in specialkeys.zip; dragging a key onto the deck copies its icon to icons/.
+buttons:
+  - {type: key, title: Home, keys: home, icon: icons/special-home.png}
+  - {type: key, title: End, keys: end, icon: icons/special-end.png}
+  - {type: key, title: Page Up, keys: pageup, icon: icons/special-pageup.png}
+  - {type: key, title: Page Down, keys: pagedown, icon: icons/special-pagedown.png}
+  - {type: key, title: Up, keys: up, icon: icons/special-up.png}
+  - {type: key, title: Down, keys: down, icon: icons/special-down.png}
+  - {type: key, title: Left, keys: left, icon: icons/special-left.png}
+  - {type: key, title: Right, keys: right, icon: icons/special-right.png}
+  - {type: key, title: Esc, keys: esc, icon: icons/special-esc.png}
+  - {type: key, title: Tab, keys: tab, icon: icons/special-tab.png}
+  - {type: key, title: Back tab, keys: shift+tab, icon: icons/special-shift-tab.png}
+  - {type: key, title: Return, keys: enter, icon: icons/special-enter.png}
+  - {type: key, title: Space, keys: space, icon: icons/special-space.png}
+  - {type: key, title: Backspace, keys: backspace, icon: icons/special-backspace.png}
+  - {type: key, title: Fwd delete, keys: forwarddelete, icon: icons/special-forwarddelete.png}

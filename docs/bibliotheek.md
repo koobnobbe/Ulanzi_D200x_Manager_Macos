@@ -17,13 +17,13 @@ De bibliotheek staat rechts in de webinterface. Hij bevat kant-en-klare toetsen 
 
 | Bibliotheek | Inhoud |
 |---|---|
-| **Agenda** | Toetsen voor BusyCal: Vandaag, Morgen, Gisteren, Deze week, Volgende week, Dag-, Week- en Maandweergave, nieuwe afspraak of taak, zoeken en meer. |
+| **BusyCal** | Toetsen voor BusyCal: Vandaag, Morgen, Gisteren, Deze week, Volgende week, Dag-, Week- en Maandweergave, nieuwe afspraak of taak, zoeken en meer. |
 | **Applications** | Een paar apps om te openen. |
 | **functionkeys** | F1 tot en met F12. |
 | **sound** | Volume, mute, afspelen, volgende en vorige, helderheid van het scherm. |
 | **template** | Toetsen die je zelf hebt bewaard. Bovenaan het bestand staat een overzicht van alle velden. |
 
-De Agenda-toetsen gebruiken de sneltoetsen van BusyCal. Sommige sturen een reeks: **Morgen** gaat naar de dagweergave (`cmd+1`), naar vandaag (`cmd+t`) en één dag verder (`cmd+right`).
+De BusyCal-toetsen gebruiken de sneltoetsen van BusyCal. Sommige sturen een reeks: **Morgen** gaat naar de dagweergave (`cmd+1`), naar vandaag (`cmd+t`) en één dag verder (`cmd+right`).
 
 ## Eigen iconen in een zip
 

@@ -1,10 +1,10 @@
 pages:
   1:
-    11: {type: page, page: previous, title: "<"}
+    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
     9: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
     8: {type: app, title: Bitwarden, output: Bitwarden, app: /Applications/Bitwarden.app, font_size: 35}
-    12: {type: page, page: home, title: "Home"}
-    13: {type: page, page: next, title: ">"}
+    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
+    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
     14: {type: profile, profile: default}
     16: {type: page, page: previous, hold: {type: profile, profile: default}}
     17: {type: page, page: next}

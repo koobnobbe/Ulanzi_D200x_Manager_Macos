@@ -7,3 +7,6 @@ __pycache__/
 # Plugin settings and secrets, per machine
 plugins.local.yaml
 plugins.local.yaml.tmp
+
+# macOS Finder files
+.DS_Store

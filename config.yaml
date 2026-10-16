@@ -52,30 +52,30 @@ pages:
     6: {type: key, title: App switch, keys: cmd+tab, icon: icons/macos-app-switch.png}
     2: {type: app, title: Finder, app: /System/Library/CoreServices/Finder.app, transparency: 90}
     3: {type: key, title: Paste, keys: cmd+v, icon: icons/macos-paste.png}
-    4:  {type: app, app: "/System/Applications/Calculator.app",profile: Calculator,  title: "Calc"}
-    5:  {type: app, app: "/Applications/iStatistica\ Pro.app", title: "Stats"}
+    4: {type: app, title: Bitwarden, app: /Applications/Bitwarden.app, profile: BitWarden, font_size: 30}
+    5: {type: key, title: Spotlight, keys: cmd+space, icon: icons/macos-spotlight.png}
     7: {type: key, title: Copy pass, keys: cmd+p, icon: icons/bitwarden-copy-pass.png}
     8: {type: key, title: Area, keys: ctrl+p, icon: icons/shottr-area.png, background: '#1b1b2d', transparency: 0}
     9: {type: app, title: Mail, app: /System/Applications/Mail.app, profile: Mail, font_size: 30}
-    11: {type: page, page: previous, title: "<"}
-    12: {type: page, page: home, title: "Home"}
-    13: {type: page, page: next, title: ">"}
-    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
+    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
+    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
+    16: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png, hold: {type: page, page: Home}}
     14: {type: profile, profile: default, transparency: 90}
     17: {type: page, title: Next, page: next}
   2:
-    1:  {title: "2-1", output: "2-1"}
+    1: {type: ha.toggle, title: werkkkamer, entity: light.werkkamer}
     3: {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
     2: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
     4:  {title: "2-4", output: "2-4"}
     5: {title: F1, type: key, keys: f1}
-    6:  {title: "2-6", output: "2-6"}
+    6: {type: ha.state, title: Airco Temp, entity: sensor.werkkamer_airconditioner_werkkamer_temperature}
     8: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
     9:  {title: "2-9", output: "2-9"}
     10: {title: Helder -, type: key, keys: brightnessdown}
-    11: {type: page, page: previous, title: "<-"}
-    12: {type: page, page: home, title: "Home"}
-    13: {type: page, page: next, title: "->"}
+    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
+    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
+    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
     16: {type: page, page: previous, hold: {type: profile, profile: default}}
     14: {type: profile, profile: default}
     17: {type: page, page: next}
@@ -90,9 +90,9 @@ pages:
     8:  {title: "3-8", output: "3-8"}
     9: {type: app, title: Mute, app: /Applications/Bloom.app, profile: Bloom, color: '#ffffff'}
     10: {type: app, app: /System/Library/CoreServices/Finder.app, title: Finder}
-    11: {type: page, page: previous, title: "<-"}
-    12: {type: page, page: home, title: "Home"}
-    13: {type: page, page: next, title: "->"}
+    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
+    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
+    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
     16: {type: page, page: previous, hold: {type: profile, profile: default}}
     14: {type: profile, profile: default}
     17: {type: page, page: next}

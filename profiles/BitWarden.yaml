@@ -1,0 +1,14 @@
+app: "/Applications/Bitwarden.app"
+pages:
+  1:
+    11: {type: page, page: previous, title: "<"}
+    5: {type: key, title: New login, keys: cmd+n, icon: icons/bitwarden-new-login.png}
+    1: {type: key, title: Search, keys: cmd+f, icon: icons/bitwarden-search.png}
+    2: {type: key, title: Copy user, keys: cmd+u, icon: icons/bitwarden-copy-user.png}
+    3: {type: key, title: Copy pass, keys: cmd+p, icon: icons/bitwarden-copy-pass.png}
+    4: {type: key, title: Copy TOTP, keys: cmd+t, icon: icons/bitwarden-copy-totp.png}
+    12: {type: page, page: home, title: "Home"}
+    13: {type: page, page: next, title: ">"}
+    14: {type: profile, profile: default}
+    16: {type: page, page: previous, hold: {type: profile, profile: default}}
+    17: {type: page, page: next}

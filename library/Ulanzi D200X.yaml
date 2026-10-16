@@ -1,0 +1,14 @@
+# Library section "Ulanzi D200X": keys that operate the deck itself: pages and profiles.
+# "Page 2" and "Page 3" only work in a profile that has that page. The profile keys are for the profiles
+# on this Mac (made when this library was created); a renamed or removed profile needs a new key.
+# Deck brightness is set with a knob (type device_brightness), not with a key.
+# The key icons are in "Ulanzi D200X.zip"; dragging a key onto the deck copies its icon to icons/.
+buttons:
+  # Pages
+  - {type: page, title: Home, page: home, icon: icons/deck-home.png}
+  - {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
+  - {type: page, title: Next, page: next, icon: icons/deck-next.png}
+  - {type: page, title: Page 2, page: 2, icon: icons/deck-page-2.png}
+  - {type: page, title: Page 3, page: 3, icon: icons/deck-page-3.png}
+  - {type: page, title: Next (hold), page: next, hold: {type: profile, profile: default}, icon: icons/deck-next-hold.png}
+  # Profiles

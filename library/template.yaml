@@ -21,4 +21,3 @@
 # Example entry (delete the leading "#" to use it):
 #   - {title: "Copy", type: key, keys: "cmd+c", background: "#1a1a2e", color: "#ffffff", font_size: 60}
 buttons:
-  - {type: key, title: Copy, keys: cmd+c, transparency: 90}

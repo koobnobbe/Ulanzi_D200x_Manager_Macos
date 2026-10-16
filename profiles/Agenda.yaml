@@ -1,17 +1,19 @@
 app: "/Applications/BusyCal.app"
 pages:
   1:
-    11: {type: page, page: previous, title: "<"}
-    4: {type: key, title: + Afspraak, keys: cmd+n, font_size: 30}
-    3: {type: key, title: Nu, keys: cmd+t, font_size: 50}
-    9: {type: key, title: Zoeken, keys: cmd+f, font_size: 36}
-    8: {type: key, title: Maand, keys: cmd+3, font_size: 40}
-    7: {type: key, title: Week, keys: cmd+2, font_size: 44}
-    6: {type: key, title: Dag, keys: cmd+1, font_size: 44}
-    2: {type: key, title: Morgen, keys: [cmd+1, cmd+t, cmd+right], font_size: 36}
-    1: {type: key, title: Vandaag, keys: [cmd+1, cmd+t], font_size: 36}
-    12: {type: page, page: home, title: "Home"}
-    13: {type: page, page: next, title: ">"}
+    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
+    5: {type: key, title: Volg. mnd, keys: [cmd+3, cmd+t, cmd+right], icon: icons/busycal-next-month.png}
+    4: {type: key, title: Volg. week, keys: [cmd+2, cmd+t, cmd+right], icon: icons/busycal-next-week.png}
+    10: {type: key, title: Jaar, keys: cmd+4, icon: icons/busycal-year.png}
+    9: {type: key, title: Week, keys: cmd+2, icon: icons/busycal-week.png}
+    3: {type: key, title: Deze week, keys: [cmd+2, cmd+t], icon: icons/busycal-this-week.png}
+    8: {type: key, title: Dag, keys: cmd+1, icon: icons/busycal-day.png}
+    7: {type: key, title: Zoeken, keys: cmd+f, icon: icons/busycal-search.png}
+    6: {type: key, title: + Afspraak, keys: cmd+n, icon: icons/busycal-new-event.png}
+    2: {type: key, title: Morgen, keys: [cmd+1, cmd+t, cmd+right], icon: icons/busycal-tomorrow.png}
+    1: {type: key, title: Vandaag, keys: [cmd+1, cmd+t], icon: icons/busycal-today.png}
+    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
+    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
     14: {type: profile, profile: default}
     16: {type: page, page: previous, hold: {type: profile, profile: default}}
     17: {type: page, page: next}
