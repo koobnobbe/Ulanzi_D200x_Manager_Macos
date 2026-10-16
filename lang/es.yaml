@@ -80,7 +80,8 @@ key_dialog:
   key_title: Título
   icon: Icono (ruta)
   no_icon: sin icono
-  hint_text: Solo texto en la tecla. La salida (output) se imprime en cada pulsación.
+  paste_text: "Texto para pegar"
+  hint_text: "Al pulsar la tecla se pega este texto en la app en primer plano (a través del portapapeles; luego se restaura su texto). Vacío: solo el título en la tecla."
   pick_key: Elige una tecla
   keys: Teclas (key)
   keys_placeholder: cmd+c o cmd+a, cmd+c

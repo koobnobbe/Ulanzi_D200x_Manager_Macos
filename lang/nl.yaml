@@ -82,7 +82,8 @@ key_dialog:
   key_title: Titel
   icon: Icoon (pad)
   no_icon: geen icoon
-  hint_text: Alleen tekst op de toets. De output wordt geprint bij een druk.
+  paste_text: "Tekst om te plakken"
+  hint_text: "Een druk op de toets plakt deze tekst in de app die vooraan staat (via het klembord; de tekst op het klembord wordt daarna teruggezet). Leeg: alleen de titel op de toets."
   pick_key: Kies een toets
   keys: Toetsen (key)
   keys_placeholder: cmd+c of cmd+a, cmd+c

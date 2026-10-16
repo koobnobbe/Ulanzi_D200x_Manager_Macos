@@ -79,6 +79,7 @@ ui:
 | `transparency` | alle | 0–100 |
 | `background_image` | alleen toets 14 | afbeelding achter de klok |
 | `hold` | alle | actie bij lang indrukken, bijvoorbeeld `{type: profile, profile: default}` |
+| `text` | `text` | tekst die een druk op de toets plakt in de app vooraan (via het klembord, dat daarna zijn tekst terugkrijgt) |
 | `output` | alle | tekst die bij een druk in de terminal wordt geprint |
 
 ## Taal

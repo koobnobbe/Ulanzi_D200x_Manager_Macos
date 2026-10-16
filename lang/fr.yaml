@@ -80,7 +80,8 @@ key_dialog:
   key_title: Titre
   icon: Icône (chemin)
   no_icon: aucune icône
-  hint_text: Texte seul sur la touche. La sortie (output) est affichée à chaque appui.
+  paste_text: "Texte à coller"
+  hint_text: "Un appui sur la touche colle ce texte dans l'app au premier plan (via le presse-papiers ; son texte est ensuite remis). Vide : seulement le titre sur la touche."
   pick_key: Choisir une touche
   keys: Touches (key)
   keys_placeholder: cmd+c ou cmd+a, cmd+c

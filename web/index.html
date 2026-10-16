@@ -267,6 +267,8 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
         <div class="pick"><select id="kIcon"></select><button type="button" id="kIconPick" data-t="common.new"></button></div></label>
     </div>
     <div class="tpanel" data-type="text">
+      <label><span data-t="key_dialog.paste_text"></span>
+        <textarea id="kText" rows="3" style="width: 100%; resize: vertical; font: inherit"></textarea></label>
       <div class="hint" data-t="key_dialog.hint_text"></div>
     </div>
     <div class="tpanel" data-type="key">
@@ -636,6 +638,7 @@ function buildTargetOptions(current) {
 function fillKeyForm(raw) {
   $('kType').value = raw.type || 'text';
   $('kTitleText').value = asText(raw.title);
+  $('kText').value = asText(raw.text);
   $('kKeys').value = asText(raw.keys);
   $('kApp').value = asText(raw.app);
   buildTargetOptions(asText(raw.page));
@@ -667,6 +670,7 @@ function readKeyForm() {
   const data = {};
   if (type !== 'text') data.type = type;
   if (v('kTitleText')) data.title = v('kTitleText');
+  if (type === 'text' && $('kText').value.trim()) data.text = $('kText').value.replace(/\s+$/, '');
   if (type === 'key' && v('kKeys')) {
     const combos = v('kKeys').split(',').map((s) => s.trim()).filter(Boolean);
     data.keys = combos.length === 1 ? combos[0] : combos;

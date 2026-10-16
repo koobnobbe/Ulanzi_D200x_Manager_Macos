@@ -184,6 +184,31 @@ def send_keys(combos):
             _AS.CFRelease(event)
 
 
+PASTE = None   # the combo for cmd+v, parsed on first use
+
+
+def clipboard(text=None):
+    """The clipboard's text, or set it to text. pbcopy/pbpaste need a UTF-8 locale for anything beyond ASCII."""
+    env = {**os.environ, 'LANG': 'en_US.UTF-8'}
+    if text is None:
+        return subprocess.run(['pbpaste'], capture_output=True, env=env, timeout=2).stdout.decode('utf-8', 'replace')
+    subprocess.run(['pbcopy'], input=text.encode('utf-8'), env=env, timeout=2)
+
+
+async def paste_text(text):
+    """Paste text into the app in front: via the clipboard and cmd+v, then put the clipboard's text back.
+    (Only text comes back: an image or file on the clipboard is replaced.)"""
+    global PASTE
+    PASTE = PASTE or parse_keys('cmd+v')
+    previous = await asyncio.to_thread(clipboard)
+    await asyncio.to_thread(clipboard, text)
+    await asyncio.sleep(0.05)
+    send_keys(PASTE)
+    await asyncio.sleep(0.5)     # the app reads the clipboard when it handles cmd+v
+    if previous and previous != text:
+        await asyncio.to_thread(clipboard, previous)
+
+
 def parse_knob(name, knob):
     """For a knob with type key, parse its left/right/press combos into knob['combos']."""
     kind = knob.get('type', 'text')
@@ -391,7 +416,7 @@ def check_button(number, button):
 
 
 KEY_FIELDS = {'title', 'type', 'keys', 'app', 'profile', 'page', 'icon', 'background', 'color', 'font_size',
-              'transparency', 'hold', 'output', 'background_image'}
+              'transparency', 'hold', 'output', 'background_image', 'text'}
 
 
 def check_key_entry(entry, where, icons=()):
@@ -1036,6 +1061,8 @@ class Manager:
             steps.append((f"send {button['keys']}", partial(send_keys, button['combos'])))
         elif plugins.plugin_kind(button.get('type')) == 'key':
             steps += plugins.actions(button['type'], button, 'press')
+        elif button.get('type', 'text') == 'text' and button.get('text'):
+            steps.append((f"paste {button['text']!r}", partial(paste_text, str(button['text']))))
         if button.get('output'):
             steps.append((f"print {button['output']}", partial(print, button['output'])))
         return steps
@@ -1368,7 +1395,7 @@ class Manager:
             'clock': [self.layouts[self.page][i]['icon'] for i in (13, 14)],
             'keys': {n: {'icon': self.icons.get(self.page, {}).get(n),
                          **{k: self.pages.get(self.page, {}).get(n, {}).get(k)
-                            for k in ('type', 'title', 'app', 'keys', 'output', 'page')}}
+                            for k in ('type', 'title', 'app', 'keys', 'output', 'page', 'text')}}
                      for n in sorted(KEY_NUMBERS)},
             'knobs': [{k: v for k, v in knob.items() if k != 'combos'} for knob in self.knobs.values()],
         }

@@ -82,7 +82,8 @@ key_dialog:
   key_title: Title
   icon: Icon (path)
   no_icon: no icon
-  hint_text: Text on the key only. The output is printed when the key is pressed.
+  paste_text: "Text to paste"
+  hint_text: "Pressing the key pastes this text into the app in front (via the clipboard; the clipboard text is put back afterwards). Empty: only the title on the key."
   pick_key: Pick a key
   keys: Keys (key)
   keys_placeholder: cmd+c or cmd+a, cmd+c

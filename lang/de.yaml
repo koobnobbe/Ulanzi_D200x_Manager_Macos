@@ -80,7 +80,8 @@ key_dialog:
   key_title: Titel
   icon: Symbol (Pfad)
   no_icon: kein Symbol
-  hint_text: Nur Text auf der Taste. Die Ausgabe (output) wird bei jedem Drücken ausgegeben.
+  paste_text: "Einzufügender Text"
+  hint_text: "Ein Druck auf die Taste fügt diesen Text in die App im Vordergrund ein (über die Zwischenablage; deren Text wird danach wiederhergestellt). Leer: nur der Titel auf der Taste."
   pick_key: Taste auswählen
   keys: Tasten (key)
   keys_placeholder: cmd+c oder cmd+a, cmd+c
