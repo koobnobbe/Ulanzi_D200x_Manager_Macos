@@ -142,6 +142,7 @@ image_dialog:
 app_dialog:
   title: Choose an app
   finder_folder: /System/Library/CoreServices (Finder)
+  start_menu: "Start menu"
   filter: filter by name
 
 device_dialog:
@@ -271,6 +272,12 @@ config:
   unknown_combo: "unknown key combo: {combo}"
   unknown_type: "unknown type: {type}"
   app_not_found: "app not found: {app}"
+  app_needed: "an app key needs \"app\""
+  app_none_here: "no app for {system} on this key"
+  app_not_here: "app not on this computer: {app}"
+  keys_not_here: "no key combo for {system} on this key"
+  other_system: "{combo} only exists on the other system"
+  not_here_short: "not on this computer"
   keys_needed: type key needs "keys"
   background_image_missing: "background_image not found: {path}"
   transparency_range: transparency must be between 0 and 100
@@ -310,8 +317,8 @@ plugins_check:
   unknown_plugin: "unknown plugin: {id}"
   not_running: "{name} is not running"
 
-# Menu of D200X Manager.app (tools/macos-app)
-mac_app:
+# Menu of the D200X Manager app: menu bar on macOS (tools/macos-app), system tray on Windows (tools/windows)
+app_menu:
   running: "Manager running"
   stopped: "Manager stopped (restarts by itself)"
   open: "Open web interface"

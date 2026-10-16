@@ -8,6 +8,8 @@ import asyncio
 import json
 import os
 import shlex
+import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 
@@ -46,6 +48,9 @@ def resets_in(at):
 
 
 def statusline_command():
+    if sys.platform == 'win32':
+        # no system Python on Windows: the manager's own (the .venv's)
+        return subprocess.list2cmdline([sys.executable, STATUSLINE])
     return f'/usr/bin/python3 {shlex.quote(STATUSLINE)}'
 
 

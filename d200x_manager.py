@@ -1,6 +1,5 @@
 import asyncio
 import binascii
-import ctypes
 import inspect
 import hashlib
 import io
@@ -19,7 +18,8 @@ from strmdck.device import ButtonAction
 from strmdck.devices.ulanzi_d200 import UlanziD200Device
 import plugins
 import web_server
-from appicon import app_icon as load_app_icon
+import system
+from system import Unavailable, clipboard, frontmost_app, parse_keys, send_keys
 import i18n
 from i18n import t
 
@@ -45,90 +45,6 @@ KNOB_RELEASE = 0x00
 KNOB_EVENTS = {0x01: 'press', 0x02: 'left', 0x03: 'right'}
 
 
-# Keyboard events via CoreGraphics (no extra dependency). Sending them needs the
-# Accessibility permission for the app running this script (Terminal, VS Code, ...).
-_AS = ctypes.cdll.LoadLibrary('/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices')
-_AS.AXIsProcessTrusted.restype = ctypes.c_bool
-_AS.CGEventCreateKeyboardEvent.restype = ctypes.c_void_p
-_AS.CGEventCreateKeyboardEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint16, ctypes.c_bool]
-_AS.CGEventSetFlags.argtypes = [ctypes.c_void_p, ctypes.c_uint64]
-_AS.CGEventPost.argtypes = [ctypes.c_uint32, ctypes.c_void_p]
-_AS.CFRelease.argtypes = [ctypes.c_void_p]
-CG_HID_EVENT_TAP = 0
-
-MODIFIERS = {
-    'shift': 0x20000,
-    'ctrl': 0x40000, 'control': 0x40000,
-    'alt': 0x80000, 'option': 0x80000, 'opt': 0x80000,
-    'cmd': 0x100000, 'command': 0x100000,
-    'fn': 0x800000,
-}
-# macOS virtual key codes (ANSI layout positions).
-KEY_CODES = {
-    'a': 0, 's': 1, 'd': 2, 'f': 3, 'h': 4, 'g': 5, 'z': 6, 'x': 7, 'c': 8, 'v': 9,
-    'b': 11, 'q': 12, 'w': 13, 'e': 14, 'r': 15, 'y': 16, 't': 17,
-    '1': 18, '2': 19, '3': 20, '4': 21, '6': 22, '5': 23, '=': 24, '9': 25, '7': 26,
-    '-': 27, '8': 28, '0': 29, ']': 30, 'o': 31, 'u': 32, '[': 33, 'i': 34, 'p': 35,
-    'enter': 36, 'return': 36, 'l': 37, 'j': 38, "'": 39, 'k': 40, ';': 41, '\\': 42,
-    ',': 43, '/': 44, 'n': 45, 'm': 46, '.': 47, 'tab': 48, 'space': 49, '`': 50,
-    'backspace': 51, 'delete': 51, 'esc': 53, 'escape': 53,
-    'f1': 122, 'f2': 120, 'f3': 99, 'f4': 118, 'f5': 96, 'f6': 97, 'f7': 98, 'f8': 100,
-    'f9': 101, 'f10': 109, 'f11': 103, 'f12': 111,
-    'home': 115, 'pageup': 116, 'forwarddelete': 117, 'end': 119, 'pagedown': 121,
-    'left': 123, 'right': 124, 'down': 125, 'up': 126,
-}
-# Media keys (NX_KEYTYPE_*). These aren't key codes but system-defined events,
-# the same ones the volume/media keys on a Mac keyboard send.
-MEDIA_KEYS = {
-    'volumeup': 0, 'volumedown': 1, 'mute': 7,
-    'brightnessup': 2, 'brightnessdown': 3,
-    'play': 16, 'next': 17, 'previous': 18,
-}
-
-# NSEvent is needed to build a system-defined event; call it through the
-# Objective-C runtime so no pyobjc dependency is needed.
-_OBJC = ctypes.cdll.LoadLibrary('/usr/lib/libobjc.A.dylib')
-ctypes.cdll.LoadLibrary('/System/Library/Frameworks/AppKit.framework/AppKit')
-_OBJC.objc_getClass.restype = ctypes.c_void_p
-_OBJC.objc_getClass.argtypes = [ctypes.c_char_p]
-_OBJC.sel_registerName.restype = ctypes.c_void_p
-_OBJC.sel_registerName.argtypes = [ctypes.c_char_p]
-
-
-class _NSPoint(ctypes.Structure):
-    _fields_ = [('x', ctypes.c_double), ('y', ctypes.c_double)]
-
-
-_MSG_SEND = ctypes.cast(_OBJC.objc_msgSend, ctypes.c_void_p).value
-# +[NSEvent otherEventWithType:location:modifierFlags:timestamp:windowNumber:context:subtype:data1:data2:]
-_ns_other_event = ctypes.CFUNCTYPE(
-    ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_ulong, _NSPoint, ctypes.c_ulong,
-    ctypes.c_double, ctypes.c_long, ctypes.c_void_p, ctypes.c_short, ctypes.c_long, ctypes.c_long)(_MSG_SEND)
-_ns_cg_event = ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p)(_MSG_SEND)
-_NSEVENT = _OBJC.objc_getClass(b'NSEvent')
-_SEL_OTHER_EVENT = _OBJC.sel_registerName(
-    b'otherEventWithType:location:modifierFlags:timestamp:windowNumber:context:subtype:data1:data2:')
-_SEL_CG_EVENT = _OBJC.sel_registerName(b'CGEvent')
-NS_SYSTEM_DEFINED = 14
-NS_SUBTYPE_AUX_CONTROL = 8
-MEDIA_DOWN, MEDIA_UP = 0xa, 0xb
-
-
-
-def frontmost_app():
-    """(name, bundle path) of the frontmost app, or (None, None).
-
-    NSWorkspace.frontmostApplication goes stale in a process without a Cocoa run loop,
-    so ask launch services instead."""
-    front = subprocess.run(['lsappinfo', 'front'], capture_output=True, text=True, timeout=2).stdout.strip()
-    if not front:
-        return None, None
-    info = subprocess.run(['lsappinfo', 'info', front], capture_output=True, text=True, timeout=2).stdout
-    name = re.match(r'\s*"(.*?)" ASN', info)
-    path = re.search(r'bundle path="(.*?)"', info)
-    return (name.group(1) if name else None), (os.path.normpath(path.group(1)) if path else None)
-
-
 def set_top_line(text, key, value):
     """Set (or with value None remove) a top-level `key: value` line, keeping the rest of the file."""
     lines = text.split('\n')
@@ -147,56 +63,11 @@ def set_top_line(text, key, value):
     return '\n'.join(lines)
 
 
-def parse_keys(keys):
-    """Parse "cmd+c", "volumeup" (or a list of those) into [(kind, code, flags), ...]."""
-    combos = []
-    for combo in [keys] if isinstance(keys, str) else keys:
-        *mods, key = [part.strip().lower() for part in str(combo).split('+')]
-        if key in MEDIA_KEYS and not mods:
-            combos.append(('media', MEDIA_KEYS[key], 0))
-            continue
-        if key not in KEY_CODES or any(m not in MODIFIERS for m in mods):
-            raise ValueError(t('config.unknown_combo', combo=combo))
-        flags = 0
-        for m in mods:
-            flags |= MODIFIERS[m]
-        combos.append(('key', KEY_CODES[key], flags))
-    return combos
-
-
-def send_media_key(key):
-    for state in (MEDIA_DOWN, MEDIA_UP):
-        event = _ns_other_event(_NSEVENT, _SEL_OTHER_EVENT, NS_SYSTEM_DEFINED, _NSPoint(0, 0),
-                                state << 8, 0.0, 0, None, NS_SUBTYPE_AUX_CONTROL,
-                                (key << 16) | (state << 8), -1)
-        _AS.CGEventPost(CG_HID_EVENT_TAP, _ns_cg_event(event, _SEL_CG_EVENT))
-
-
-def send_keys(combos):
-    for kind, code, flags in combos:
-        if kind == 'media':
-            send_media_key(code)
-            continue
-        for down in (True, False):
-            event = _AS.CGEventCreateKeyboardEvent(None, code, down)
-            _AS.CGEventSetFlags(event, flags)
-            _AS.CGEventPost(CG_HID_EVENT_TAP, event)
-            _AS.CFRelease(event)
-
-
 PASTE = None   # the combo for cmd+v, parsed on first use
 
 
-def clipboard(text=None):
-    """The clipboard's text, or set it to text. pbcopy/pbpaste need a UTF-8 locale for anything beyond ASCII."""
-    env = {**os.environ, 'LANG': 'en_US.UTF-8'}
-    if text is None:
-        return subprocess.run(['pbpaste'], capture_output=True, env=env, timeout=2).stdout.decode('utf-8', 'replace')
-    subprocess.run(['pbcopy'], input=text.encode('utf-8'), env=env, timeout=2)
-
-
 async def paste_text(text):
-    """Paste text into the app in front: via the clipboard and cmd+v, then put the clipboard's text back.
+    """Paste text into the app in front: via the clipboard and cmd+v (Ctrl+V on Windows), then put the clipboard's text back.
     (Only text comes back: an image or file on the clipboard is replaced.)"""
     global PASTE
     PASTE = PASTE or parse_keys('cmd+v')
@@ -213,10 +84,18 @@ def parse_knob(name, knob):
     """For a knob with type key, parse its left/right/press combos into knob['combos']."""
     kind = knob.get('type', 'text')
     if kind == 'key':
-        try:
-            knob['combos'] = {e: parse_keys(knob[e]) for e in KNOB_EVENTS.values() if knob.get(e)}
-        except ValueError as e:
-            raise ValueError(t('config.knob', name=name, error=e))
+        knob['combos'] = {}
+        for event in KNOB_EVENTS.values():
+            keys = system.for_system(knob.get(event))
+            if not keys:
+                continue
+            try:
+                knob['combos'][event] = parse_keys(keys)
+                knob[event] = keys
+            except Unavailable:
+                knob.pop(event, None)       # a combo of the other system (shared config): does nothing here
+            except ValueError as e:
+                raise ValueError(t('config.knob', name=name, error=e))
     elif plugins.plugin_kind(kind) == 'knob':
         problem = plugins.check_fields(kind, knob)
         if problem:
@@ -272,7 +151,7 @@ def load_font(size):
 
 
 def load_config(path):
-    with open(path) as fp:
+    with open(path, encoding='utf-8') as fp:
         return yaml.safe_load(fp)
 
 
@@ -383,19 +262,36 @@ def draw_title(img, button, center):
 
 
 def button_problem(button):
-    """What is wrong with a key definition, or None. Also parses "keys" into button['combos']."""
+    """What is wrong with a key definition, or None. Also parses "keys" into button['combos'].
+
+    "app" and "keys" may hold a value per system ({mac: ..., windows: ...}); they are replaced by this system's.
+    A key whose app or keys are not on this computer (a shared config) is no error: it gets button['unavailable'],
+    shows its title with a note and does nothing."""
     kind = button.get('type', 'text')
     if kind == 'app':
-        app = button.get('app')   # an .app, or a link that `open` hands to its app, e.g. raycast://...
-        if not app or not (os.path.isdir(app) or re.match(r'[a-z][a-z0-9+.-]*://', app)):
-            return t('config.app_not_found', app=app)
+        if not button.get('app'):
+            return t('config.app_needed')
+        app = system.for_system(button['app'])   # an app, or a link that the system opens, e.g. raycast://...
+        if not app:
+            button['unavailable'] = t('config.app_none_here', system=system.NAME)
+        elif not system.is_app(app):
+            button['unavailable'] = t('config.app_not_here', app=app)
+        else:
+            button['app'] = app
     elif kind == 'key':
+        if button.get('keys') in (None, '', []):
+            return t('config.keys_needed')
+        keys = system.for_system(button['keys'])
         try:
-            button['combos'] = parse_keys(button.get('keys') or [])
+            button['combos'] = parse_keys(keys) if keys else []
+        except Unavailable as e:
+            button['combos'], button['unavailable'] = [], str(e)
         except ValueError as e:
             return str(e)
-        if not button['combos']:
-            return t('config.keys_needed')
+        if not button['combos'] and not button.get('unavailable'):
+            button['unavailable'] = t('config.keys_not_here', system=system.NAME)
+        if keys:
+            button['keys'] = keys
     elif plugins.plugin_kind(kind) == 'key':
         problem = plugins.check_fields(kind, button)
         if problem:
@@ -494,7 +390,15 @@ def render_button(number, button, wallpaper=None):
     elif plugins.plugin_kind(kind) == 'key':
         img = Image.new('RGBA', (SIZE, SIZE), color=fill)
         img.alpha_composite(plugins.render(kind, button, SIZE, load_font).convert('RGBA').resize((SIZE, SIZE)))
-    elif kind == 'app' and (app_icon := load_app_icon(button['app'])):
+    elif button.get('unavailable'):
+        # a key of the other system (shared config): its title, and why it does nothing here
+        img = Image.new('RGBA', (SIZE, SIZE), color=fill)
+        draw_title(img, button, (SIZE / 2, SIZE / 2 - 12))
+        note, size = t('config.not_here_short'), 20
+        while size > 12 and load_font(size).getbbox(note)[2] > SIZE - 16:
+            size -= 1
+        ImageDraw.Draw(img).text((SIZE / 2, SIZE - 30), note, font=load_font(size), fill='#8a8aa0', anchor='mm')
+    elif kind == 'app' and (app_icon := system.app_icon(button['app'])):
         img = Image.new('RGBA', (SIZE, SIZE), color=fill)
         # Leave room at the bottom for an optional title.
         icon_size = SIZE - 50 if button.get('title') else SIZE - 20
@@ -851,9 +755,8 @@ class Manager:
         # Media keys work without it, but normal key combos are dropped silently.
         combos = [c for keys in pages.values() for b in keys.values() for c in b.get('combos', [])]
         combos += [c for k in knobs.values() for cs in k.get('combos', {}).values() for c in cs]
-        if any(kind == 'key' for kind, _, _ in combos) and not _AS.AXIsProcessTrusted():
-            print('warning: type key needs Accessibility permission for this terminal app '
-                  '(System Settings > Privacy & Security > Accessibility)')
+        if any(kind == 'key' for kind, _, _ in combos) and not system.can_send_keys():
+            print(system.SETTINGS_HINT)
         self.deck.set_brightness(device.get('brightness', 80))
         self.deck.set_buttons(self.layouts[self.page])
         self.apply_small_window()
@@ -919,7 +822,7 @@ class Manager:
 
     def open_app_profile(self, app, profile):
         # The app activating would otherwise switch to its own profile, so mark it as already seen.
-        self.last_app = os.path.normpath(app)
+        self.last_app = system.app_key(app)
         self.open_profile(profile)
         self.sticky = profile is not None
 
@@ -939,6 +842,7 @@ class Manager:
         while True:
             try:
                 name, path = await asyncio.to_thread(frontmost_app)
+                path = system.app_key(path)
                 if path != self.last_app:
                     self.last_app = path
                     wanted = self.profile_for_app(path)
@@ -1040,6 +944,9 @@ class Manager:
             return [(text, partial(print, text))]
         if hold:
             button = button.get('hold') or {}
+        if button.get('unavailable'):
+            text = f"key {number}: {button['unavailable']}"
+            return [(text, partial(print, text))]
         steps = []
         if button.get('type') == 'page':
             target = self.page_number(str(button['page']))
@@ -1051,7 +958,7 @@ class Manager:
                 return [(text, partial(print, text))]
             steps.append((f"profile {button['profile']}", partial(self.open_profile, name)))
         elif button.get('type') == 'app':
-            steps.append((f"open {button['app']}", partial(subprocess.Popen, ['open', button['app']])))
+            steps.append((f"open {button['app']}", partial(system.open_app, button['app'])))
             wanted = button.get('profile') or self.profile_for_app(button['app'])
             if wanted and wanted != 'none':
                 target = None if wanted == 'default' else wanted
@@ -1103,14 +1010,14 @@ class Manager:
         """Write the config only if it loads, otherwise restore the old file. Returns the error or None."""
         yaml.safe_load(text)
         path = self.active_path()
-        with open(path) as fp:
+        with open(path, encoding='utf-8') as fp:
             old = fp.read()
-        with open(path, 'w') as fp:
+        with open(path, 'w', encoding='utf-8', newline='\n') as fp:
             fp.write(text)
         if self.load():
             return None
         error = self.last_error
-        with open(path, 'w') as fp:
+        with open(path, 'w', encoding='utf-8', newline='\n') as fp:
             fp.write(old)
         self.load()
         return error
@@ -1121,7 +1028,7 @@ class Manager:
         if name in self.profile_names():
             raise ValueError(t('errors.profile_exists', name=name))
         os.makedirs(os.path.dirname(self.profile_path(name)), exist_ok=True)
-        with open(self.profile_path(name), 'x') as fp:
+        with open(self.profile_path(name), 'x', encoding='utf-8', newline='\n') as fp:
             fp.write(PROFILE_TEMPLATE)
         return name
 
@@ -1208,32 +1115,34 @@ class Manager:
                 app = (load_config(self.profile_path(name)) or {}).get('app')
             except Exception:
                 continue
+            app = system.for_system(app)
             if app:
-                apps[name] = os.path.normpath(app)
+                apps[name] = system.app_key(app)
         return apps
 
     def profile_for_app(self, path):
         if not path:
             return None
-        path = os.path.normpath(path)
+        path = system.app_key(path)
         return next((name for name, app in self.profile_apps().items() if app == path), None)
 
     def set_profile_settings(self, name, data):
         """Change the app that activates a profile and/or its background (picture or color). Only given fields change."""
         path = self.file_for(name)
-        with open(path) as fp:
+        with open(path, encoding='utf-8') as fp:
             text = fp.read()
         if 'app' in data:
             app = data['app'] or None
             if app and name == 'default':
                 return t('errors.default_no_app')
             if app:
-                if not (app.endswith('.app') and os.path.isdir(app)):
+                if not system.is_app(app):
                     return t('errors.not_an_app', app=app)
                 other = self.profile_for_app(app)
                 if other and other != name:
                     return t('errors.app_taken', app=os.path.basename(app), profile=other)
-            text = set_top_line(text, 'app', app)
+            # in a shared config the app may be set per system: only this system's part changes
+            text = set_top_line(text, 'app', system.merge_for_system((yaml.safe_load(text) or {}).get('app'), app))
         for field in ('background_image', 'background_color'):
             if field in data:
                 try:
@@ -1242,7 +1151,7 @@ class Manager:
                     return str(e)
                 text = set_top_line(text, field, data[field] or None)
         yaml.safe_load(text)
-        with open(path, 'w') as fp:
+        with open(path, 'w', encoding='utf-8', newline='\n') as fp:
             fp.write(text)
         self.last_app = None  # re-check the frontmost app against a changed link
         if name == (self.profile or 'default'):
@@ -1250,6 +1159,16 @@ class Manager:
         return None
 
     def key_data(self, name, page, number):
+        """A key as the web interface edits it: fields with a value per system show this system's value."""
+        pages = (load_config(self.file_for(name)) or {}).get('pages') or {}
+        data = dict((pages.get(page) or {}).get(number) or {})
+        for entry in (data, data.get('hold') if isinstance(data.get('hold'), dict) else None):
+            for field in system.PER_SYSTEM:
+                if entry and isinstance(entry.get(field), dict):
+                    entry[field] = system.for_system(entry[field]) or ''
+        return data
+
+    def key_data_raw(self, name, page, number):
         pages = (load_config(self.file_for(name)) or {}).get('pages') or {}
         return dict((pages.get(page) or {}).get(number) or {})
 
@@ -1270,14 +1189,14 @@ class Manager:
         code = data.get('language')
         if code not in [lang['code'] for lang in i18n.languages()]:
             return t('errors.unknown_language', language=code)
-        with open(self.config_path) as fp:
+        with open(self.config_path, encoding='utf-8') as fp:
             old = fp.read()
-        with open(self.config_path, 'w') as fp:
+        with open(self.config_path, 'w', encoding='utf-8', newline='\n') as fp:
             fp.write(replace_block_lines(old, 'ui', {'language': code}))
         if self.load():
             return None
         error = self.last_error
-        with open(self.config_path, 'w') as fp:
+        with open(self.config_path, 'w', encoding='utf-8', newline='\n') as fp:
             fp.write(old)
         self.load()
         return error
@@ -1306,14 +1225,14 @@ class Manager:
         values = {'screensaver': data['screensaver'], 'screensaver_timeout': timeout,
                   'screensaver_brightness': saver_brightness, 'screensaver_color': data['screensaver_color'],
                   'screensaver_image': data['screensaver_image'], 'keep_alive_interval': interval}
-        with open(self.config_path) as fp:
+        with open(self.config_path, encoding='utf-8') as fp:
             old = fp.read()
-        with open(self.config_path, 'w') as fp:
+        with open(self.config_path, 'w', encoding='utf-8', newline='\n') as fp:
             fp.write(replace_block_lines(old, 'device', values))
         if self.load():
             return None
         error = self.last_error
-        with open(self.config_path, 'w') as fp:
+        with open(self.config_path, 'w', encoding='utf-8', newline='\n') as fp:
             fp.write(old)
         self.load()
         return error
@@ -1330,6 +1249,17 @@ class Manager:
         return self.save_file(name, remove_key_line(self.read_file(name), page, number))
 
     def set_key(self, name, page, number, data):
+        # a field that holds a value per system keeps the other system's value
+        old = self.key_data_raw(name, page, number)
+        for new_entry, old_entry in ((data, old), (data.get('hold'), old.get('hold'))):
+            if isinstance(new_entry, dict) and isinstance(old_entry, dict):
+                for field in system.PER_SYSTEM:
+                    if field in new_entry or field in old_entry:
+                        value = system.merge_for_system(old_entry.get(field), new_entry.get(field))
+                        if value in (None, ''):
+                            new_entry.pop(field, None)
+                        else:
+                            new_entry[field] = value
         text = replace_key_line(self.read_file(name), page, number, data)
         return self.save_file(name, text)
 
@@ -1341,7 +1271,7 @@ class Manager:
             check_text(text)
         except Exception as e:
             return str(e)
-        with open(self.file_for(name), 'w') as fp:
+        with open(self.file_for(name), 'w', encoding='utf-8', newline='\n') as fp:
             fp.write(text)
         return None
 
@@ -1356,7 +1286,7 @@ class Manager:
         return self.config_path if name == 'default' else self.profile_path(name)
 
     def read_file(self, name):
-        with open(self.file_for(name)) as fp:
+        with open(self.file_for(name), encoding='utf-8') as fp:
             return fp.read()
 
     def tree(self):

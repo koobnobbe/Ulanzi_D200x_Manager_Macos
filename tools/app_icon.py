@@ -1,5 +1,9 @@
-"""Draw the app icon of D200X Manager.app: the deck seen from above, a grid of keys on a dark tile.
-Writes an .iconset folder for iconutil: python make_icon.py <out.iconset>"""
+"""Draw the app icon of D200X Manager: the deck seen from above, a grid of keys on a dark tile.
+
+    python tools/app_icon.py <out.iconset>   an .iconset folder for iconutil (macOS app)
+    python tools/app_icon.py <out.ico>       a Windows icon
+Also imported by the Windows tray app for its icon (draw()).
+"""
 import os
 import sys
 
@@ -48,8 +52,11 @@ def draw():
 
 if __name__ == '__main__':
     out = sys.argv[1]
-    os.makedirs(out, exist_ok=True)
     big = draw()
+    if out.lower().endswith('.ico'):
+        big.save(out, sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+        sys.exit()
+    os.makedirs(out, exist_ok=True)
     for size in (16, 32, 128, 256, 512):
         big.resize((size, size), Image.LANCZOS).save(os.path.join(out, f'icon_{size}x{size}.png'))
         big.resize((size * 2, size * 2), Image.LANCZOS).save(os.path.join(out, f'icon_{size}x{size}@2x.png'))

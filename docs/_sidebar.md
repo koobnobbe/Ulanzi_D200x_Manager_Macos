@@ -2,6 +2,7 @@
 
 - [Overzicht](README.md)
 - [Installeren en starten](installatie.md)
+- [Windows](windows.md)
 - [De webinterface](webinterface.md)
 
 ## Instellen

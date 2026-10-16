@@ -142,6 +142,7 @@ image_dialog:
 app_dialog:
   title: Kies een app
   finder_folder: /System/Library/CoreServices (Finder)
+  start_menu: "Startmenu"
   filter: filter op naam
 
 device_dialog:
@@ -271,6 +272,12 @@ config:
   unknown_combo: "onbekende toetscombinatie: {combo}"
   unknown_type: "onbekend type: {type}"
   app_not_found: "app niet gevonden: {app}"
+  app_needed: "een app-toets heeft \"app\" nodig"
+  app_none_here: "geen app voor {system} op deze toets"
+  app_not_here: "app niet op deze computer: {app}"
+  keys_not_here: "geen toetscombinatie voor {system} op deze toets"
+  other_system: "{combo} bestaat alleen op het andere systeem"
+  not_here_short: "niet op deze computer"
   keys_needed: type key heeft "keys" nodig
   background_image_missing: "background_image niet gevonden: {path}"
   transparency_range: transparency moet tussen 0 en 100 liggen
@@ -310,8 +317,8 @@ plugins_check:
   unknown_plugin: "onbekende plugin: {id}"
   not_running: "{name} draait niet"
 
-# Menu of D200X Manager.app (tools/macos-app)
-mac_app:
+# Menu of the D200X Manager app: menu bar on macOS (tools/macos-app), system tray on Windows (tools/windows)
+app_menu:
   running: "Manager draait"
   stopped: "Manager gestopt (start vanzelf opnieuw)"
   open: "Webinterface openen"

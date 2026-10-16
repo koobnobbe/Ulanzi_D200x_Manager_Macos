@@ -238,13 +238,7 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
 <dialog id="appDlg">
   <div style="min-width: 360px">
     <h2 data-t="app_dialog.title"></h2>
-    <select id="appRoot">
-      <option value="/Applications">/Applications</option>
-      <option value="/System/Applications">/System/Applications</option>
-      <option value="/System/Applications/Utilities">/System/Applications/Utilities</option>
-      <option value="~/Applications">~/Applications</option>
-      <option value="/System/Library/CoreServices" data-t="app_dialog.finder_folder"></option>
-    </select>
+    <select id="appRoot"></select>
     <input id="appFilter" type="text" data-t-placeholder="app_dialog.filter" style="margin-top: 8px">
     <div id="appList" class="applist"></div>
     <div class="bar"><span style="flex: 1"></span><button type="button" id="appCancel" data-t="common.close"></button></div>
@@ -731,6 +725,16 @@ let appPickTarget = 'kApp';  // input that receives the chosen app path
 
 async function loadApps() {
   const data = await api('/api/apps?dir=' + encodeURIComponent($('appRoot').value));
+  // the folders differ per system (macOS, Windows); the server says which
+  if (!$('appRoot').options.length) {
+    for (const folder of data.folders) {
+      const option = document.createElement('option');
+      option.value = folder.value;
+      option.textContent = folder.label;
+      $('appRoot').append(option);
+    }
+    $('appRoot').value = data.dir;
+  }
   appsCache = data.apps;
   renderApps();
 }

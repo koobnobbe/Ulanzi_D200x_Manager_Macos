@@ -2,7 +2,7 @@
 
 ## Wat je nodig hebt
 
-- Een Mac met macOS.
+- Een Mac met macOS, of een pc met Windows 11 (zie [Windows](windows.md)).
 - Python 3 (getest met 3.11).
 - Een Ulanzi D200X, met USB aangesloten.
 

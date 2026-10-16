@@ -16,7 +16,7 @@ swiftc -O -target arm64-apple-macos13 -o "$APP/Contents/MacOS/$NAME" "$HERE/main
 
 # icon and menu texts
 TMP=$(mktemp -d)
-"$PROJECT/.venv/bin/python" "$HERE/make_icon.py" "$TMP/AppIcon.iconset"
+"$PROJECT/.venv/bin/python" "$PROJECT/tools/app_icon.py" "$TMP/AppIcon.iconset"
 iconutil -c icns -o "$APP/Contents/Resources/AppIcon.icns" "$TMP/AppIcon.iconset"
 "$PROJECT/.venv/bin/python" - "$PROJECT" "$APP/Contents/Resources/menu.json" <<'PY'
 import glob, json, os, sys, yaml
@@ -24,7 +24,7 @@ project, out = sys.argv[1:]
 texts = {}
 for path in glob.glob(os.path.join(project, 'lang', '*.yaml')):
     with open(path, encoding='utf-8') as fp:
-        texts[os.path.splitext(os.path.basename(path))[0]] = (yaml.safe_load(fp) or {}).get('mac_app') or {}
+        texts[os.path.splitext(os.path.basename(path))[0]] = (yaml.safe_load(fp) or {}).get('app_menu') or {}
 with open(out, 'w', encoding='utf-8') as fp:
     json.dump(texts, fp, ensure_ascii=False)
 PY

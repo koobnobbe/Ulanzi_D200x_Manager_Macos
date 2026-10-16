@@ -14,7 +14,7 @@ import yaml
 from PIL import Image
 
 import i18n
-from appicon import app_icon
+import system
 from i18n import t
 
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'index.html')
@@ -49,7 +49,7 @@ HIDDEN_LIBRARIES = os.path.join(PROJECT_DIR, 'library', 'hidden.json')
 
 def hidden_libraries():
     try:
-        with open(HIDDEN_LIBRARIES) as fp:
+        with open(HIDDEN_LIBRARIES, encoding='utf-8') as fp:
             return set(json.load(fp).get('hidden') or [])
     except FileNotFoundError:
         return set()
@@ -63,7 +63,7 @@ def set_library_enabled(section, enabled):
         hidden.discard(section)
     else:
         hidden.add(section)
-    with open(HIDDEN_LIBRARIES, 'w') as fp:
+    with open(HIDDEN_LIBRARIES, 'w', encoding='utf-8', newline='\n') as fp:
         json.dump({'hidden': sorted(hidden)}, fp, indent=2)
 
 
@@ -76,7 +76,7 @@ def list_library():
     for name in sorted(os.listdir(folder), key=str.lower):
         if not name.endswith('.yaml'):
             continue
-        with open(os.path.join(folder, name)) as fp:
+        with open(os.path.join(folder, name), encoding='utf-8') as fp:
             entries = (yaml.safe_load(fp) or {}).get('buttons') or []
         sections.append({'section': os.path.splitext(name)[0], 'enabled': os.path.splitext(name)[0] not in hidden,
                          'items': [{'title': e.get('title') or str(e.get('keys', '')), 'data': e} for e in entries]})
@@ -85,7 +85,7 @@ def list_library():
 
 def app_icon_png(app, size=64):
     """The app's icon as PNG bytes for the web interface (64 px, sharp on a Retina screen at 32 px)."""
-    icon = app_icon(app)
+    icon = system.app_icon(app)
     if icon is None:
         return None
     buf = io.BytesIO()
@@ -101,14 +101,14 @@ def library_path(section):
 
 def append_library_line(path, line):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    text = open(path).read() if os.path.exists(path) else ''
+    text = open(path, encoding='utf-8').read() if os.path.exists(path) else ''
     lines = text.rstrip('\n').split('\n') if text.strip() else []
     if 'buttons: []' in lines:
         lines[lines.index('buttons: []')] = 'buttons:'
     elif 'buttons:' not in lines:
         lines.append('buttons:')
     lines.append(line)
-    with open(path, 'w') as fp:
+    with open(path, 'w', encoding='utf-8', newline='\n') as fp:
         fp.write('\n'.join(lines) + '\n')
 
 
@@ -126,7 +126,7 @@ def library_zip_path(section):
 
 
 def library_entries(section):
-    with open(library_path(section)) as fp:
+    with open(library_path(section), encoding='utf-8') as fp:
         return (yaml.safe_load(fp) or {}).get('buttons') or []
 
 
@@ -221,7 +221,7 @@ def create_library(name):
     if os.path.exists(path):
         raise ValueError(t('errors.library_exists', name=name))
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, 'x') as fp:
+    with open(path, 'x', encoding='utf-8', newline='\n') as fp:
         fp.write(f'# Library section "{name}". Each entry is a key definition you can drag onto a key.\nbuttons: []\n')
 
 
@@ -244,7 +244,7 @@ def import_library(filename, text, check, zip_data=None):
         flows = [yaml.safe_dump(e, default_flow_style=True, sort_keys=False, allow_unicode=True, width=10 ** 6).strip()
                  for e in entries]
         text = f'# Library section "{name}" (imported).\nbuttons:' + ''.join(f'\n  - {f}' for f in flows) + ('\n' if flows else ' []\n')
-    with open(path, 'x') as fp:
+    with open(path, 'x', encoding='utf-8', newline='\n') as fp:
         fp.write(text)
     if icons:
         with zipfile.ZipFile(library_zip_path(name), 'w', zipfile.ZIP_DEFLATED) as archive:
@@ -258,13 +258,13 @@ def take_library_line(section, index):
     path = library_path(section)
     if not os.path.isfile(path):
         raise ValueError(t('errors.unknown_section'))
-    with open(path) as fp:
+    with open(path, encoding='utf-8') as fp:
         lines = fp.read().split('\n')
     entries = [i for i, line in enumerate(lines) if line.startswith('  - ')]
     if not 0 <= index < len(entries):
         raise ValueError(t('errors.unknown_item'))
     line = lines.pop(entries[index])
-    with open(path, 'w') as fp:
+    with open(path, 'w', encoding='utf-8', newline='\n') as fp:
         fp.write('\n'.join(lines))
     return line
 
@@ -334,10 +334,10 @@ def make_background(source, name=None):
 
 
 def list_apps(directory):
-    directory = os.path.expanduser(directory)
-    entries = [e for e in os.scandir(directory) if e.name.endswith('.app') and e.is_dir()]
-    entries.sort(key=lambda e: e.name.lower())
-    return {'dir': directory, 'apps': [{'name': e.name[:-4], 'path': e.path} for e in entries]}
+    """The apps in a folder for the app picker, and the folders the picker offers on this system."""
+    result = system.list_apps(directory or system.APP_DIR)
+    result['folders'] = [{'value': value, 'label': t(label) if label else value} for value, label in system.APP_FOLDERS]
+    return result
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -435,7 +435,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             with open(file, 'rb') as fp:
                 self.send(200, fp.read(), 'image/png')
         elif path == '/api/apps':
-            directory = parse_qs(urlsplit(self.path).query).get('dir', ['/Applications'])[0]
+            directory = parse_qs(urlsplit(self.path).query).get('dir', [''])[0]
             try:
                 self.send_json(list_apps(directory))
             except Exception as e:
@@ -467,12 +467,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             except Exception as e:
                 self.send_json({'error': str(e)}, 400)
         elif path == '/api/state':
-            with open(manager.active_path()) as fp:
+            with open(manager.active_path(), encoding='utf-8') as fp:
                 text = fp.read()
             self.send_json({'text': text, **self.call(manager.state)})
         elif path == '/appicon':
             app = parse_qs(urlsplit(self.path).query).get('path', [''])[0]
-            data = app_icon_png(app) if app.endswith('.app') and os.path.isdir(app) else None
+            data = app_icon_png(app) if system.is_app(app) else None
             if data is None:
                 self.send_json({'error': 'no icon'}, 404)
             else:

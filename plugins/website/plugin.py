@@ -9,13 +9,13 @@ import hashlib
 import io
 import os
 import re
-import subprocess
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlsplit
 
 import aiohttp
 from PIL import Image, ImageDraw
 
+import system
 from plugins import PROJECT_DIR, Plugin
 
 CACHE_DIR = os.path.join(PROJECT_DIR, '.cache', 'favicons')
@@ -97,11 +97,9 @@ class Website(Plugin):
         url = normalize(entry.get('url'))
         if not url:
             return []
-        command = ['open', url]
-        browser = BROWSERS.get(entry.get('browser') or 'default')
-        if browser:
-            command = ['open', '-a', browser, url]
-        return [(f'open {url}' + (f' in {browser}' if browser else ''), lambda: subprocess.Popen(command))]
+        browser = entry.get('browser') if entry.get('browser') in BROWSERS else None
+        # a browser that is not on this system (Safari on Windows) opens the default browser
+        return [(f'open {url}' + (f' in {BROWSERS[browser]}' if browser else ''), lambda: system.open_url(url, browser))]
 
     async def call(self, action, data):
         if action == 'test':

@@ -140,6 +140,7 @@ image_dialog:
 app_dialog:
   title: Choisir une app
   finder_folder: /System/Library/CoreServices (Finder)
+  start_menu: "Menu Démarrer"
   filter: filtrer par nom
 
 device_dialog:
@@ -269,6 +270,12 @@ config:
   unknown_combo: "combinaison de touches inconnue : {combo}"
   unknown_type: "type inconnu : {type}"
   app_not_found: "app introuvable : {app}"
+  app_needed: "une touche app a besoin de \"app\""
+  app_none_here: "pas d'app pour {system} sur cette touche"
+  app_not_here: "app absente de cet ordinateur : {app}"
+  keys_not_here: "pas de combinaison de touches pour {system} sur cette touche"
+  other_system: "{combo} n'existe que sur l'autre système"
+  not_here_short: "absent de cet ordinateur"
   keys_needed: le type key nécessite "keys"
   background_image_missing: "background_image introuvable : {path}"
   transparency_range: transparency doit être entre 0 et 100
@@ -308,8 +315,8 @@ plugins_check:
   unknown_plugin: "plugin inconnu : {id}"
   not_running: "{name} n'est pas actif"
 
-# Menu of D200X Manager.app (tools/macos-app)
-mac_app:
+# Menu of the D200X Manager app: menu bar on macOS (tools/macos-app), system tray on Windows (tools/windows)
+app_menu:
   running: "Manager en marche"
   stopped: "Manager arrêté (redémarre tout seul)"
   open: "Ouvrir l'interface web"
