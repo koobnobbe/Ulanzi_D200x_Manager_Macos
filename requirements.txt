@@ -5,6 +5,8 @@ pyyaml==6.0.3
 # Imported by strmdck but not declared in its package metadata
 deepdiff==9.1.0
 python-dotenv==1.2.4
+# The time zones of the clock: Windows has no time zone database of its own
+tzdata==2026.4; sys_platform == 'win32'
 # For plugins (Home Assistant: WebSocket connection)
 aiohttp==3.14.5
 # The menu bar / system tray icon (tray.py); on macOS it pulls in pyobjc

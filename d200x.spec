@@ -6,7 +6,7 @@ import glob
 import os
 import sys
 
-from PyInstaller.utils.hooks import collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 ROOT = os.path.abspath(SPECPATH)
 DEFAULTS = os.path.join(ROOT, 'build', 'defaults')
@@ -28,12 +28,14 @@ def plugin_imports():
 
 
 hidden = plugin_imports() + collect_submodules('aiohttp') + ['html.parser', 'plistlib', 'runpy']
-hidden += ['pystray._darwin', 'system.mac', 'system.mac_icon'] if sys.platform == 'darwin' else ['pystray._win32', 'system.windows']
+hidden += ['pystray._darwin', 'system.mac', 'system.mac_icon'] if sys.platform == 'darwin' else ['pystray._win32', 'system.windows', 'tzdata']
+# zoneinfo reads the time zones from the tzdata package on Windows
+tzdata = collect_data_files('tzdata') if sys.platform == 'win32' else []
 
 a = Analysis(
     [os.path.join(ROOT, 'main.py')],
     pathex=[ROOT],
-    datas=[(os.path.join(ROOT, 'web'), 'web'), (DEFAULTS, 'defaults')],
+    datas=[(os.path.join(ROOT, 'web'), 'web'), (DEFAULTS, 'defaults')] + tzdata,
     hiddenimports=hidden,
     excludes=['tkinter', 'test', 'unittest'],
 )
