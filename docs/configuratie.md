@@ -19,7 +19,7 @@ Bevat een bestand een fout, dan blijft de vorige configuratie actief. De foutmel
 | `docs/` | Deze documentatie. |
 | `lang/` | De teksten van de webinterface, per taal. Zie [Taal](#taal). |
 | `.env` | De tijdzone van de klok. |
-| `.cache/`, `.build/` | Gegenereerde plaatjes en bestanden voor het deck. Die kun je negeren. |
+| `.cache/`, `.build/` | Gegenereerde plaatjes en bestanden voor het deck (bij de app: in `~/Library/Caches/D200X Manager` of `%LOCALAPPDATA%\D200X Manager`). Die kun je negeren. |
 
 ## config.yaml
 

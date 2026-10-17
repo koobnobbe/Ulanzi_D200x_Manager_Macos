@@ -1,7 +1,7 @@
 """Claude usage on the deck: how much of the session (5 hour) and weekly limits of your Claude plan is used.
 
 Claude Code hands its status line the same numbers it shows in its "Account & usage" panel. statusline.py, set
-as Claude Code's status line, saves them in .cache/claude_usage.json; this plugin reads that file. No network,
+as Claude Code's status line, saves them in claude_usage.json in the cache; this plugin reads that file. No network,
 no login and no rate limits: the numbers are as fresh as the last message in any Claude Code session.
 """
 import asyncio
@@ -15,9 +15,10 @@ from datetime import datetime, timezone
 
 from PIL import Image, ImageDraw
 
-from plugins import PROJECT_DIR, Plugin
+import paths
+from plugins import CACHE_DIR, Plugin
 
-DATA_FILE = os.path.join(PROJECT_DIR, '.cache', 'claude_usage.json')
+DATA_FILE = os.path.join(CACHE_DIR, 'claude_usage.json')
 STATUSLINE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statusline.py')
 CLAUDE_SETTINGS = os.path.expanduser('~/.claude/settings.json')
 BAR = (47, 111, 224)          # the blue of Claude Code's usage bars
@@ -48,10 +49,12 @@ def resets_in(at):
 
 
 def statusline_command():
+    """The command Claude Code runs; the script gets the data file this plugin reads."""
     if sys.platform == 'win32':
-        # no system Python on Windows: the manager's own (the .venv's)
-        return subprocess.list2cmdline([sys.executable, STATUSLINE])
-    return f'/usr/bin/python3 {shlex.quote(STATUSLINE)}'
+        # no system Python on Windows: the app runs the script itself (from source: the .venv's Python)
+        command = [sys.executable, '--run', STATUSLINE] if paths.FROZEN else [sys.executable, STATUSLINE]
+        return subprocess.list2cmdline(command + [DATA_FILE])
+    return f'/usr/bin/python3 {shlex.quote(STATUSLINE)} {shlex.quote(DATA_FILE)}'
 
 
 def install_statusline():
@@ -62,10 +65,10 @@ def install_statusline():
     except FileNotFoundError:
         settings = {}
     current = (settings.get('statusLine') or {}).get('command', '')
-    if STATUSLINE in current:
+    if current == statusline_command():
         return 'present'
-    if current:
-        return 'other'
+    if current and not ('claude_usage' in current and 'statusline.py' in current):
+        return 'other'      # someone else's status line; an older one of ours (other folder) is replaced
     settings['statusLine'] = {'type': 'command', 'command': statusline_command(), 'padding': 0}
     os.makedirs(os.path.dirname(CLAUDE_SETTINGS), exist_ok=True)
     with open(CLAUDE_SETTINGS + '.tmp', 'w', encoding='utf-8') as fp:

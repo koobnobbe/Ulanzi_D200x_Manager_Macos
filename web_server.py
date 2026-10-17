@@ -14,11 +14,12 @@ import yaml
 from PIL import Image
 
 import i18n
+import paths
 import system
 from i18n import t
 
-PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'index.html')
-DOCS_PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'docs.html')
+PAGE = os.path.join(paths.BUNDLE, 'web', 'index.html')
+DOCS_PAGE = os.path.join(paths.BUNDLE, 'web', 'docs.html')
 
 
 IMAGE_EXTS = ('.png', '.jpg', '.jpeg', '.ico', '.icns')
@@ -39,7 +40,7 @@ def browse(directory):
     return {'dir': directory, 'parent': os.path.dirname(directory), 'dirs': dirs, 'files': files}
 
 
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = paths.CONFIG_DIR     # library, icons, backgrounds and docs are in the config folder
 ICON_SIZE = 192
 BACKGROUND_MAX = 1960  # wide enough for 5 keys of 196px
 
@@ -524,6 +525,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return {'error': self.call(manager.save_file, body.get('name', 'default'), body['text'])}
         if path == '/api/device':
             return {'error': self.call(manager.set_device, body)}
+        if path == '/api/configdir':
+            return {'error': self.call(manager.set_config_dir, body.get('path', ''))}
         if path == '/api/ui':
             return {'error': self.call(manager.set_ui, body)}
         if path == '/api/plugins/enabled':

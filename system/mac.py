@@ -166,7 +166,7 @@ def app_icon(path):
 
 def list_apps(directory):
     """The apps in a folder for the app picker: [{'name', 'path'}]."""
-    directory = os.path.expanduser(directory)
+    directory = os.path.expanduser(directory or APP_DIR)
     entries = [e for e in os.scandir(directory) if e.name.endswith('.app') and e.is_dir()]
     entries.sort(key=lambda e: e.name.lower())
     return {'dir': directory, 'apps': [{'name': e.name[:-4], 'path': e.path} for e in entries]}

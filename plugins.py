@@ -20,9 +20,12 @@ from PIL import Image, ImageDraw
 import i18n
 from i18n import t
 
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-PLUGIN_DIR = os.path.join(PROJECT_DIR, 'plugins')
-LOCAL_SETTINGS = os.path.join(PROJECT_DIR, 'plugins.local.yaml')
+import paths
+
+PROJECT_DIR = paths.CONFIG_DIR      # the config folder (the name is older than the config folder)
+CACHE_DIR = paths.CACHE_DIR         # for plugins: files they keep, such as fetched icons
+PLUGIN_DIR = paths.config('plugins')
+LOCAL_SETTINGS = paths.config('plugins.local.yaml')
 ENTITY_ID = re.compile(r'[a-z_]+\.[a-z0-9_]+')
 
 host = None   # the running Host, set by Host(); render() and the checks below also work without one

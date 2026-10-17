@@ -9,7 +9,9 @@ import re
 
 import yaml
 
-LANG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lang')
+import paths
+
+LANG_DIR = paths.config('lang')
 DEFAULT = 'en'
 
 _language = DEFAULT
@@ -51,7 +53,7 @@ def set_language(code):
     _language = code if valid and os.path.exists(os.path.join(LANG_DIR, f'{code}.yaml')) else DEFAULT
 
 
-PLUGIN_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'plugins')
+PLUGIN_DIR = paths.config('plugins')
 
 
 def _files():

@@ -11,6 +11,8 @@ import sys
 import time
 from dataclasses import dataclass
 from functools import partial
+import paths
+paths.prepare()      # before strmdck: it reads .env and uses .cache in the current folder
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 import hid
 import yaml
@@ -25,9 +27,10 @@ from i18n import t
 
 ICON_DIR = os.path.join('.cache', 'icons', '_generated')
 SIZE = UlanziD200Device.ICON_WIDTH  # 196x196
-CONFIG_PATH = 'config.yaml'
+CONFIG_PATH = paths.config('config.yaml')
 APP_TITLE_SIZE = 28  # title under an app icon
 WEB_PORT = 8765
+RESTART_EXIT = 3   # exit code that makes the tray start the manager again at once
 LONG_PRESS = 0.6  # seconds a key with a "hold" action must be held
 # Keys 14, 16 and 17 send presses but have no screen (14 is the clock slot, 16 and 17 are next to the knobs).
 INPUT_ONLY_KEYS = (14, 16, 17)
@@ -341,7 +344,7 @@ def check_key_entry(entry, where, icons=()):
         fail(t('library_check.font_size_range'))
     if 'transparency' in entry and not isinstance(entry['transparency'], (int, float)):
         fail(t('library_check.transparency_number'))
-    if (entry.get('icon') and not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), entry['icon']))
+    if (entry.get('icon') and not os.path.isfile(paths.config(entry['icon']))
             and os.path.basename(entry['icon']) not in icons):
         fail(t('library_check.icon_missing', path=entry['icon']))
     problem = button_problem(dict(entry))
@@ -384,7 +387,7 @@ def render_button(number, button, wallpaper=None):
     fill = ImageColor.getrgb(button['background'])[:3] + (round(255 * opacity),)
     if button.get('icon'):
         # Like the other keys: the background color (with its transparency) first, the icon on top of it.
-        icon = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), button['icon'])).convert('RGBA')
+        icon = Image.open(paths.config(button['icon'])).convert('RGBA')
         img = Image.new('RGBA', (SIZE, SIZE), color=fill)
         img.alpha_composite(icon.resize((SIZE, SIZE), Image.LANCZOS))
     elif plugins.plugin_kind(kind) == 'key':
@@ -1179,7 +1182,25 @@ class Manager:
                 'screensaver_brightness': d.get('screensaver_brightness', 10),
                 'screensaver_color': d.get('screensaver_color', '#000000'),
                 'screensaver_image': d.get('screensaver_image') or '',
-                'keep_alive_interval': d.get('keep_alive_interval', 1.0)}
+                'keep_alive_interval': d.get('keep_alive_interval', 1.0),
+                'config_dir': paths.CONFIG_DIR, 'default_config_dir': paths.default_config_dir()}
+
+    def set_config_dir(self, path):
+        """Use another config folder: written next to the app, then the manager restarts (the tray starts it again)."""
+        path = (path or '').strip()
+        if path and not os.path.isabs(os.path.expandvars(os.path.expanduser(path))):
+            return t('errors.config_dir_absolute')
+        try:
+            new = paths.set_config_dir(path)
+            probe = os.path.join(new, '.write-test')
+            with open(probe, 'w', encoding='utf-8') as fp:
+                fp.write('')
+            os.remove(probe)
+        except OSError as e:
+            return t('errors.config_dir_failed', error=e)
+        print(f'config folder: {new} (restarting)')
+        asyncio.get_running_loop().call_later(0.5, os._exit, RESTART_EXIT)
+        return None
 
     def ui_settings(self):
         return {'language': i18n.language(), 'languages': i18n.languages()}

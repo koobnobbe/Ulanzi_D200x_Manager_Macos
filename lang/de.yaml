@@ -158,6 +158,9 @@ device_dialog:
   image: Bild
   other: Sonstiges
   keep_alive: Keep-alive-Intervall (s)
+  config_dir: "Konfigurationsordner"
+  config_dir_hint: "Alles von dir: config.yaml, Profile, Bibliotheken, Plugins, Sprachen, Doku, Symbole. Leer = der Ordner der App ({folder}). Ein neuer Ordner bekommt eine Startkonfiguration. Der Manager startet neu."
+  config_dir_restart: "Der Manager startet mit dem neuen Konfigurationsordner neu ..."
   hint: "Wird unter device: in config.yaml gespeichert. Ein Druck auf eine Taste oder einen Drehknopf beendet den Bildschirmschoner; dieser Druck bewirkt sonst nichts. Die Helligkeit steht oben auf der Seite."
 
 profile_dialog:
@@ -232,6 +235,8 @@ docs_viewer:
 
 # Meldungen des Servers, die in der Weboberfläche erscheinen.
 errors:
+  config_dir_absolute: "Der Konfigurationsordner muss ein vollständiger Pfad sein, z. B. /Users/du/D200X oder C:\\Users\\du\\D200X"
+  config_dir_failed: "Dieser Konfigurationsordner kann nicht verwendet werden: {error}"
   at: "{where}: {error}"
   unknown_section: unbekannter Abschnitt
   unknown_item: unbekanntes Element

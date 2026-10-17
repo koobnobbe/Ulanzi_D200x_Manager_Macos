@@ -11,5 +11,6 @@ plugins.local.yaml.tmp
 # macOS Finder files
 .DS_Store
 
-# Built app (tools/macos-app/build.sh)
+# Built app and exe (tools/build-mac.sh, tools/build-windows.ps1)
 dist/
+build/

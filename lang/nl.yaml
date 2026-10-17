@@ -160,6 +160,9 @@ device_dialog:
   image: Afbeelding
   other: Overig
   keep_alive: Keep-alive interval (s)
+  config_dir: "Config-map"
+  config_dir_hint: "Alles van jou: config.yaml, profielen, bibliotheken, plugins, talen, docs, iconen. Leeg = de map van de app ({folder}). Een nieuwe map krijgt een startconfig. De manager herstart."
+  config_dir_restart: "De manager herstart met de nieuwe config-map ..."
   hint: "Wordt opgeslagen onder device: in config.yaml. De screensaver gaat weg met een druk op een toets of knop; die druk doet verder niets. Helderheid staat bovenaan de pagina."
 
 profile_dialog:
@@ -234,6 +237,8 @@ docs_viewer:
 
 # Meldingen van de server die in de webinterface verschijnen.
 errors:
+  config_dir_absolute: "De config-map moet een volledig pad zijn, bijv. /Users/jij/D200X of C:\\Users\\jij\\D200X"
+  config_dir_failed: "Deze config-map kan niet worden gebruikt: {error}"
   at: "{where}: {error}"
   unknown_section: onbekende sectie
   unknown_item: onbekend item

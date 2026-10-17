@@ -158,6 +158,9 @@ device_dialog:
   image: Imagen
   other: Otros
   keep_alive: Intervalo de keep-alive (s)
+  config_dir: "Carpeta de configuración"
+  config_dir_hint: "Todo lo tuyo: config.yaml, perfiles, bibliotecas, plugins, idiomas, documentación, iconos. Vacío = la carpeta de la app ({folder}). Una carpeta nueva recibe una configuración inicial. El manager se reinicia."
+  config_dir_restart: "El manager se reinicia con la nueva carpeta de configuración ..."
   hint: "Se guarda en device: de config.yaml. Una pulsación en una tecla o mando termina el salvapantallas; esa pulsación no hace nada más. El brillo está arriba en la página."
 
 profile_dialog:
@@ -232,6 +235,8 @@ docs_viewer:
 
 # Mensajes del servidor que aparecen en la interfaz web.
 errors:
+  config_dir_absolute: "La carpeta de configuración debe ser una ruta completa, p. ej. /Users/tu/D200X o C:\\Users\\tu\\D200X"
+  config_dir_failed: "No se puede usar esta carpeta de configuración: {error}"
   at: "{where}: {error}"
   unknown_section: sección desconocida
   unknown_item: elemento desconocido

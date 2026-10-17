@@ -1,7 +1,7 @@
 """Websites on the deck: a key opens a web page, in the default browser or a chosen one, and shows the site's icon.
 
 The icon comes from the site itself (apple-touch-icon, <link rel="icon"> or /favicon.ico), fetched once per host
-and kept in .cache/favicons/<host>.png. Until then, or when a site has none, the key shows the first letter of
+and kept in the cache (favicons/<host>.png). Until then, or when a site has none, the key shows the first letter of
 the site on a tile in a color of its own.
 """
 import asyncio
@@ -16,9 +16,9 @@ import aiohttp
 from PIL import Image, ImageDraw
 
 import system
-from plugins import PROJECT_DIR, Plugin
+from plugins import CACHE_DIR as PLUGIN_CACHE, Plugin
 
-CACHE_DIR = os.path.join(PROJECT_DIR, '.cache', 'favicons')
+CACHE_DIR = os.path.join(PLUGIN_CACHE, 'favicons')
 BROWSERS = {'safari': 'Safari', 'chrome': 'Google Chrome', 'firefox': 'Firefox', 'arc': 'Arc',
             'edge': 'Microsoft Edge', 'brave': 'Brave Browser'}
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) '

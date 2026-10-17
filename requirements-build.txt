@@ -1,0 +1,3 @@
+# Building the app (macOS) or exe (Windows): tools/build-mac.sh, tools/build-windows.ps1
+-r requirements.txt
+pyinstaller==6.22.3

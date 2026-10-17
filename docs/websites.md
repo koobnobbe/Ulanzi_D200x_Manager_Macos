@@ -12,9 +12,9 @@ Zonder titel staat de naam van de site op de toets (`nos.nl`); met een titel die
 
 ## Het icoon
 
-De plugin haalt het icoon één keer op bij de site zelf: het apple-touch-icon, het icoon uit de pagina of `/favicon.ico`. Het komt in `.cache/favicons/` en wordt daarna niet meer opgehaald. Tot het binnen is, of als een site geen bruikbaar icoon heeft, toont de toets de eerste letter van de site op een gekleurde tegel.
+De plugin haalt het icoon één keer op bij de site zelf: het apple-touch-icon, het icoon uit de pagina of `/favicon.ico`. Het komt in `favicons/` in de cache van de app (de map `.cache`) en wordt daarna niet meer opgehaald. Tot het binnen is, of als een site geen bruikbaar icoon heeft, toont de toets de eerste letter van de site op een gekleurde tegel.
 
-Een nieuw icoon nodig, bijvoorbeeld omdat de site een nieuw logo heeft? Verwijder het bestand van die site uit `.cache/favicons/` en zet de plugin uit en weer aan.
+Een nieuw icoon nodig, bijvoorbeeld omdat de site een nieuw logo heeft? Verwijder het bestand van die site uit die map `favicons/` en zet de plugin uit en weer aan.
 
 ## In het bestand
 

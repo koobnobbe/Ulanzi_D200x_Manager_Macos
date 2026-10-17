@@ -1,0 +1,91 @@
+# Ulanzi D200X configuration: the starting point. Change it in the web interface (the tray or menu bar
+# icon > Open web interface) or here; the manager picks up changes by itself.
+
+background_color: "#1e1a2e"
+device:
+  screensaver_image: ""
+  screensaver_color: "#000000"
+  screensaver_brightness: 10
+  screensaver_timeout: 60
+  screensaver: "dim"
+  brightness: 80              # 0-100
+  keep_alive_interval: 1.0
+  clock_background: "#1a1a2e"
+
+# Defaults for every key; a key below only needs the fields it changes.
+button_defaults:
+  background: "#1a1a2e"
+  color: "#ffffff"
+  font_size: 60
+
+# Keys 1-13, numbered left to right, top to bottom:
+#    1  2  3  4  5
+#    6  7  8  9 10
+#   11 12 13 [clock]
+#
+# Per key:
+#   type:       "text" (default), "app", "key" or "page"
+#   app:        type app: an app (.app on macOS, .exe or Start menu shortcut on Windows),
+#               or {mac: ..., windows: ...} for a config used on both.
+#               The key shows the app's icon, with the title (if any) below it.
+#   keys:       type key: key combo sent when pressed, e.g. "cmd+c", "ctrl+shift+tab",
+#               or a list of combos sent one after another: ["cmd+a", "cmd+c"].
+#               Modifiers: cmd (Ctrl on Windows), ctrl, alt/option, shift, fn (macOS), win (Windows).
+#               Keys: a-z, 0-9,
+#               enter, tab, space, esc, backspace, delete, up/down/left/right,
+#               home, end, pageup, pagedown, f1-f12 and punctuation.
+#               Media keys (alone, no modifiers): volumeup, volumedown, mute,
+#               brightnessup, brightnessdown, play, next, previous.
+#               Normal combos need Accessibility permission for the terminal running
+#               the manager; media keys do not.
+#   page:       type page: "next", "previous", "home" (page 1) or a page number
+#   title:      text drawn on the key
+#   icon:       path to an image (png/jpg); used instead of the text/app icon
+#   background: background color
+#   color:      text color
+#   font_size:  text size in pixels
+#   output:     printed when the key is pressed to the terminal/logfile
+#
+# Pages: each page has its own keys. Keys not listed on a page are blank.
+# The manager starts on page 1.
+pages:
+  1:
+    1: {type: key, title: Copy, keys: cmd+c, icon: icons/macos-copy.png}
+    2: {type: key, title: Paste, keys: cmd+v, icon: icons/macos-paste.png}
+    3: {type: key, title: Mute, keys: mute}
+    4: {type: key, title: Vol -, keys: volumedown}
+    5: {type: key, title: Vol +, keys: volumeup}
+    6: {type: key, title: Play, keys: play}
+    7: {type: key, title: Prev, keys: previous}
+    8: {type: key, title: Next, keys: next}
+    9: {title: Hello, text: "Hello from the D200X"}
+    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
+    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
+    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
+    14: {type: profile, profile: default}
+    16: {type: page, page: previous}
+    17: {type: page, page: next}
+  2:
+    11: {type: page, title: Previous, page: previous, icon: icons/deck-previous.png}
+    12: {type: page, title: Home, page: home, icon: icons/deck-home.png}
+    13: {type: page, title: Next, page: next, icon: icons/deck-next.png}
+    14: {type: profile, profile: default}
+    16: {type: page, page: previous}
+    17: {type: page, page: next}
+
+# Rotary knobs, left to right.
+#   index: the knob's id in the USB events (only 0x11 for K1 is confirmed)
+#   type:  "text" (default): left/right/press are printed
+#          "key": left/right/press are key combos to send (same syntax as keys above)
+#          "device_brightness": turns the deck's own brightness down (left) or up (right)
+#   step:  device_brightness only: brightness change per click, default 10
+#   left:  counter-clockwise step
+#   right: clockwise step
+#   press: knob pressed
+knobs:
+  K1: {index: 0x11, type: key, left: "volumedown", right: "volumeup", press: "mute"}
+  K2: {index: 0x12, type: key, left: "brightnessdown", right: "brightnessup"}
+  K3: {index: 19, type: device_brightness, step: 10}
+
+ui:
+  language: "en"

@@ -3,54 +3,74 @@
 ## Wat je nodig hebt
 
 - Een Mac met macOS, of een pc met Windows 11 (zie [Windows](windows.md)).
-- Python 3 (getest met 3.11).
 - Een Ulanzi D200X, met USB aangesloten.
 
-## Installeren
+## De app
 
-Open een terminal in de projectmap en maak een virtuele omgeving met de benodigde pakketten:
+D200X Manager is één programma: **D200X Manager.app** op de Mac, **D200X Manager.exe** op Windows. Python en de code zitten erin; je hoeft niets anders te installeren. Start de app en er verschijnt een icoon in de menubalk (Mac) of het systeemvak (Windows). Het menu:
 
-```
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+- **Webinterface openen**;
+- **Manager herstarten**, **Log tonen** en **Projectmap tonen** (de config-map);
+- **Starten bij inloggen**;
+- **D200X Manager stoppen**.
+
+Stopt de manager, bijvoorbeeld omdat het deck niet is aangesloten, dan start de app hem na 10 seconden opnieuw. Het log staat in `~/Library/Logs/D200X Manager.log` (Mac) of `%LOCALAPPDATA%\D200X Manager\manager.log` (Windows).
+
+## De config-map
+
+Alles wat van jou is staat in de **config-map**:
+
+| | |
+|---|---|
+| `config.yaml` | de toetsen, pagina's, draaiknoppen en instellingen |
+| `profiles/` | de profielen |
+| `library/` | de bibliotheken |
+| `plugins/` | de plugins; hun instellingen en tokens staan in `plugins.local.yaml` |
+| `icons/`, `backgrounds/` | iconen en achtergronden |
+| `lang/`, `docs/` | de teksten van de app en deze documentatie |
+| `.env` | de tijdzone van de klok (zie hieronder) |
+
+Standaard is de config-map **de map waar de app (of exe) in staat**. Zet de app daarom in een eigen map, bijvoorbeeld `/Applications/D200X Manager/` of `C:\D200X Manager\`. Is die map nog leeg, dan krijgt hij bij de eerste start een startconfig met de meegeleverde bibliotheken, plugins, talen en docs.
+
+Een andere config-map, bijvoorbeeld een git-map die je met een andere computer deelt, stel je in bij **Apparaat → Config-map**. Dat pad komt in het bestand `D200X Manager config.txt` naast de app; verwijder dat bestand om weer de map van de app te gebruiken. De manager herstart met de nieuwe map.
+
+Bij een nieuwe versie van de app worden `docs/`, `lang/` en de meegeleverde plugins bijgewerkt. Je `config.yaml`, profielen, bibliotheken, iconen en instellingen blijven altijd zoals ze zijn.
 
 ## Tijdzone van de klok
 
-De klok op het deck gebruikt de tijdzone uit het bestand `.env` in de projectmap. Zonder dat bestand staat de klok op New Yorkse tijd. Zet er daarom deze regel in:
+De klok op het deck gebruikt de tijdzone uit het bestand `.env` in de config-map. Zonder dat bestand staat de klok op New Yorkse tijd. Zet er daarom deze regel in:
 
 ```
 TIMEZONE=Europe/Amsterdam
 ```
 
-## Starten
+## De app bouwen
 
-Start de manager vanuit de projectmap:
+De app bouw je uit deze projectmap, op het systeem waarvoor hij is:
+
+- **Mac:** `tools/build-mac.sh` maakt `dist/D200X Manager.app`; met `--install` zet hij hem ook in `/Applications/D200X Manager/`.
+- **Windows:** zie [Windows](windows.md).
+
+Nodig: Python 3.11 of nieuwer en een `.venv` in de projectmap (`python3 -m venv .venv`); het bouwscript installeert de rest.
+
+## Starten vanuit de broncode
+
+Voor ontwikkelen kan het ook zonder app, vanuit de projectmap (na `pip install -r requirements.txt` in de `.venv`):
 
 ```
-python3 d200x_manager.py
+python3 main.py              # het icoon in de menubalk, dat de manager start
+python3 d200x_manager.py     # alleen de manager, in de terminal (stoppen met Ctrl+C)
 ```
 
-Wil je een ander configuratiebestand gebruiken dan `config.yaml`, geef het dan mee: `python3 d200x_manager.py ander.yaml`.
+Vanuit de broncode is de projectmap de config-map, tenzij `D200X Manager config.txt` in de projectmap naar een andere wijst.
 
-Als alles goed gaat, zie je in de terminal onder andere:
+## Toestemming voor toetscombinaties (Mac)
 
-```
-web interface: http://127.0.0.1:8765
-active app: Code (profile: default)
-Druk op een knop (Ctrl+C om te stoppen)
-```
+Om toetscombinaties zoals `cmd+c` naar andere apps te sturen, heeft macOS toestemming nodig. Geef **D200X Manager** (of de terminal waarin je de manager start) toegang via **Systeeminstellingen → Privacy en beveiliging → Toegankelijkheid**. Na een nieuwe build vraagt macOS daar soms opnieuw om.
 
-Stoppen doe je met **Ctrl+C**.
+Zonder die toestemming worden gewone toetscombinaties stil genegeerd. Mediatoetsen (volume, afspelen, helderheid) werken wel.
 
-> Start de manager altijd vanuit de projectmap. Paden zoals `icons/…` en `backgrounds/…` in de configuratie zijn ten opzichte van die map.
-
-## Toestemming voor toetscombinaties
-
-Om toetscombinaties zoals `cmd+c` naar andere apps te sturen, heeft macOS toestemming nodig. Geef de app waarin de manager draait (Terminal, iTerm of VS Code) toegang via **Systeeminstellingen → Privacy en beveiliging → Toegankelijkheid**.
-
-Zonder die toestemming worden gewone toetscombinaties stil genegeerd. Mediatoetsen (volume, afspelen, helderheid) werken wel. De manager waarschuwt in de terminal als de toestemming ontbreekt.
+Gebruik je een virusscanner met app-controle, zoals F-Secure, sta D200X Manager daar dan toe; anders wordt de manager direct gestopt (in het log: `exit -9`).
 
 ## Ulanzi Studio
 
@@ -59,22 +79,5 @@ Sluit Ulanzi Studio af voordat je de manager start. Beide programma's willen het
 ## Na een update
 
 - Wijzigingen in `config.yaml` en de profielen worden vanzelf opnieuw ingelezen.
-- Na een update van de code (`.py`-bestanden) moet je de manager herstarten.
-- Na een update van de webinterface ververs je de pagina met **Cmd+Shift+R**.
-
-## Als app in Programma's
-
-`tools/macos-app/build.sh --install` bouwt **D200X Manager.app** en zet die in `/Applications`. Daarvoor zijn de command line tools van Xcode nodig (`xcode-select --install`).
-
-De app staat als icoon in de menubalk, niet in het Dock. Hij start de manager met de code en de `.venv` uit deze projectmap; wijzigingen in de code of in `config.yaml` werken dus gewoon. Het menu:
-
-- **Webinterface openen** (ook als je de app nog een keer opent);
-- **Manager herstarten**, **Log tonen** (`~/Library/Logs/D200X Manager.log`) en **Projectmap tonen**;
-- **Starten bij inloggen**;
-- **D200X Manager stoppen**.
-
-Stopt de manager, bijvoorbeeld omdat het deck niet is aangesloten, dan start de app hem na 10 seconden opnieuw.
-
-Toetsen die sneltoetsen sturen hebben **Toegankelijkheid** nodig: geef die aan **D200X Manager** in Systeeminstellingen → Privacy en beveiliging. Na een nieuwe build vraagt macOS daar soms opnieuw om. Start de manager niet tegelijk ook in de terminal: dan willen ze allebei het deck gebruiken.
-
-Verplaats je de projectmap, bouw de app dan opnieuw.
+- Na een nieuwe versie van de app: stop de oude en start de nieuwe.
+- Na een update van de webinterface ververs je de pagina met **Cmd+Shift+R** (Windows: **Ctrl+F5**).

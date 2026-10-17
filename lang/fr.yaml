@@ -158,6 +158,9 @@ device_dialog:
   image: Image
   other: Autres
   keep_alive: Intervalle keep-alive (s)
+  config_dir: "Dossier de configuration"
+  config_dir_hint: "Tout ce qui est à toi : config.yaml, profils, bibliothèques, plugins, langues, docs, icônes. Vide = le dossier de l'app ({folder}). Un nouveau dossier reçoit une configuration de départ. Le manager redémarre."
+  config_dir_restart: "Le manager redémarre avec le nouveau dossier de configuration ..."
   hint: "Enregistré sous device: dans config.yaml. Un appui sur une touche ou une molette arrête l'économiseur ; cet appui ne fait rien d'autre. La luminosité se règle en haut de la page."
 
 profile_dialog:
@@ -232,6 +235,8 @@ docs_viewer:
 
 # Messages du serveur affichés dans l'interface web.
 errors:
+  config_dir_absolute: "Le dossier de configuration doit être un chemin complet, par ex. /Users/toi/D200X ou C:\\Users\\toi\\D200X"
+  config_dir_failed: "Ce dossier de configuration ne peut pas être utilisé : {error}"
   at: "{where} : {error}"
   unknown_section: section inconnue
   unknown_item: élément inconnu

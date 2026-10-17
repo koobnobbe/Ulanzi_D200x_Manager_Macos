@@ -160,6 +160,9 @@ device_dialog:
   image: Image
   other: Other
   keep_alive: Keep-alive interval (s)
+  config_dir: "Config folder"
+  config_dir_hint: "All that is yours: config.yaml, profiles, library, plugins, languages, docs, icons. Empty = the folder of the app ({folder}). A new folder gets a starting config. The manager restarts."
+  config_dir_restart: "The manager restarts with the new config folder ..."
   hint: "Saved under device: in config.yaml. A press on a key or knob ends the screensaver; that press does nothing else. Brightness is at the top of the page."
 
 profile_dialog:
@@ -234,6 +237,8 @@ docs_viewer:
 
 # Server messages shown in the web interface.
 errors:
+  config_dir_absolute: "The config folder must be a full path, e.g. /Users/you/D200X or C:\\Users\\you\\D200X"
+  config_dir_failed: "Cannot use this config folder: {error}"
   at: "{where}: {error}"
   unknown_section: unknown section
   unknown_item: unknown item

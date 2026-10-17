@@ -7,5 +7,5 @@ deepdiff==9.1.0
 python-dotenv==1.2.4
 # For plugins (Home Assistant: WebSocket connection)
 aiohttp==3.14.5
-# Windows only: the tray app (tools/windows/tray.py)
-pystray==0.19.5; sys_platform == "win32"
+# The menu bar / system tray icon (tray.py); on macOS it pulls in pyobjc
+pystray==0.19.5

@@ -4,27 +4,25 @@ De manager draait ook op Windows 11. Alles werkt hetzelfde als op de Mac: het de
 
 ## Installeren
 
+Op Windows bouw je de exe zelf, op de laptop:
+
 1. Installeer **Python 3.11 of nieuwer** van [python.org](https://www.python.org/downloads/windows/), met het vinkje **py launcher**.
 2. Zet de projectmap op de laptop, bijvoorbeeld met `git clone`.
 3. Open PowerShell in de projectmap en voer uit:
 
    ```
-   powershell -ExecutionPolicy Bypass -File tools\windows\install.ps1
+   powershell -ExecutionPolicy Bypass -File tools\build-windows.ps1
    ```
 
-   Dat maakt `.venv` met de pakketten en zet **D200X Manager** in het Startmenu.
-4. Zet de tijdzone van de klok in `.env`, net als op de Mac (`TIMEZONE=Europe/Amsterdam`).
+   Dat maakt `dist\D200X Manager.exe`: één bestand met alles erin.
+4. Zet de exe in een eigen map, bijvoorbeeld `C:\D200X Manager\`. Die map wordt de config-map (zie [Installeren](installatie.md)), tenzij je in de webinterface een andere kiest.
+5. Start de exe. Bij de eerste start komt de startconfig naast de exe te staan. Zet de tijdzone van de klok in `.env` in die map (`TIMEZONE=Europe/Amsterdam`).
+
+Wil je een snelkoppeling in het Startmenu, sleep de exe dan met de rechtermuisknop naar `%APPDATA%\Microsoft\Windows\Start Menu\Programs` en kies **Snelkoppeling maken**.
 
 ## Starten
 
-Start **D200X Manager** vanuit het Startmenu. Er verschijnt een icoon in het systeemvak (rechtsonder, eventueel onder het pijltje). Het menu van dat icoon:
-
-- **Webinterface openen** (ook met een klik op het icoon);
-- **Manager herstarten**, **Log tonen** (`%LOCALAPPDATA%\D200X Manager\manager.log`) en **Projectmap tonen**;
-- **Starten bij inloggen**;
-- **D200X Manager stoppen**.
-
-Stopt de manager, bijvoorbeeld omdat het deck niet is aangesloten, dan start de app hem na 10 seconden opnieuw. Starten zonder systeemvak kan ook: `.venv\Scripts\python -X utf8 d200x_manager.py`.
+Na het starten verschijnt een icoon in het systeemvak (rechtsonder, eventueel onder het pijltje). Het menu is hetzelfde als op de Mac; een klik op het icoon opent de webinterface. Het log staat in `%LOCALAPPDATA%\D200X Manager\manager.log`.
 
 ## Sneltoetsen
 

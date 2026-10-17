@@ -1,7 +1,7 @@
 """Draw the app icon of D200X Manager: the deck seen from above, a grid of keys on a dark tile.
 
-    python tools/app_icon.py <out.iconset>   an .iconset folder for iconutil (macOS app)
-    python tools/app_icon.py <out.ico>       a Windows icon
+    python app_logo.py <out.iconset>   an .iconset folder for iconutil (macOS app)
+    python app_logo.py <out.ico>       a Windows icon
 Also imported by the Windows tray app for its icon (draw()).
 """
 import os

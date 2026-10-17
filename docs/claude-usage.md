@@ -13,7 +13,7 @@ De plugin **Claude usage** toont op het deck hoeveel je van je Claude-abonnement
 
 ## Hoe het werkt
 
-Claude Code geeft na elk bericht de limieten van je abonnement door aan zijn statusregel. `statusline.py` bewaart ze in `.cache/claude_usage.json` en toont zelf een korte regel onderin Claude Code, bijvoorbeeld `Opus · 5h 23% · 7d 41%`. De plugin leest dat bestand en tekent de toetsen meteen opnieuw als het verandert.
+Claude Code geeft na elk bericht de limieten van je abonnement door aan zijn statusregel. `statusline.py` bewaart ze in `claude_usage.json` in de cache van de app (de map `.cache`) en toont zelf een korte regel onderin Claude Code, bijvoorbeeld `Opus · 5h 23% · 7d 41%`. De plugin leest dat bestand en tekent de toetsen meteen opnieuw als het verandert.
 
 Er gaat dus niets over het netwerk en er is geen login of token nodig. De cijfers zijn zo vers als het laatste bericht in een Claude Code-sessie. Is een limiet intussen gereset, dan toont de toets 0%.
 

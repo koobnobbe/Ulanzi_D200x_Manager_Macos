@@ -344,6 +344,9 @@ dialog input.hidden-picker { position: absolute; opacity: 0; width: 1px; height:
     <div class="grid2">
       <label><span data-t="device_dialog.keep_alive"></span> <input id="dInterval" type="number" min="0.2" max="10" step="0.1"></label>
     </div>
+    <h3 data-t="device_dialog.config_dir"></h3>
+    <label><input id="dConfigDir" type="text" style="width: 100%"></label>
+    <div class="hint" id="dConfigHint"></div>
     <div class="hint" data-t="device_dialog.hint"></div>
     <div id="dErr" class="err"></div>
     <div class="bar" style="justify-content: flex-end">
@@ -1257,6 +1260,10 @@ $('deviceBtn').onclick = () => guarded(async () => {
   $('dSaverColor').value = d.screensaver_color;
   await loadBackgrounds('dSaverImg', d.screensaver_image);
   $('dInterval').value = d.keep_alive_interval;
+  $('dConfigDir').value = d.config_dir;
+  $('dConfigDir').dataset.current = d.config_dir;
+  $('dConfigDir').placeholder = d.default_config_dir;
+  $('dConfigHint').textContent = t('device_dialog.config_dir_hint', { folder: d.default_config_dir });
   showSaverFields();
   $('dErr').textContent = '';
   $('deviceDlg').showModal();
@@ -1275,6 +1282,18 @@ $('deviceForm').onsubmit = (e) => {
     });
     if (result.error) {
       $('dErr').textContent = result.error;
+      return;
+    }
+    const folder = $('dConfigDir').value.trim();
+    if (folder !== $('dConfigDir').dataset.current) {
+      // another config folder: the manager restarts with it; reload the page once it is back
+      const moved = await api('/api/configdir', { path: folder });
+      if (moved.error) {
+        $('dErr').textContent = moved.error;
+        return;
+      }
+      $('dErr').textContent = t('device_dialog.config_dir_restart');
+      setTimeout(() => location.reload(), 4000);
       return;
     }
     $('deviceDlg').close();
